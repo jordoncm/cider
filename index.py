@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+import views
+
 def index(req):
     req.content_type = 'text/html'
+    """
     output = []
     output.append('<!DOCTYPE HTML>')
     output.append('<html>')
@@ -12,5 +15,7 @@ def index(req):
     output.append('</body>')
     output.append('</html>')
     
-    
     return '\n'.join(output)
+    """
+    v = views.Base(None, None, req=req)
+    return v.render()
