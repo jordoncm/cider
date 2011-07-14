@@ -3,7 +3,7 @@
 import pystache
 import os
 
-class Base(pystache.View):
+class Home(pystache.View):
     template_path = os.path.dirname(__file__) + '/templates'
 
     def title(self):
