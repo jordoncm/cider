@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
+
 import views
 
-def index(req):
-    req.content_type = 'text/html'
-    v = views.Home(None, None, req=req)
-    return v.render()
+def application(environ, start_response):
+    start_response('200 OK', [('Content-type', 'text/html')])
+    v = views.Home(None, None, environ=environ)
+    return [v.render('ascii')]

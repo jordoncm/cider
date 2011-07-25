@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 
-import pystache
 import os
+import pystache
 
-class Home(pystache.View):
+class Base(pystache.View):
     template_path = os.path.dirname(__file__) + '/templates'
 
+class Home(Base):
     def title(self):
         return 'Cider - Dashboard'
     
     def terminalLink(self):
-        req = self.get('req', None)
-        return 'https://' + req.hostname + ':4200'
+        environ = self.get('environ', None)
+        return 'https://' + environ['SERVER_NAME'] + ':4200'
+
+class FileManager(Base):
+    def fileList(self):
+        return []
