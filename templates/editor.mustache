@@ -8,6 +8,7 @@
   <body>
     <div style="position: absolute; top: 0px; right: 0px; left: 0px; height: 20px;">
       <div style="float: right;">
+        <span id="notification"></span>
         <input type="button" value="Save" onclick="save();" />
         <input type="button" value="Close" onclick="window.close();" />
       </div>
@@ -27,7 +28,15 @@ window.onload = function() {
     editor.getSession().setMode(new Mode());
     editor.getSession().setTabSize(4);
     editor.getSession().setUseSoftTabs(true);
-    editor.getSession().setValue(editor.getSession().getValue().replace(/[~]dlb/g, decodeURIComponent('%7B%7B')).replace(/[~]drb/g, decodeURIComponent('%7D%7D')));
+    editor.getSession().setValue(
+        editor.getSession().getValue().replace(
+            /[~]dlb/g,
+            decodeURIComponent('%7B%7B')
+        ).replace(
+            /[~]drb/g,
+            decodeURIComponent('%7D%7D')
+        )
+    );
 };
 
 function save() {
@@ -39,6 +48,10 @@ function save() {
             parameters : {
                 file : '{{file}}',
                 text : text
+            },
+            onSuccess : function(transport) {
+                var response = transport.responseText.evalJSON();
+                document.getElementById('notification').innerHTML = response.notification;
             }
         }
     );

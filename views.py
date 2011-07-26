@@ -9,7 +9,7 @@ class Base(pystache.View):
 
 class Home(Base):
     def title(self):
-        return 'Cider - Dashboard'
+        return 'Dashboard - Cider'
     
     def terminalLink(self):
         environ = self.get('environ', None)
@@ -17,7 +17,7 @@ class Home(Base):
 
 class Editor(Base):
     def title(self):
-        return 'Cider - ' + self.file()
+        return self.file() + ' - Cider'
     
     def file(self):
         environ = self.get('environ', None)
@@ -27,7 +27,7 @@ class Editor(Base):
     def text(self):
         try:
             f = open(os.path.dirname(__file__) + os.sep + self.file(), 'r')
-            return f.read().replace('{{', '~dlb').replace('}}', '~drb')
+            return f.read().replace('{{', '{{').replace('}}', '}}')
         except Exception:
             return ''
 
