@@ -11,9 +11,9 @@
         <input type="button" value="Save" onclick="save();" />
         <input type="button" value="Close" onclick="window.close();" />
       </div>
-      {{file}}
+      {{fileName}}
     </div>
-    <pre id="editor" style="position: absolute; top: 20px; right: 0px; bottom: 0px; left: 0px;"></pre>
+    <pre id="editor" style="position: absolute; top: 20px; right: 0px; bottom: 0px; left: 0px;">{{text}}</pre>
     <script src="ace/build/src/ace.js" type="text/javascript"></script>
     <script src="ace/build/src/theme-eclipse.js" type="text/javascript"></script>
     <script src="ace/build/src/mode-python.js" type="text/javascript"></script>
@@ -36,7 +36,7 @@ function save() {
         {
             method : 'post',
             parameters : {
-                file : '{{file}}',
+                file : '{{fileName}}',
                 text : text
             }
         }
