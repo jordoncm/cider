@@ -11,7 +11,7 @@
         <input type="button" value="Save" onclick="save();" />
         <input type="button" value="Close" onclick="window.close();" />
       </div>
-      {{fileName}}
+      {{file}}
     </div>
     <pre id="editor" style="position: absolute; top: 20px; right: 0px; bottom: 0px; left: 0px;">{{text}}</pre>
     <script src="ace/build/src/ace.js" type="text/javascript"></script>
@@ -23,7 +23,7 @@ var editor = null;
 window.onload = function() {
     editor = ace.edit('editor');
     editor.setTheme('ace/theme/eclipse');
-    var Mode = require('ace/mode/python').Mode;
+    var Mode = require('ace/mode/{{mode}}').Mode;
     editor.getSession().setMode(new Mode());
     editor.getSession().setTabSize(4);
     editor.getSession().setUseSoftTabs(true);
@@ -36,7 +36,7 @@ function save() {
         {
             method : 'post',
             parameters : {
-                file : '{{fileName}}',
+                file : '{{file}}',
                 text : text
             }
         }

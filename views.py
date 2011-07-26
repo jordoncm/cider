@@ -17,16 +17,26 @@ class Home(Base):
 
 class Editor(Base):
     def title(self):
-        return 'Cider - ' + self.fileName()
+        return 'Cider - ' + self.file()
     
-    def fileName(self):
+    def file(self):
+        return 'views.py'
         environ = self.get('environ', None)
         form = cgi.FieldStorage(fp = environ['wsgi.input'], environ = environ)
         return form.getvalue('file')
 
     def text(self):
-        f = open(os.path.dirname(__file__) + '/' + self.fileName(), 'r')
+        f = open(os.path.dirname(__file__) + '/' + self.file(), 'r')
         return f.read()
+
+    def mode(self):
+        file = self.file()
+        ext = file[(file.rfind('.') + 1):]
+
+        if ext == 'py':
+            return 'python'
+        else:
+            return 'javascript'
 
 class FileManager(Base):
     def fileList(self):
