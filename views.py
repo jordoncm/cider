@@ -20,21 +20,43 @@ class Editor(Base):
         return 'Cider - ' + self.file()
     
     def file(self):
-        return 'views.py'
         environ = self.get('environ', None)
         form = cgi.FieldStorage(fp = environ['wsgi.input'], environ = environ)
         return form.getvalue('file')
 
     def text(self):
-        f = open(os.path.dirname(__file__) + '/' + self.file(), 'r')
-        return f.read()
+        try:
+            f = open(os.path.dirname(__file__) + os.sep + self.file(), 'r')
+            return f.read().replace('{{', '~dlb').replace('}}', '~drb')
+        except Exception:
+            return ''
 
     def mode(self):
         file = self.file()
         ext = file[(file.rfind('.') + 1):]
 
-        if ext == 'py':
+        if ext == 'c' or ext == 'cpp':
+            return 'c_cpp'
+        elif ext == 'cs':
+            return 'csharp'
+        elif ext == 'css':
+            return 'css'
+        elif ext == 'html' or ext == 'mustache':
+            return 'html'
+        elif ext == 'java':
+            return 'java'
+        elif ext == 'json':
+            return 'json'
+        elif ext == 'php':
+            return 'php'
+        elif ext == 'py':
             return 'python'
+        elif ext == 'rb':
+            return 'ruby'
+        elif ext == 'svg':
+            return 'svg'
+        elif ext == 'xml':
+            return 'xml'
         else:
             return 'javascript'
 

@@ -16,7 +16,7 @@
     <pre id="editor" style="position: absolute; top: 20px; right: 0px; bottom: 0px; left: 0px;">{{text}}</pre>
     <script src="ace/build/src/ace.js" type="text/javascript"></script>
     <script src="ace/build/src/theme-eclipse.js" type="text/javascript"></script>
-    <script src="ace/build/src/mode-python.js" type="text/javascript"></script>
+    <script src="ace/build/src/mode-{{mode}}.js" type="text/javascript"></script>
     <script type="text/javascript">
 var editor = null;
 
@@ -27,6 +27,7 @@ window.onload = function() {
     editor.getSession().setMode(new Mode());
     editor.getSession().setTabSize(4);
     editor.getSession().setUseSoftTabs(true);
+    editor.getSession().setValue(editor.getSession().getValue().replace(/[~]dlb/g, decodeURIComponent('%7B%7B')).replace(/[~]drb/g, decodeURIComponent('%7D%7D')));
 };
 
 function save() {
