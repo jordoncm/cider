@@ -16,10 +16,20 @@
         <tr>
           <td>{{name}}</td>
           {{#isFile}}
+          {{#path}}
+          <td><a href="editor.py?file={{path}}/{{name}}" target="_blank">Edit</a></td>
+          {{/path}}
+          {{^path}}
           <td><a href="editor.py?file={{name}}" target="_blank">Edit</a></td>
+          {{/path}}
           {{/isFile}}
           {{^isFile}}
+          {{#path}}
           <td><a href="file-manager.py?path={{path}}/{{name}}">Browse</a></td>
+          {{/path}}
+          {{^path}}
+          <td><a href="file-manager.py?path={{name}}">Browse</a></td>
+          {{/path}}
           {{/isFile}}
         </tr>
         {{/fileList}}

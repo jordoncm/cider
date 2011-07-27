@@ -26,7 +26,7 @@ class Editor(Base):
 
     def text(self):
         try:
-            f = open(os.path.dirname(__file__) + os.sep + self.file(), 'r')
+            f = open(os.path.join(os.path.dirname(__file__), self.file()), 'r')
             return f.read().replace('{{', '~dlb').replace('}}', '~drb')
         except Exception:
             return ''
@@ -72,12 +72,15 @@ class FileManager(Base):
         path = self.path()
         
         files = []
-        files = os.listdir(base + os.sep + self.path())
+        files = os.listdir(os.path.join(base, path))
         
         for i in range(len(files)):
             files[i] = {
                 'name' : files[i],
-                'isFile' : os.path.isfile(os.path.join(base, path, files[i]))
+                'isFile' : os.path.isfile(
+                    os.path.join(base, path, files[i])
+                ),
+                'path' : path
             }
         
         return files
