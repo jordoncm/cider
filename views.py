@@ -27,7 +27,7 @@ class Editor(Base):
     def text(self):
         try:
             f = open(os.path.dirname(__file__) + os.sep + self.file(), 'r')
-            return f.read().replace('{{', '{{').replace('}}', '}}')
+            return f.read().replace('{{', '~dlb').replace('}}', '~drb')
         except Exception:
             return ''
 
@@ -61,5 +61,31 @@ class Editor(Base):
             return 'javascript'
 
 class FileManager(Base):
+    def title(self):
+        return self.path() + ' - Cider'
+        
+    def base(self):
+        return os.path.dirname(__file__)
+    
     def fileList(self):
-        return []
+        base = self.base()
+        path = self.path()
+        
+        files = []
+        files = os.listdir(base + os.sep + self.path())
+        
+        for i in range(len(files)):
+            files[i] = {
+                'name' : files[i],
+                'isFile' : os.path.isfile(os.path.join(base, path, files[i]))
+            }
+        
+        return files
+    
+    def path(self):
+        environ = self.get('environ', None)
+        form = cgi.FieldStorage(fp = environ['wsgi.input'], environ = environ)
+        if form.getvalue('path') != None:
+            return form.getvalue('path')
+        else:
+            return ''

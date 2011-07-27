@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{title}}</title>
+  </head>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#fileList}}
+        <tr>
+          <td>{{name}}</td>
+          {{#isFile}}
+          <td><a href="editor.py?file={{name}}" target="_blank">Edit</a></td>
+          {{/isFile}}
+          {{^isFile}}
+          <td><a href="file-manager.py?path={{path}}/{{name}}">Browse</a></td>
+          {{/isFile}}
+        </tr>
+        {{/fileList}}
+      </tbody>
+    </table>
+  </body>
+</html>
