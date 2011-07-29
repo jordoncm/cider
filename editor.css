@@ -1,0 +1,31 @@
+pre {
+    margin: 0;
+    padding: 0;
+}
+
+#header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 29px;
+    border-bottom: 1px solid #9F9F9F;
+}
+
+#title {
+    font-family: monospace;
+    font-size: larger;
+    font-weight: bold;
+}
+
+#notification {
+    font-family: monospace;
+}
+
+#editor {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}

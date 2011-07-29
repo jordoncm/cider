@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link href="editor.css" rel="stylesheet" type="text/css" />
+    
     <script src="prototype.js" type="text/javascript"></script>
 
     <title>{{title}}</title>
   </head>
   <body>
-    <div style="position: absolute; top: 0px; right: 0px; left: 0px; height: 20px;">
+    <div id="header">
       <div style="float: right;">
         <span id="notification"></span>
         <input type="button" value="Save" onclick="save();" />
         <input type="button" value="Close" onclick="window.close();" />
       </div>
-      {{file}}
+      <span id="title">{{file}}</span>
     </div>
-    <pre id="editor" style="position: absolute; top: 20px; right: 0px; bottom: 0px; left: 0px;">{{text}}</pre>
+    <pre id="editor">{{text}}</pre>
     <script src="ace/build/src/ace.js" type="text/javascript"></script>
     <script src="ace/build/src/theme-eclipse.js" type="text/javascript"></script>
     <script src="ace/build/src/mode-{{mode}}.js" type="text/javascript"></script>
