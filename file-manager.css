@@ -18,3 +18,9 @@
 #fileList tr:nth-child(even) {
     background-color: #EEEEEE;
 }
+
+#fileList td.icon {
+    text-align: center;
+    vertical-align: center;
+    width: 20px;
+}

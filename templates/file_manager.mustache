@@ -26,17 +26,17 @@
         <tr>
           {{#isFile}}
           {{#path}}
-          <td>
+          <td class="icon">
             <a href="editor.py?file={{path}}/{{name}}" target="_blank">
-              <img src="" />
+              <img src="images/icon/file.png" />
             </a>
           </td>
           <td><a href="editor.py?file={{path}}/{{name}}" target="_blank">{{name}}</a></td>
           {{/path}}
           {{^path}}
-          <td>
+          <td class="icon">
             <a href="editor.py?file={{name}}" target="_blank">
-              <img src="" />
+              <img src="images/icon/file.png" />
             </a>
           </td>
           <td><a href="editor.py?file={{name}}" target="_blank">{{name}}</a></td>
@@ -44,17 +44,17 @@
           {{/isFile}}
           {{^isFile}}
           {{#path}}
-          <td>
+          <td class="icon">
             <a href="file-manager.py?path={{path}}/{{name}}">
-              <img src="" />
+              <img src="images/icon/folder.png" />
             </a>
           </td>
           <td><a href="file-manager.py?path={{path}}/{{name}}">{{name}}</a></td>
           {{/path}}
           {{^path}}
-          <td>
+          <td class="icon">
             <a href="file-manager.py?path={{name}}">
-              <img src="" />
+              <img src="images/icon/folder.png" />
             </a>
           </td>
           <td><a href="file-manager.py?path={{name}}">{{name}}</a></td>
