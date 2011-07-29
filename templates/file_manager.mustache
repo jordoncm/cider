@@ -1,39 +1,76 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link href="file-manager.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript">var path = '{{path}}';</script>
+    <script src="file-manager.js" type="text/javascript"></script>
+    
     <title>{{title}}</title>
   </head>
   <body>
-    <table>
+    <table id="fileList">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Actions</th>
+          <th colspan="2">Name</th>
         </tr>
       </thead>
       <tbody>
+        {{#path}}
+        <tr>
+          <td>&nbsp;</td>
+          <td><a href="file-manager.py?path={{up}}">..</a></td>
+        </tr>
+        {{/path}}
         {{#fileList}}
         <tr>
-          <td>{{name}}</td>
           {{#isFile}}
           {{#path}}
-          <td><a href="editor.py?file={{path}}/{{name}}" target="_blank">Edit</a></td>
+          <td>
+            <a href="editor.py?file={{path}}/{{name}}" target="_blank">
+              <img src="" />
+            </a>
+          </td>
+          <td><a href="editor.py?file={{path}}/{{name}}" target="_blank">{{name}}</a></td>
           {{/path}}
           {{^path}}
-          <td><a href="editor.py?file={{name}}" target="_blank">Edit</a></td>
+          <td>
+            <a href="editor.py?file={{name}}" target="_blank">
+              <img src="" />
+            </a>
+          </td>
+          <td><a href="editor.py?file={{name}}" target="_blank">{{name}}</a></td>
           {{/path}}
           {{/isFile}}
           {{^isFile}}
           {{#path}}
-          <td><a href="file-manager.py?path={{path}}/{{name}}">Browse</a></td>
+          <td>
+            <a href="file-manager.py?path={{path}}/{{name}}">
+              <img src="" />
+            </a>
+          </td>
+          <td><a href="file-manager.py?path={{path}}/{{name}}">{{name}}</a></td>
           {{/path}}
           {{^path}}
-          <td><a href="file-manager.py?path={{name}}">Browse</a></td>
+          <td>
+            <a href="file-manager.py?path={{name}}">
+              <img src="" />
+            </a>
+          </td>
+          <td><a href="file-manager.py?path={{name}}">{{name}}</a></td>
           {{/path}}
           {{/isFile}}
         </tr>
         {{/fileList}}
       </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">
+            <input id="name" type="text" />
+            <input type="button" value="New File" onclick="createFile();" />
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </body>
 </html>

@@ -27,7 +27,7 @@ class Editor(Base):
     def text(self):
         try:
             f = open(os.path.join(os.path.dirname(__file__), self.file()), 'r')
-            return f.read().replace('{{', '~dlb').replace('}}', '~drb')
+            return f.read().replace('{{', '{{').replace('}}', '}}')
         except Exception:
             return ''
 
@@ -90,5 +90,13 @@ class FileManager(Base):
         form = cgi.FieldStorage(fp = environ['wsgi.input'], environ = environ)
         if form.getvalue('path') != None:
             return form.getvalue('path')
+        else:
+            return ''
+    
+    def up(self):
+        path = self.path()
+        
+        if path != '' and path.rfind('/') > -1:
+            return path[:path.rfind('/')]
         else:
             return ''
