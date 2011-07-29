@@ -27,7 +27,7 @@ class Editor(Base):
     def text(self):
         try:
             f = open(os.path.join(os.path.dirname(__file__), self.file()), 'r')
-            return f.read().replace('{{', '{{').replace('}}', '}}')
+            return f.read().replace('{{', '~' + 'dlb').replace('}}', '~' + 'drb')
         except Exception:
             return ''
 
