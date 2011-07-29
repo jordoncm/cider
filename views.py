@@ -45,6 +45,8 @@ class Editor(Base):
             return 'html'
         elif ext == 'java':
             return 'java'
+        elif ext == 'js':
+            return 'javascript'
         elif ext == 'json':
             return 'json'
         elif ext == 'php':
@@ -58,7 +60,7 @@ class Editor(Base):
         elif ext == 'xml':
             return 'xml'
         else:
-            return 'javascript'
+            return ''
 
 class FileManager(Base):
     def title(self):
