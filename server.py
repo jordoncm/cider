@@ -8,6 +8,8 @@ import tornado.web
 
 import views
 
+BASE_PATH_ADJUSTMENT = '..'
+
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header('Content-Type', 'text/html')
@@ -24,7 +26,11 @@ class SaveFileHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header('Content-Type', 'application/json')
         f = open(
-            os.path.join(os.path.dirname(__file__), self.get_argument('file')),
+            os.path.join(
+                os.path.dirname(__file__),
+                BASE_PATH_ADJUSTMENT,
+                self.get_argument('file')
+            ),
             'w'
         )
         f.write(self.get_argument('text'))

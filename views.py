@@ -1,6 +1,8 @@
 import os
 import pystache
 
+BASE_PATH_ADJUSTMENT = '..'
+
 class Base(pystache.View):
     template_path = os.path.dirname(__file__) + '/templates'
 
@@ -22,7 +24,14 @@ class Editor(Base):
 
     def text(self):
         try:
-            f = open(os.path.join(os.path.dirname(__file__), self.file()), 'r')
+            f = open(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    BASE_PATH_ADJUSTMENT,
+                    self.file()
+                ),
+                'r'
+            )
             return f.read().replace('{{', '~' + 'dlb').replace('}}', '~' + 'drb')
         except Exception:
             return ''
@@ -63,7 +72,7 @@ class FileManager(Base):
         return self.path() + ' - Cider'
         
     def base(self):
-        return os.path.dirname(__file__)
+        return os.path.join(os.path.dirname(__file__), BASE_PATH_ADJUSTMENT)
     
     def fileList(self):
         base = self.base()
