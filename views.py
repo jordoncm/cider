@@ -1,28 +1,24 @@
-#!/usr/bin/env python
-
-import cgi
 import os
 import pystache
 
 class Base(pystache.View):
     template_path = os.path.dirname(__file__) + '/templates'
 
-class Home(Base):
+class Index(Base):
     def title(self):
         return 'Dashboard - Cider'
     
     def terminalLink(self):
-        environ = self.get('environ', None)
-        return 'https://' + environ['SERVER_NAME'] + ':4200'
+        host = self.get('host', None)
+        host = host[:host.find(':')]
+        return 'https://' + host + ':4200'
 
 class Editor(Base):
     def title(self):
         return self.file() + ' - Cider'
     
     def file(self):
-        environ = self.get('environ', None)
-        form = cgi.FieldStorage(fp = environ['wsgi.input'], environ = environ)
-        return form.getvalue('file')
+        return self.get('file', None)
 
     def text(self):
         try:
@@ -88,10 +84,9 @@ class FileManager(Base):
         return files
     
     def path(self):
-        environ = self.get('environ', None)
-        form = cgi.FieldStorage(fp = environ['wsgi.input'], environ = environ)
-        if form.getvalue('path') != None:
-            return form.getvalue('path')
+        path = self.get('path', None)
+        if path != None or path != '':
+            return path
         else:
             return ''
     

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="editor.css" rel="stylesheet" type="text/css" />
+    <link href="../editor.css" rel="stylesheet" type="text/css" />
     
-    <script src="prototype.js" type="text/javascript"></script>
+    <script src="../javascript/prototype.js" type="text/javascript"></script>
 
     <title>{{title}}</title>
   </head>
@@ -17,10 +17,10 @@
       <span id="title">{{file}}</span>
     </div>
     <pre id="editor">{{text}}</pre>
-    <script src="ace/build/src/ace.js" type="text/javascript"></script>
-    <script src="ace/build/src/theme-eclipse.js" type="text/javascript"></script>
+    <script src="../ace/build/src/ace.js" type="text/javascript"></script>
+    <script src="../ace/build/src/theme-eclipse.js" type="text/javascript"></script>
     {{#mode}}
-    <script src="ace/build/src/mode-{{mode}}.js" type="text/javascript"></script>
+    <script src="../ace/build/src/mode-{{mode}}.js" type="text/javascript"></script>
     {{/mode}}
     <script type="text/javascript">
 var editor = null;
@@ -48,7 +48,7 @@ window.onload = function() {
 function save() {
     var text = editor.getSession().getValue();
     new Ajax.Request(
-        'save-file.py',
+        '../save-file/',
         {
             method : 'post',
             parameters : {
