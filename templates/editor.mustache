@@ -43,6 +43,17 @@ window.onload = function() {
             decodeURIComponent('%7D%7D')
         )
     );
+    
+    var canon = require('pilot/canon');
+    canon.addCommand({
+        name : 'save',
+        bindKey : {
+            win : 'Ctrl-S',
+            mac : 'Command-S',
+            sender : 'editor'
+        },
+        exec : save
+    });
 };
 
 function save() {
