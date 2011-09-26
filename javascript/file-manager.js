@@ -10,7 +10,7 @@ function createFile() {
     
     if(name != '') {
         window.open(
-            'editor.py?file=' + encodeURIComponent(parameter),
+            '../editor/?file=' + encodeURIComponent(parameter),
             '_blank'
         );
     }

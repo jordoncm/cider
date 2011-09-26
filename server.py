@@ -37,7 +37,7 @@ class SaveFileHandler(tornado.web.RequestHandler):
         f.close()
         self.write(json.dumps({
             'success' : True,
-            'notification' : 'last saved: ' + time.strftime('%Y-%m-%d %H:%I:%S')
+            'notification' : 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
         }))
     def post(self):
         self.get()
