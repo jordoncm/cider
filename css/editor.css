@@ -14,6 +14,8 @@ pre {
     left: 0;
     height: 29px;
     border-bottom: 1px solid #9F9F9F;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 #title {
@@ -23,7 +25,9 @@ pre {
 }
 
 #notification {
+    background-color: #FFFFFF;
     font-family: monospace;
+    z-index: 10;
 }
 
 #editor {
