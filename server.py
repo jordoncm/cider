@@ -28,18 +28,20 @@ class EditorHandler(tornado.web.RequestHandler):
     def get(self):
         file = self.get_argument('file', '')
         
-        # try:
-        f = open(
-            os.path.join(
-                os.path.dirname(__file__),
-                BASE_PATH_ADJUSTMENT,
-                file
-            ),
-            'r'
-        )
-        text = f.read().replace('{', '~' + 'lb').replace('}', '~' + 'rb')
-        # except Exception:
-        #     text = ''
+        title = file + ' - Cider'
+        
+        try:
+            f = open(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    BASE_PATH_ADJUSTMENT,
+                    file
+                ),
+                'r'
+            )
+            text = f.read().replace('{', '~' + 'lb').replace('}', '~' + 'rb')
+        except Exception:
+            text = ''
         
         ext = file[(file.rfind('.') + 1):]
 
@@ -73,7 +75,7 @@ class EditorHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('editor.html').generate(
-            title = file + ' - Cider',
+            title = title,
             file = file,
             text = text,
             mode = mode
