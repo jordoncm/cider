@@ -41,6 +41,8 @@ class EditorHandler(tornado.web.RequestHandler):
         except Exception:
             text = ''
         
+        tabWidth = 4
+        
         ext = file[(file.rfind('.') + 1):]
 
         if ext == 'c' or ext == 'cpp':
@@ -51,6 +53,7 @@ class EditorHandler(tornado.web.RequestHandler):
             mode = 'css'
         elif ext == 'html' or ext == 'mustache':
             mode = 'html'
+            tabWidth = 2
         elif ext == 'java':
             mode = 'java'
         elif ext == 'js':
@@ -65,8 +68,10 @@ class EditorHandler(tornado.web.RequestHandler):
             mode = 'ruby'
         elif ext == 'svg':
             mode = 'svg'
-        elif ext == 'xml':
+            tabWidth = 2
+        elif ext == 'xml' or ext == 'kml':
             mode = 'xml'
+            tabWidth = 2
         else:
             mode = ''
         
@@ -76,7 +81,8 @@ class EditorHandler(tornado.web.RequestHandler):
             title = title,
             file = file,
             text = text,
-            mode = mode
+            mode = mode,
+            tabWidth = tabWidth
         ))
 
 class SaveFileHandler(tornado.web.RequestHandler):
