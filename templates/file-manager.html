@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="../file-manager.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript">var path = '{{ path }}';</script>
+    <script src="../javascript/file-manager.js" type="text/javascript"></script>
+    
+    <title>{{ title }}</title>
+  </head>
+  <body>
+    <table id="fileList">
+      <thead>
+        <tr>
+          <th colspan="2">Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if path != '' %}
+        <tr>
+          <td>&nbsp;</td>
+          <td><a href="../file-manager/?path={{ up }}">..</a></td>
+        </tr>
+        {% end %}
+        {% for file in filesList %}
+        <tr>
+          {% if file['isFile'] == True %}
+          {% if path != '' %}
+          <td class="icon">
+            <a href="../editor/?file={{ path }}/{{ file['name'] }}">
+              <img src="../images/icon/file.png" />
+            </a>
+          </td>
+          <td><a href="../editor/?file={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a></td>
+          {% else %}
+          <td class="icon">
+            <a href="../editor/?file={{ file['name'] }}">
+              <img src="../images/icon/file.png" />
+            </a>
+          </td>
+          <td><a href="../editor/?file={{ file['name'] }}" target="_blank">{{ file['name'] }}</a></td>
+          {% end %}
+          {% else %}
+          {% if path != '' %}
+          <td class="icon">
+            <a href="../file-manager/?path={{ path }}/{{ file['name'] }}">
+              <img src="../images/icon/folder.png" />
+            </a>
+          </td>
+          <td><a href="../file-manager/?path={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a></td>
+          {% else %}
+          <td class="icon">
+            <a href="../file-manager/?path={{ file['name'] }}">
+              <img src="../images/icon/folder.png" />
+            </a>
+          </td>
+          <td><a href="../file-manager/?path={{ file['name'] }}">{{ file['name'] }}</a></td>
+          {% end %}
+          {% end %}
+        </tr>
+        {% end %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">
+            <input id="name" type="text" />
+            <input type="button" value="New File" onclick="createFile();" />
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </body>
+</html>

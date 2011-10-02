@@ -7,8 +7,6 @@ import tornado.ioloop
 import tornado.template
 import tornado.web
 
-import views
-
 BASE_PATH_ADJUSTMENT = '..'
 
 class IndexHandler(tornado.web.RequestHandler):
@@ -103,9 +101,38 @@ class SaveFileHandler(tornado.web.RequestHandler):
 
 class FileManagerHandler(tornado.web.RequestHandler):
     def get(self):
+        path = self.get_argument('path', '')
+        
+        title = path + ' - Cider'
+        
+        base = os.path.join(os.path.dirname(__file__), BASE_PATH_ADJUSTMENT)
+        
+        files = []
+        files = os.listdir(os.path.join(base, path))
+        
+        for i in range(len(files)):
+            files[i] = {
+                'name' : files[i],
+                'isFile' : os.path.isfile(
+                    os.path.join(base, path, files[i])
+                ),
+                'path' : path
+            }
+        
+        if path != '' and path.rfind('/') > -1:
+            up = path[:path.rfind('/')]
+        else:
+            up = ''
+        
         self.set_header('Content-Type', 'text/html')
-        v = views.FileManager(None, None, path = self.get_argument('path', ''))
-        self.write(v.render())
+        loader = tornado.template.Loader('templates')
+        self.write(loader.load('file-manager.html').generate(
+            title = title,
+            base = base,
+            path = path,
+            filesList = files,
+            up = up
+        ))
 
 application = tornado.web.Application([
     (r'/', IndexHandler),
