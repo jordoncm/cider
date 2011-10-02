@@ -115,8 +115,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
                 'name' : files[i],
                 'isFile' : os.path.isfile(
                     os.path.join(base, path, files[i])
-                ),
-                'path' : path
+                )
             }
         
         if path != '' and path.rfind('/') > -1:
@@ -146,5 +145,5 @@ application = tornado.web.Application([
 ])
 
 if __name__ == '__main__':
-    application.listen(4444)
+    application.listen(3333)
     tornado.ioloop.IOLoop.instance().start()
