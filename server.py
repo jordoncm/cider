@@ -23,10 +23,6 @@ class IndexHandler(tornado.web.RequestHandler):
             title = 'Dashboard - Cider',
             terminalLink = host
         ))
-        '''
-        v = views.Index(None, None, host = self.request.host)
-        self.write(v.render())
-        '''
 
 class EditorHandler(tornado.web.RequestHandler):
     def get(self):
