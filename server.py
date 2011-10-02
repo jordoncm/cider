@@ -4,6 +4,7 @@ import json
 import os
 import time
 import tornado.ioloop
+import tornado.template
 import tornado.web
 
 import views
@@ -12,9 +13,20 @@ BASE_PATH_ADJUSTMENT = '..'
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
+        host = self.request.host
+        host = host[:host.find(':')]
+        host = 'https://' + host + ':4200'
+        
         self.set_header('Content-Type', 'text/html')
+        loader = tornado.template.Loader('templates')
+        self.write(loader.load('index.html').generate(
+            title = 'Dashboard - Cider',
+            terminalLink = host
+        ))
+        '''
         v = views.Index(None, None, host = self.request.host)
         self.write(v.render())
+        '''
 
 class EditorHandler(tornado.web.RequestHandler):
     def get(self):
@@ -60,5 +72,5 @@ application = tornado.web.Application([
 ])
 
 if __name__ == '__main__':
-    application.listen(3333)
+    application.listen(4444)
     tornado.ioloop.IOLoop.instance().start()
