@@ -80,10 +80,6 @@ class EditorHandler(tornado.web.RequestHandler):
             text = text,
             mode = mode
         ))
-        '''
-        v = views.Editor(None, None, file = self.get_argument('file', ''))
-        self.write(v.render())
-        '''
 
 class SaveFileHandler(tornado.web.RequestHandler):
     def get(self):
