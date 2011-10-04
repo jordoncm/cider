@@ -4,6 +4,7 @@
     <link href="../file-manager.css" rel="stylesheet" type="text/css" />
     
     <script type="text/javascript">var path = '{{ path }}';</script>
+    <script src="../javascript/prototype.js" type="text/javascript"></script>
     <script src="../javascript/file-manager.js" type="text/javascript"></script>
     
     <title>{{ title }}</title>
@@ -65,6 +66,7 @@
           <td colspan="2">
             <input id="name" type="text" />
             <input type="button" value="New File" onclick="createFile();" />
+            <input type="button" value="New Folder" onclick="createFolder();" />
           </td>
         </tr>
       </tfoot>

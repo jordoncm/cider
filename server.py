@@ -139,11 +139,38 @@ class FileManagerHandler(tornado.web.RequestHandler):
             up = up
         ))
 
+class CreateFolderHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header('Content-Type', 'application/json')
+        try:
+            path = self.get_argument('path', '')
+            
+            os.mkdir(os.path.join(
+                os.path.dirname(__file__),
+                BASE_PATH_ADJUSTMENT,
+                path
+            ))
+            
+            self.write(json.dumps({
+                'success' : True
+            }))
+        except:
+            self.write(json.dumps({
+                'success' : False
+            }))
+
+class DeleteFileHandler(tornado.web.RequestHandler):
+    pass
+
+class DeleteFolderHandler(tornado.web.RequestHandler):
+    pass
+
 application = tornado.web.Application([
     (r'/', IndexHandler),
     (r'/editor/?', EditorHandler),
     (r'/save-file/?', SaveFileHandler),
     (r'/file-manager/?', FileManagerHandler),
+    (r'/create-folder/?', CreateFolderHandler),
     (r'/ace/(.*)', tornado.web.StaticFileHandler, {'path' : './ace'}),
     (r'/images/(.*)', tornado.web.StaticFileHandler, {'path' : './images'}),
     (r'/javascript/(.*)', tornado.web.StaticFileHandler, {'path' : './javascript'}),
