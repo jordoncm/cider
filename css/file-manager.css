@@ -10,11 +10,11 @@
     text-align: left;
 }
 
-#fileList tr:nth-child(odd) {
+#fileList tbody tr:nth-child(odd) {
     background-color: #FFFFFF;
 }
 
-#fileList tr:nth-child(even) {
+#fileList tbody tr:nth-child(even) {
     background-color: #EEEEEE;
 }
 
@@ -22,4 +22,10 @@
     text-align: center;
     vertical-align: center;
     width: 20px;
+}
+
+#title {
+    font-family: monospace;
+    font-size: larger;
+    font-weight: bold;
 }
