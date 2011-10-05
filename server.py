@@ -24,7 +24,7 @@ class IndexHandler(tornado.web.RequestHandler):
 
 class EditorHandler(tornado.web.RequestHandler):
     def get(self):
-        file = self.get_argument('file', '')
+        file = self.get_argument('file', '').replace('..', '').strip('/')
         
         title = file + ' - Cider'
         
@@ -92,7 +92,7 @@ class SaveFileHandler(tornado.web.RequestHandler):
             os.path.join(
                 os.path.dirname(__file__),
                 BASE_PATH_ADJUSTMENT,
-                self.get_argument('file')
+                self.get_argument('file', '').replace('..', '').strip('/')
             ),
             'w'
         )
@@ -107,7 +107,7 @@ class SaveFileHandler(tornado.web.RequestHandler):
 
 class FileManagerHandler(tornado.web.RequestHandler):
     def get(self):
-        path = self.get_argument('path', '')
+        path = self.get_argument('path', '').replace('..', '').strip('/')
         
         title = path + ' - Cider'
         
@@ -143,7 +143,7 @@ class CreateFolderHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header('Content-Type', 'application/json')
         try:
-            path = self.get_argument('path', '')
+            path = self.get_argument('path', '').replace('..', '').strip('/')
             
             os.mkdir(os.path.join(
                 os.path.dirname(__file__),
