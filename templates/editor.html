@@ -24,6 +24,9 @@
     {% end %}
     <script type="text/javascript">
 var editor = null;
+var dirty = false;
+var oldDirty = false;
+var saving = false;
 
 window.onload = function() {
     editor = ace.edit('editor');
@@ -44,6 +47,10 @@ window.onload = function() {
         )
     );
     
+    editor.getSession().on('change', function() {
+        dirty = true;
+    });
+    
     var canon = require('pilot/canon');
     canon.addCommand({
         name : 'save',
@@ -56,7 +63,20 @@ window.onload = function() {
     });
 };
 
+window.onbeforeunload = function() {
+    if(dirty) {
+        return 'Document has unsaved changes; changes will be lost.';
+    }
+    
+    if(saving) {
+        return 'Save operation in progress; changes could be lost.';
+    }
+};
+
 function save() {
+    saving = true;
+    oldDirty = dirty;
+    dirty = false;
     var text = editor.getSession().getValue();
     new Ajax.Request(
         '../save-file/',
@@ -68,7 +88,16 @@ function save() {
             },
             onSuccess : function(transport) {
                 var response = transport.responseText.evalJSON();
+                
+                if(!response.success) {
+                    if(!dirty) {
+                        dirty = oldDirty;
+                    }
+                }
+                
                 document.getElementById('notification').innerHTML = response.notification;
+                
+                saving = false;
             }
         }
     );

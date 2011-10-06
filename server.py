@@ -88,19 +88,27 @@ class EditorHandler(tornado.web.RequestHandler):
 class SaveFileHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header('Content-Type', 'application/json')
-        f = open(
-            os.path.join(
-                os.path.dirname(__file__),
-                BASE_PATH_ADJUSTMENT,
-                self.get_argument('file', '').replace('..', '').strip('/')
-            ),
-            'w'
-        )
-        f.write(self.get_argument('text'))
-        f.close()
+        try:
+            f = open(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    BASE_PATH_ADJUSTMENT,
+                    self.get_argument('file', '').replace('..', '').strip('/')
+                ),
+                'w'
+            )
+            f.write(self.get_argument('text'))
+            f.close()
+            
+            success = True
+            notification = 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
+        except:
+            success = False
+            notification = 'save failed'
+        
         self.write(json.dumps({
-            'success' : True,
-            'notification' : 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
+            'success' : success,
+            'notification' : notification
         }))
     def post(self):
         self.get()
