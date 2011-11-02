@@ -123,6 +123,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
         
         files = []
         files = os.listdir(os.path.join(base, path))
+        files.sort()
         
         for i in range(len(files)):
             files[i] = {
