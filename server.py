@@ -26,7 +26,14 @@ class EditorHandler(tornado.web.RequestHandler):
     def get(self):
         file = self.get_argument('file', '').replace('..', '').strip('/')
         
-        title = file + ' - Cider'
+        if file.find('/') != -1:
+            fileName = file[(file.rfind('/') + 1):]
+            path = file[:file.rfind('/')]
+            title = '[' + fileName + '] ' + path + ' - Cider'
+        else:
+            fileName = file
+            path = ''
+            title = '[' + fileName + '] - Cider'
         
         try:
             f = open(
@@ -78,6 +85,8 @@ class EditorHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('editor.html').generate(
+            fileName = fileName,
+            path = path,
             title = title,
             file = file,
             text = text,

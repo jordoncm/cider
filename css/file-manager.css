@@ -8,6 +8,7 @@
 
 #fileList th {
     text-align: left;
+    padding: 8px;
 }
 
 #fileList tbody tr td {
