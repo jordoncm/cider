@@ -12,7 +12,7 @@ pre {
     top: 0;
     right: 0;
     left: 0;
-    height: 29px;
+    height: 51px;
     border-bottom: 1px solid #9F9F9F;
     overflow: hidden;
     white-space: nowrap;
@@ -32,7 +32,7 @@ pre {
 
 #editor {
     position: absolute;
-    top: 30px;
+    top: 52px;
     right: 0;
     bottom: 0;
     left: 0;
