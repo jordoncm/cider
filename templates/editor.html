@@ -11,8 +11,7 @@
   <body>
     <div id="header">
       <div style="float: right; margin-top: 10px;">
-        <span id="notification"></span>
-        <a class="button left" href="javascript:void(0);" onclick="save();">Save</a><a class="button right" href="javascript:void(0);" onclick="window.close();">Close</a>
+        <a class="button left" href="javascript:void(0);" id="save" onclick="save();">Save</a><a class="button right" href="javascript:void(0);" onclick="window.close();">Close</a>
       </div>
       <span id="title">{{ file }}</span>
     </div>
@@ -48,6 +47,7 @@ window.onload = function() {
     );
     
     editor.getSession().on('change', function() {
+        document.getElementById('save').innerHTML = 'Save';
         dirty = true;
     });
     
@@ -75,6 +75,7 @@ window.onbeforeunload = function() {
 
 function save() {
     saving = true;
+    document.getElementById('save').innerHTML = 'Saving...';
     oldDirty = dirty;
     dirty = false;
     var text = editor.getSession().getValue();
@@ -95,7 +96,11 @@ function save() {
                     }
                 }
                 
-                document.getElementById('notification').innerHTML = response.notification;
+                if(!dirty) {
+                    document.getElementById('save').innerHTML = 'Saved';
+                } else {
+                    document.getElementById('save').innerHTML = 'Save';
+                }
                 
                 saving = false;
             }
