@@ -10,11 +10,17 @@
     text-align: left;
 }
 
-#fileList tbody tr:nth-child(odd) {
-    background-color: #FFFFFF;
+#fileList tbody tr td {
+    margin: 0px;
+    padding: 2px;
+    border-bottom: 1px solid #DCDCDC;
 }
 
-#fileList tbody tr:nth-child(even) {
+#fileList tbody tr:last-child td {
+    border: none;
+}
+
+#fileList tbody tr:hover {
     background-color: #EEEEEE;
 }
 
@@ -22,10 +28,4 @@
     text-align: center;
     vertical-align: center;
     width: 20px;
-}
-
-#title {
-    font-family: monospace;
-    font-size: larger;
-    font-weight: bold;
 }

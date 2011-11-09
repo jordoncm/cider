@@ -18,18 +18,6 @@ pre {
     white-space: nowrap;
 }
 
-#title {
-    font-family: monospace;
-    font-size: larger;
-    font-weight: bold;
-}
-
-#notification {
-    background-color: #FFFFFF;
-    font-family: monospace;
-    z-index: 10;
-}
-
 #editor {
     position: absolute;
     top: 52px;
