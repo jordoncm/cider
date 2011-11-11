@@ -39,6 +39,7 @@
 
 #fileList tfoot tr td {
     text-align: right;
+    padding-bottom: 10px;
 }
 
 input {
