@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from operator import itemgetter
+
 import json
 import os
 import time
@@ -136,7 +138,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
         
         files = []
         files = os.listdir(os.path.join(base, path))
-        files.sort()
+        files.sort(key = lambda x: x.encode().lower())
         
         for i in range(len(files)):
             files[i] = {
@@ -145,6 +147,8 @@ class FileManagerHandler(tornado.web.RequestHandler):
                     os.path.join(base, path, files[i])
                 )
             }
+        
+        files = sorted(files, key = itemgetter('isFile'))
         
         if path != '' and path.rfind('/') > -1:
             up = path[:path.rfind('/')]
