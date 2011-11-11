@@ -83,7 +83,7 @@ class EditorHandler(tornado.web.RequestHandler):
             mode = 'xml'
             tabWidth = 2
         else:
-            mode = ''
+            mode = 'text'
         
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
