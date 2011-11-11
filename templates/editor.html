@@ -55,8 +55,7 @@ window.onload = function() {
         dirty = true;
     });
     
-    var canon = require('pilot/canon');
-    canon.addCommand({
+    editor.commands.addCommand({
         name : 'save',
         bindKey : {
             win : 'Ctrl-S',
