@@ -45,8 +45,11 @@ class EditorHandler(tornado.web.RequestHandler):
                 'r'
             )
             text = f.read().replace('{', '~' + 'lb').replace('}', '~' + 'rb')
+            
+            saveText = 'Saved'
         except Exception:
             text = ''
+            saveText = 'Save'
         
         tabWidth = 4
         
@@ -91,7 +94,8 @@ class EditorHandler(tornado.web.RequestHandler):
             file = file,
             text = text,
             mode = mode,
-            tabWidth = tabWidth
+            tabWidth = tabWidth,
+            saveText = saveText
         ))
 
 class SaveFileHandler(tornado.web.RequestHandler):
