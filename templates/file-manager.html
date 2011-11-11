@@ -14,57 +14,78 @@
     <table id="fileList">
       <thead>
         <tr>
-          <th colspan="2" id="title">{{ path }}</th>
+          <th colspan="3" id="title">{{ path }}</th>
         </tr>
       </thead>
       <tbody>
         {% if path != '' %}
-        <tr>
-          <td>&nbsp;</td>
-          <td><a href="../file-manager/?path={{ up }}">..</a></td>
-        </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td><a href="../file-manager/?path={{ up }}">..</a></td>
+            <td class="buttons"><a class="button small" href="../file-manager/?path={{ up }}">..</a></td>
+          </tr>
         {% end %}
         {% for file in filesList %}
-        <tr>
-          {% if file['isFile'] == True %}
-          {% if path != '' %}
-          <td class="icon">
-            <a href="../editor/?file={{ path }}/{{ file['name'] }}">
-              <img src="../images/icon/file.png" />
-            </a>
-          </td>
-          <td><a href="../editor/?file={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a></td>
-          {% else %}
-          <td class="icon">
-            <a href="../editor/?file={{ file['name'] }}">
-              <img src="../images/icon/file.png" />
-            </a>
-          </td>
-          <td><a href="../editor/?file={{ file['name'] }}" target="_blank">{{ file['name'] }}</a></td>
-          {% end %}
-          {% else %}
-          {% if path != '' %}
-          <td class="icon">
-            <a href="../file-manager/?path={{ path }}/{{ file['name'] }}">
-              <img src="../images/icon/folder.png" />
-            </a>
-          </td>
-          <td><a href="../file-manager/?path={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a></td>
-          {% else %}
-          <td class="icon">
-            <a href="../file-manager/?path={{ file['name'] }}">
-              <img src="../images/icon/folder.png" />
-            </a>
-          </td>
-          <td><a href="../file-manager/?path={{ file['name'] }}">{{ file['name'] }}</a></td>
-          {% end %}
-          {% end %}
-        </tr>
+          <tr>
+            {% if file['isFile'] == True %}
+              {% if path != '' %}
+                <td class="icon">
+                  <a href="../editor/?file={{ path }}/{{ file['name'] }}">
+                    <img src="../images/icon/file.png" />
+                  </a>
+                </td>
+                <td>
+                  <a href="../editor/?file={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a>
+                </td>
+                <td class="buttons">
+                  <a class="button left small" href="../editor/?file={{ path }}/{{ file['name'] }}">Edit</a><a class="button right small" href="../download/?file={{ path }}/{{ file['name'] }}">Download</a>
+                </td>
+              {% else %}
+                <td class="icon">
+                  <a href="../editor/?file={{ file['name'] }}">
+                    <img src="../images/icon/file.png" />
+                  </a>
+                </td>
+                <td>
+                  <a href="../editor/?file={{ file['name'] }}" target="_blank">{{ file['name'] }}</a>
+                </td>
+                <td class="buttons">
+                  <a class="button left small" href="../editor/?file={{ file['name'] }}">Edit</a><a class="button right small" href="../download/?file={{ file['name'] }}">Download</a>
+                </td>
+              {% end %}
+            {% else %}
+              {% if path != '' %}
+                <td class="icon">
+                  <a href="../file-manager/?path={{ path }}/{{ file['name'] }}">
+                    <img src="../images/icon/folder.png" />
+                  </a>
+                </td>
+                <td>
+                  <a href="../file-manager/?path={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a>
+                </td>
+                <td class="buttons">
+                  <a class="button small" href="../file-manager/?path={{ path }}/{{ file['name'] }}">Browse</a>
+                </td>
+              {% else %}
+                <td class="icon">
+                  <a href="../file-manager/?path={{ file['name'] }}">
+                    <img src="../images/icon/folder.png" />
+                  </a>
+                </td>
+                <td>
+                  <a href="../file-manager/?path={{ file['name'] }}">{{ file['name'] }}</a>
+                </td>
+                <td class="buttons">
+                  <a class="button small" href="../file-manager/?path={{ file['name'] }}">Browse</a>
+                </td>
+              {% end %}
+            {% end %}
+          </tr>
         {% end %}
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="2">
+          <td colspan="3">
             <input id="name" type="text" /><a class="button middle" href="javascript:void(0);" onclick="createFile();">New File</a><a class="button right" href="javascript:void(0);" onclick="createFolder();">New Folder</a>
           </td>
         </tr>

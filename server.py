@@ -161,6 +161,43 @@ class FileManagerHandler(tornado.web.RequestHandler):
             up = up
         ))
 
+class DownloadHandler(tornado.web.RequestHandler):
+    def get(self):
+        file = self.get_argument('file', '').replace('..', '').strip('/')
+        
+        if file.find('/') != -1:
+            fileName = file[(file.rfind('/') + 1):]
+            path = file[:file.rfind('/')]
+        else:
+            fileName = file
+            path = ''
+        
+        try:
+            f = open(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    BASE_PATH_ADJUSTMENT,
+                    file
+                ),
+                'rb'
+            )
+            data = f.read()
+            length = os.path.getsize(os.path.join(
+                os.path.dirname(__file__),
+                BASE_PATH_ADJUSTMENT,
+                file
+            ))
+        except Exception:
+            data = None
+            length = 0
+        
+        self.set_header('Content-Type', 'application/force-download');
+        self.set_header('Content-Disposition', 'attachment; filename="' + fileName + '"');
+        self.set_header('Content-Length', length);
+        
+        self.write(data)
+        
+
 class CreateFolderHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header('Content-Type', 'application/json')
@@ -192,6 +229,7 @@ application = tornado.web.Application([
     (r'/editor/?', EditorHandler),
     (r'/save-file/?', SaveFileHandler),
     (r'/file-manager/?', FileManagerHandler),
+    (r'/download/?', DownloadHandler),
     (r'/create-folder/?', CreateFolderHandler),
     (r'/ace/(.*)', tornado.web.StaticFileHandler, {'path' : './ace'}),
     (r'/images/(.*)', tornado.web.StaticFileHandler, {'path' : './images'}),

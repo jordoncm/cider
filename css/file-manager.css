@@ -22,6 +22,11 @@
     border: none;
 }
 
+#fileList tbody tr td.buttons {
+    text-align: right;
+    padding-right: 0px;
+}
+
 #fileList tbody tr:hover {
     background-color: #EEEEEE;
 }
