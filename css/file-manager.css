@@ -4,6 +4,7 @@
     right: 0;
     left: 0;
     width: 100%;
+    border-spacing: 0px;
 }
 
 #fileList th {
@@ -13,7 +14,7 @@
 
 #fileList tbody tr td {
     margin: 0px;
-    padding: 2px;
+    padding: 7px;
     border-bottom: 1px solid #DCDCDC;
 }
 
