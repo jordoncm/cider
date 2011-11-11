@@ -31,3 +31,11 @@
     vertical-align: center;
     width: 20px;
 }
+
+#fileList tfoot tr td {
+    text-align: right;
+}
+
+input {
+    width: 280px;
+}

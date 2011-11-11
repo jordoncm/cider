@@ -10,13 +10,13 @@
   </head>
   <body>
     <div id="header">
-      <div style="float: right; margin-top: 10px;">
+      <div class="buttons">
         <a class="button left" href="javascript:void(0);" id="save" onclick="save();">{{ saveText }}</a><a class="button right" href="javascript:void(0);" onclick="window.close();">Close</a>
       </div>
-      <div style="margin: 8px;">
+      <div class="header">
         <span id="title">{{ fileName }}</span>
         <br />
-        <span style="font-family: monospace;">{{ path }}</span>
+        <span class="path">{{ path }}</span>
       </div>
     </div>
     <pre id="editor">{{ text }}</pre>

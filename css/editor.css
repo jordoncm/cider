@@ -25,3 +25,16 @@ pre {
     bottom: 0;
     left: 0;
 }
+
+.buttons {
+    float: right;
+    margin-top: 10px;
+}
+
+.header {
+    margin: 8px;
+}
+
+.path {
+    font-family: monospace;
+}

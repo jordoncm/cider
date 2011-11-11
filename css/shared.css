@@ -13,6 +13,13 @@ a {
 }
 
 
+input {
+    border: solid 1px #dcdcdc;
+    margin: 0px;
+    width: 280px;
+    font: 12px Helvetica, Arial, sans-serif;
+    padding: 7px;
+}
 
 a.button {
     color: #6e6e6e;
