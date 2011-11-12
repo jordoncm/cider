@@ -9,19 +9,32 @@ import tornado.ioloop
 import tornado.template
 import tornado.web
 
-BASE_PATH_ADJUSTMENT = '..'
+def getConfigurationValue(key):
+    try:
+        return json.loads(open(os.path.join(
+            os.path.dirname(__file__),
+            'configuration.json'
+        )).read())[key]
+    except:
+        return None
+
+BASE_PATH_ADJUSTMENT = getConfigurationValue('basePathAdjustment')
+if BASE_PATH_ADJUSTMENT == None:
+    BASE_PATH_ADJUSTMENT = '..'
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
-        host = self.request.host
-        host = host[:host.find(':')]
-        host = 'https://' + host + ':4200'
+        terminalLink = getConfigurationValue('terminalLink')
+        if terminalLink != None:
+            host = self.request.host
+            host = host[:host.find(':')]
+            terminalLink = terminalLink.replace('[host]', host)
         
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
             title = 'Dashboard - Cider',
-            terminalLink = host
+            terminalLink = terminalLink
         ))
 
 class EditorHandler(tornado.web.RequestHandler):

@@ -10,7 +10,9 @@
     <div class="mainContainer">
       <h1 class="header">Welcome to cider; select and icon below to begin.</h1>
       <a href="./file-manager/"><img src="./images/file-manager.png" /></a>
-      <a href="{{ terminalLink }}"><img class="terminalIcon" src="./images/terminal.png" /></a>
+      {% if terminalLink != None %}
+        <a href="{{ terminalLink }}"><img class="terminalIcon" src="./images/terminal.png" /></a>
+      {% end %}
     </div>
   </body>
 </html>
