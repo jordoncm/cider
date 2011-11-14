@@ -1,3 +1,8 @@
+/**
+ * This work is copyright Jordon Mears. All rights reserved. See license.txt 
+ * for details.
+ */
+
 var editor = null;
 var dirty = false;
 var oldDirty = false;

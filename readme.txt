@@ -29,3 +29,6 @@ terminalLink       : A full URL to a web based console login (i.e. shellinabox).
 
 Be sure to keep the JSON in the file valid otherwise it will ignore your 
 settings and take defaults.
+
+This work is copyright Jordon Mears. All rights reserved. See license.txt for 
+details.

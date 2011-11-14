@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+#
+# This work is copyright Jordon Mears. All rights reserved. See license.txt for 
+# details.
+#
+
 from operator import itemgetter
 
 import json
