@@ -81,7 +81,7 @@ class EditorHandler(tornado.web.RequestHandler):
             mode = 'csharp'
         elif ext == 'css':
             mode = 'css'
-        elif ext == 'html' or ext == 'mustache':
+        elif ext == 'html' or ext == 'mustache' or ext == 'tpl':
             mode = 'html'
             tabWidth = 2
         elif ext == 'java':
@@ -90,12 +90,14 @@ class EditorHandler(tornado.web.RequestHandler):
             mode = 'javascript'
         elif ext == 'json':
             mode = 'json'
-        elif ext == 'php':
+        elif ext == 'php' or ext == 'inc':
             mode = 'php'
         elif ext == 'py':
             mode = 'python'
         elif ext == 'rb':
             mode = 'ruby'
+        elif ext == 'sql':
+            mode = 'sql'    
         elif ext == 'svg':
             mode = 'svg'
             tabWidth = 2
