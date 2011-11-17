@@ -42,6 +42,14 @@ class IndexHandler(tornado.web.RequestHandler):
             terminalLink = terminalLink
         ))
 
+class IDEHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header('Content-Type', 'text/html')
+        loader = tornado.template.Loader('templates')
+        self.write(loader.load('ide.html').generate(
+            title = 'IDE - Cider'
+        ))
+
 class EditorHandler(tornado.web.RequestHandler):
     def get(self):
         file = self.get_argument('file', '').replace('..', '').strip('/')
@@ -250,6 +258,7 @@ class DeleteFolderHandler(tornado.web.RequestHandler):
 
 application = tornado.web.Application([
     (r'/', IndexHandler),
+    (r'/ide/?', IDEHandler),
     (r'/editor/?', EditorHandler),
     (r'/save-file/?', SaveFileHandler),
     (r'/file-manager/?', FileManagerHandler),

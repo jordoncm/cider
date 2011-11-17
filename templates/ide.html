@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="../shared.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+var tabs = [];
+
+function addTab(file) {
+    var alreadyOpen = false;
+    for(var i = 0; i < tabs.length; i++) {
+        if(file == tabs[i].file) {
+            alreadyOpen = true;
+            activateTab(file);
+            break;
+        }
+    }
+    
+    if(!alreadyOpen) {
+        var fileName = file.split('/');
+        fileName = fileName[(fileName.length - 1)];
+        
+        var a = document.createElement('a');
+        a.className = 'button middle';
+        a.href = 'javascript:void(0);';
+        a.onclick = function() {
+            activateTab(file);
+        };
+        a.appendChild(document.createTextNode(fileName));
+        document.getElementById('tabs').appendChild(a);
+        
+        var iframe = document.createElement('iframe');
+        iframe.className = 'file';
+        iframe.src = '../editor/?file=' + encodeURIComponent(file);
+        document.getElementById('files').appendChild(iframe);
+        
+        tabs.push({
+            a : a,
+            iframe : iframe,
+            file : file
+        });
+        
+        activateTab(file);
+    }
+}
+
+function activateTab(file) {
+    for(var i = 0; i < tabs.length; i++) {
+        if(tabs[i].file == file) {
+            tabs[i].iframe.style.display = 'block';
+        } else {
+            tabs[i].iframe.style.display = 'none';
+        }
+    }
+}
+
+function removeTab(file) {
+    for(var i = 0; i < tabs.length; i++) {
+        if(file == tabs[i].file) {
+            document.getElementById('tabs').removeChild(tabs[i].a);
+            document.getElementById('files').removeChild(tabs[i].iframe);
+            tabs.splice(i, 1);
+            
+            if(tabs.length > 0) {
+                if(i == 0) {
+                    activateTab(tabs[0].file);
+                } else {
+                    activateTab(tabs[i - 1].file);
+                }
+            }
+        }
+    }
+}
+    </script>
+    <style type="text/css">
+html, body {
+    overflow: hidden;
+}
+
+iframe {
+    border: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+#fileManager {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    
+    height: 100%;
+    width: 360px;
+    
+    border-right: 1px solid #9F9F9F;
+}
+
+#tabs {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    left: 361px;
+}
+
+#files {
+    position: absolute;
+    top: 31px;
+    right: 0px;
+    bottom: 0px;
+    left: 361px;
+    
+    border-top: 1px solid #9F9F9F;
+}
+
+.file {
+    width: 100%;
+    height: 100%;
+}
+    </style>
+    <title>{{ title }}</title>
+  </head>
+  <body>
+    <iframe id="fileManager" src="../file-manager/"></iframe>
+    <div id="tabs"></div>
+    <div id="files"></div>
+  </body>
+</html>

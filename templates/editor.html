@@ -9,13 +9,14 @@ details.
     <link href="../editor.css" rel="stylesheet" type="text/css" />
     
     <script src="../javascript/prototype.js" type="text/javascript"></script>
+    <script src="../javascript/ide-enable.js" type="text/javascript"></script>
 
     <title>{{ title }}</title>
   </head>
   <body>
     <div id="header">
       <div class="buttons">
-        <a class="button left" href="javascript:void(0);" id="save" onclick="save();">{{ saveText }}</a><a class="button middle" href="../download/?file={{ file }}">Download</a><a class="button right" href="javascript:void(0);" onclick="window.close();">Close</a>
+        <a class="button left" href="javascript:void(0);" id="save" onclick="save();">{{ saveText }}</a><a class="button middle" href="../download/?file={{ file }}">Download</a><a class="button right" href="javascript:void(0);" onclick="ide.closeFile('{{ file }}');">Close</a>
       </div>
       <div class="header">
         <span id="title">{{ fileName }}</span>
