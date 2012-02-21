@@ -103,6 +103,8 @@ class EditorHandler(tornado.web.RequestHandler):
             mode = 'csharp'
         elif ext == 'css':
             mode = 'css'
+        elif ext == 'groovy':
+            mode = 'groovy'
         elif ext == 'html' or ext == 'mustache' or ext == 'tpl':
             mode = 'html'
             tabWidth = 2
