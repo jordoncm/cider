@@ -284,6 +284,7 @@ application = tornado.web.Application([
     (r'/images/(.*)', tornado.web.StaticFileHandler, {'path' : './images'}),
     (r'/javascript/(.*)', tornado.web.StaticFileHandler, {'path' : './javascript'}),
     (r'/static/(.*)', tornado.web.StaticFileHandler, {'path' : './static'}),
+    (r'/favicon.ico', tornado.web.StaticFileHandler, {'path' : './static/favicon.ico'}),
     (r'/(.*)', tornado.web.StaticFileHandler, {'path' : './css'})
 ])
 
