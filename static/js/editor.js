@@ -55,6 +55,36 @@ window.onload = function() {
         },
         exec : save
     });
+    
+    editor.commands.addCommand({
+        name : 'find',
+        bindKey : {
+            win : 'Ctrl-F',
+            mac : 'Command-F',
+            sender : 'editor'
+        },
+        exec : find
+    });
+    
+    editor.commands.addCommand({
+        name : 'findNext',
+        bindKey : {
+            win : 'Ctrl-G',
+            mac : 'Command-G',
+            sender : 'editor'
+        },
+        exec : findNext
+    });
+    
+    editor.commands.addCommand({
+        name : 'findPrevious',
+        bindKey : {
+            win : 'Ctrl-Shift-G',
+            mac : 'Command-Shift-G',
+            sender : 'editor'
+        },
+        exec : findPrevious
+    });
 };
 
 window.onbeforeunload = function() {
@@ -66,6 +96,29 @@ window.onbeforeunload = function() {
         return 'Save operation in progress; changes could be lost.';
     }
 };
+
+window.onkeydown = function(e) {
+    if(e.ctrlKey || e.metaKey) {
+        switch(e.keyCode) {
+            case 'F'.charCodeAt(0):
+                e.preventDefault();
+                find();
+                break;
+            case 'G'.charCodeAt(0):
+                e.preventDefault();
+                if(e.shiftKey) {
+                    findPrevious();
+                } else {
+                    findNext();
+                }
+                break;
+            case 'S'.charCodeAt(0):
+                e.preventDefault();
+                save();
+                break;
+        }
+    }
+}
 
 function save() {
     saving = true;
@@ -97,4 +150,26 @@ function save() {
             saving = false;
         }
     });
+}
+
+function find() {
+    var element = document.getElementById('find');
+    element.select();
+    if(element.value !== '') {
+        search(element.value);
+    }
+}
+
+function findNext() {
+    editor.findNext();
+}
+
+function findPrevious() {
+    editor.findPrevious();
+}
+
+function search(needle) {
+    if(needle && needle !== '') {
+        editor.find(needle);
+    }
 }

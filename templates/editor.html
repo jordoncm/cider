@@ -48,6 +48,13 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
       <div class="navbar-inner">
         <div class="container-fluid">
           <div class="brand">Cider</div>
+          <div class="btn-group pull-right">
+            <a class="btn" href="javascript:void(0);" onclick="findPrevious();">&lt;</a>
+            <a class="btn" href="javascript:void(0);" onclick="findNext();">&gt;</a>
+          </div>
+          <form class="navbar-form pull-right">
+            <input id="find" type="text" class="span3" placeholder="Find" onkeyup="search(this.value);" />&nbsp;
+          </form>
         </div>
       </div>
     </div>
