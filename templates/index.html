@@ -19,18 +19,51 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="shared.css" rel="stylesheet" type="text/css" />
-    <link href="index.css" rel="stylesheet" type="text/css" />
+    <link href="static/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+    
+    <link href="static/css/base.css" rel="stylesheet" />
     
     <title>{{ title }}</title>
   </head>
   <body>
-    <div class="mainContainer">
-      <h1 class="header">Welcome to cider; select and icon below to begin.</h1>
-      <a href="./file-manager/"><img src="./images/file-manager.png" /></a>
-      {% if terminalLink != None %}
-        <a href="{{ terminalLink }}"><img class="terminalIcon" src="./images/terminal.png" /></a>
-      {% end %}
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <div class="brand">Cider</div>
+        </div>
+      </div>
     </div>
+    
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12">
+          <div class="hero-unit">
+            <h1>Welcome to cider.</h1>
+            <p>Cider is a web-based IDE that allows developers to work within a 
+            browser to edit code locally or from across the world.</p>
+            <p>Choose an option below to get started.</p>
+            <div class="row-fluid">
+              <div class="span4">
+                <h2>File Manager</h2>
+                <p>Browse and edit files.</p>
+                <p><a class="btn btn-primary" href="./file-manager/">Launch File Manager &raquo;</a></p>
+              </div>
+              <div class="span4">
+                {% if terminalLink != None %}
+                  <h2>Terminal</h2>
+                  <p>Web-based terminal.</p>
+                  <p><a class="btn btn-primary" href="{{ terminalLink }}">Launch Terminal &raquo;</a></p>
+                {% end %}
+              </div>
+              <div class="span4">&nbsp;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="static/jquery.min.js" type="text/javascript"></script>
+    <script src="static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
   </body>
 </html>
