@@ -19,21 +19,28 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="../shared.css" rel="stylesheet" type="text/css" />
-    <link href="../file-manager.css" rel="stylesheet" type="text/css" />
+    <link href="../static/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
     
-    <script type="text/javascript">var path = '{{ path }}';</script>
-    <script src="../javascript/prototype.js" type="text/javascript"></script>
-    <script src="../javascript/file-manager.js" type="text/javascript"></script>
-    <script src="../javascript/ide-enable.js" type="text/javascript"></script>
+    <link href="../static/css/base.css" rel="stylesheet" />
+    <link href="../static/css/file-manager.css" rel="stylesheet" />
     
     <title>{{ title }}</title>
   </head>
   <body>
-    <table id="fileList">
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <div class="brand">{% if path != '' %}{{ path }}{% else %}&nbsp;{% end %}</div>
+        </div>
+      </div>
+    </div>
+    
+    <table class="table table-striped" id="fileList">
       <thead>
         <tr>
-          <th colspan="3" id="title">{{ path }}</th>
+         <th colspan="2">Name</th>
+         <th>&nbsp;</th>
         </tr>
       </thead>
       <tbody>
@@ -41,7 +48,11 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
           <tr>
             <td>&nbsp;</td>
             <td><a href="../file-manager/?path={{ up }}">..</a></td>
-            <td class="buttons"><a class="button small" href="../file-manager/?path={{ up }}">..</a></td>
+            <td>
+              <div class="btn-group" style="float: right;">
+                <a class="btn btn-mini" href="../file-manager/?path={{ up }}">..</a>
+              </div>
+            </td>
           </tr>
         {% end %}
         {% for file in filesList %}
@@ -56,8 +67,11 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
                 <td>
                   <a href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return ide.openFile('{{ path }}/{{ file['name'] }}');">{{ file['name'] }}</a>
                 </td>
-                <td class="buttons">
-                  <a class="button left small" href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return ide.openFile('{{ path }}/{{ file['name'] }}');">Edit</a><a class="button right small" href="../download/?file={{ path }}/{{ file['name'] }}">Download</a>
+                <td>
+                  <div class="btn-group" style="float: right;">
+                    <a class="btn btn-mini" href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return ide.openFile('{{ path }}/{{ file['name'] }}');">Edit</a>
+                    <a class="btn btn-mini" href="../download/?file={{ path }}/{{ file['name'] }}">Download</a>
+                  </div>
                 </td>
               {% else %}
                 <td class="icon">
@@ -68,8 +82,11 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
                 <td>
                   <a href="../editor/?file={{ file['name'] }}" onclick="return ide.openFile('{{ file['name'] }}');">{{ file['name'] }}</a>
                 </td>
-                <td class="buttons">
-                  <a class="button left small" href="../editor/?file={{ file['name'] }}" onclick="return ide.openFile('{{ file['name'] }}');">Edit</a><a class="button right small" href="../download/?file={{ file['name'] }}">Download</a>
+                <td>
+                  <div class="btn-group" style="float: right;">
+                    <a class="btn btn-mini" href="../editor/?file={{ file['name'] }}" onclick="return ide.openFile('{{ file['name'] }}');">Edit</a>
+                    <a class="btn btn-mini" href="../download/?file={{ file['name'] }}">Download</a>
+                  </div>
                 </td>
               {% end %}
             {% else %}
@@ -82,8 +99,10 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
                 <td>
                   <a href="../file-manager/?path={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a>
                 </td>
-                <td class="buttons">
-                  <a class="button small" href="../file-manager/?path={{ path }}/{{ file['name'] }}">Browse</a>
+                <td>
+                  <div class="btn-group" style="float: right;">
+                    <a class="btn btn-mini" href="../file-manager/?path={{ path }}/{{ file['name'] }}">Browse</a>
+                  </div>
                 </td>
               {% else %}
                 <td class="icon">
@@ -94,21 +113,36 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
                 <td>
                   <a href="../file-manager/?path={{ file['name'] }}">{{ file['name'] }}</a>
                 </td>
-                <td class="buttons">
-                  <a class="button small" href="../file-manager/?path={{ file['name'] }}">Browse</a>
+                <td>
+                  <div class="btn-group" style="float: right;">
+                    <a class="btn btn-mini" href="../file-manager/?path={{ file['name'] }}">Browse</a>
+                  </div>
                 </td>
               {% end %}
             {% end %}
           </tr>
         {% end %}
       </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="3">
-            <input id="name" type="text" /><a class="button middle" href="javascript:void(0);" onclick="createFile();">New File</a><a class="button right" href="javascript:void(0);" onclick="createFolder();">New Folder</a>
-          </td>
-        </tr>
-      </tfoot>
     </table>
+    
+    <div class="navbar navbar-fixed-bottom">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <div class="brand">Cider</div>
+          <form class="navbar-form pull-right">
+            <input id="name" type="text" class="span3" placeholder="Enter Name" />
+            <a class="btn" href="javascript:void(0);" onclick="createFile();">New File</a>
+            <a class="btn" href="javascript:void(0);" onclick="createFolder();">New Folder</a>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <script src="../static/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    
+    <script type="text/javascript">var path = '{{ path }}';</script>
+    <script src="../static/js/file-manager.js" type="text/javascript"></script>
+    <script src="../javascript/ide-enable.js" type="text/javascript"></script>
   </body>
 </html>

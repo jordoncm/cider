@@ -18,49 +18,10 @@
  */
 
 #fileList {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
-    border-spacing: 0px;
-}
-
-#fileList th {
-    text-align: left;
-    padding: 8px;
-}
-
-#fileList tbody tr td {
-    margin: 0px;
-    padding: 7px;
-    border-bottom: 1px solid #DCDCDC;
-}
-
-#fileList tbody tr:last-child td {
-    border: none;
-}
-
-#fileList tbody tr td.buttons {
-    text-align: right;
-    padding-right: 0px;
-}
-
-#fileList tbody tr:hover {
-    background-color: #EEEEEE;
 }
 
 #fileList td.icon {
     text-align: center;
     vertical-align: center;
     width: 20px;
-}
-
-#fileList tfoot tr td {
-    text-align: right;
-    padding-bottom: 10px;
-}
-
-input {
-    width: 280px;
 }

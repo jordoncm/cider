@@ -45,20 +45,16 @@ function createFolder() {
     var parameter = getCreateParameter();
     
     if(document.getElementById('name').value != '') {
-        new Ajax.Request(
+        $.getJSON(
             '../create-folder/',
             {
-                method : 'get',
-                parameters : {
-                    path : parameter
-                },
-                onSuccess : function(response) {
-                    var json = response.responseText.evalJSON();
-                    if(json.success) {
-                        window.location.reload();
-                    } else {
-                        alert('Folder creation failed.');
-                    }
+                path : parameter
+            },
+            function(json) {
+                if(json.success) {
+                    window.location.reload();
+                } else {
+                    alert('Folder creation failed.');
                 }
             }
         );
