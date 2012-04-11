@@ -17,6 +17,7 @@ import logging
 import os.path
 import re
 import socket
+import sys
 import time
 import urlparse
 import zlib
@@ -52,7 +53,7 @@ class SimpleAsyncHTTPClient(AsyncHTTPClient):
 
     Some features found in the curl-based AsyncHTTPClient are not yet
     supported.  In particular, proxies are not supported, connections
-    are not reused, and callers cannot select the network interface to be 
+    are not reused, and callers cannot select the network interface to be
     used.
 
     Python 2.6 or higher is required for HTTPS support.  Users of Python 2.5
@@ -185,6 +186,26 @@ class _HTTPConnection(object):
                     ssl_options["keyfile"] = request.client_key
                 if request.client_cert is not None:
                     ssl_options["certfile"] = request.client_cert
+
+                # SSL interoperability is tricky.  We want to disable
+                # SSLv2 for security reasons; it wasn't disabled by default
+                # until openssl 1.0.  The best way to do this is to use
+                # the SSL_OP_NO_SSLv2, but that wasn't exposed to python
+                # until 3.2.  Python 2.7 adds the ciphers argument, which
+                # can also be used to disable SSLv2.  As a last resort
+                # on python 2.6, we set ssl_version to SSLv3.  This is
+                # more narrow than we'd like since it also breaks
+                # compatibility with servers configured for TLSv1 only,
+                # but nearly all servers support SSLv3:
+                # http://blog.ivanristic.com/2011/09/ssl-survey-protocol-support.html
+                if sys.version_info >= (2,7):
+                    ssl_options["ciphers"] = "DEFAULT:!SSLv2"
+                else:
+                    # This is really only necessary for pre-1.0 versions
+                    # of openssl, but python 2.6 doesn't expose version
+                    # information.
+                    ssl_options["ssl_version"] = ssl.PROTOCOL_SSLv3
+
                 self.stream = SSLIOStream(socket.socket(af, socktype, proto),
                                           io_loop=self.io_loop,
                                           ssl_options=ssl_options,
@@ -236,7 +257,7 @@ class _HTTPConnection(object):
             username, password = parsed.username, parsed.password
         elif self.request.auth_username is not None:
             username = self.request.auth_username
-            password = self.request.auth_password
+            password = self.request.auth_password or ''
         if username is not None:
             auth = utf8(username) + b(":") + utf8(password)
             self.request.headers["Authorization"] = (b("Basic ") +
@@ -289,7 +310,7 @@ class _HTTPConnection(object):
             yield
         except Exception, e:
             logging.warning("uncaught exception", exc_info=True)
-            self._run_callback(HTTPResponse(self.request, 599, error=e, 
+            self._run_callback(HTTPResponse(self.request, 599, error=e,
                                 request_time=time.time() - self.start_time,
                                 ))
 
@@ -306,9 +327,38 @@ class _HTTPConnection(object):
         assert match
         self.code = int(match.group(1))
         self.headers = HTTPHeaders.parse(header_data)
+
+        if "Content-Length" in self.headers:
+            if "," in self.headers["Content-Length"]:
+                # Proxies sometimes cause Content-Length headers to get
+                # duplicated.  If all the values are identical then we can
+                # use them but if they differ it's an error.
+                pieces = re.split(r',\s*', self.headers["Content-Length"])
+                if any(i != pieces[0] for i in pieces):
+                    raise ValueError("Multiple unequal Content-Lengths: %r" %
+                                     self.headers["Content-Length"])
+                self.headers["Content-Length"] = pieces[0]
+            content_length = int(self.headers["Content-Length"])
+        else:
+            content_length = None
+
         if self.request.header_callback is not None:
             for k, v in self.headers.get_all():
                 self.request.header_callback("%s: %s\r\n" % (k, v))
+
+        if self.request.method == "HEAD":
+            # HEAD requests never have content, even though they may have
+            # content-length headers
+            self._on_body(b(""))
+            return
+        if 100 <= self.code < 200 or self.code in (204, 304):
+            # These response codes never have bodies
+            # http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.3
+            assert "Transfer-Encoding" not in self.headers
+            assert content_length in (None, 0)
+            self._on_body(b(""))
+            return
+
         if (self.request.use_gzip and
             self.headers.get("Content-Encoding") == "gzip"):
             # Magic parameter makes zlib module understand gzip header
@@ -317,18 +367,8 @@ class _HTTPConnection(object):
         if self.headers.get("Transfer-Encoding") == "chunked":
             self.chunks = []
             self.stream.read_until(b("\r\n"), self._on_chunk_length)
-        elif "Content-Length" in self.headers:
-            if "," in self.headers["Content-Length"]:
-                # Proxies sometimes cause Content-Length headers to get
-                # duplicated.  If all the values are identical then we can
-                # use them but if they differ it's an error.
-                pieces = re.split(r',\s*', self.headers["Content-Length"])
-                if any(i != pieces[0] for i in pieces):
-                    raise ValueError("Multiple unequal Content-Lengths: %r" % 
-                                     self.headers["Content-Length"])
-                self.headers["Content-Length"] = pieces[0]
-            self.stream.read_bytes(int(self.headers["Content-Length"]),
-                                   self._on_body)
+        elif content_length is not None:
+            self.stream.read_bytes(content_length, self._on_body)
         else:
             self.stream.read_until_close(self._on_body)
 
@@ -336,6 +376,34 @@ class _HTTPConnection(object):
         if self._timeout is not None:
             self.io_loop.remove_timeout(self._timeout)
             self._timeout = None
+        original_request = getattr(self.request, "original_request",
+                                   self.request)
+        if (self.request.follow_redirects and
+            self.request.max_redirects > 0 and
+            self.code in (301, 302, 303, 307)):
+            new_request = copy.copy(self.request)
+            new_request.url = urlparse.urljoin(self.request.url,
+                                               self.headers["Location"])
+            new_request.max_redirects -= 1
+            del new_request.headers["Host"]
+            # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.4
+            # client SHOULD make a GET request
+            if self.code == 303:
+                new_request.method = "GET"
+                new_request.body = None
+                for h in ["Content-Length", "Content-Type",
+                          "Content-Encoding", "Transfer-Encoding"]:
+                    try:
+                        del self.request.headers[h]
+                    except KeyError:
+                        pass
+            new_request.original_request = original_request
+            final_callback = self.final_callback
+            self.final_callback = None
+            self._release()
+            self.client.fetch(new_request, final_callback)
+            self.stream.close()
+            return
         if self._decompressor:
             data = self._decompressor.decompress(data)
         if self.request.streaming_callback:
@@ -346,23 +414,6 @@ class _HTTPConnection(object):
             buffer = BytesIO()
         else:
             buffer = BytesIO(data) # TODO: don't require one big string?
-        original_request = getattr(self.request, "original_request",
-                                   self.request)
-        if (self.request.follow_redirects and
-            self.request.max_redirects > 0 and
-            self.code in (301, 302)):
-            new_request = copy.copy(self.request)
-            new_request.url = urlparse.urljoin(self.request.url,
-                                               self.headers["Location"])
-            new_request.max_redirects -= 1
-            del new_request.headers["Host"]
-            new_request.original_request = original_request
-            final_callback = self.final_callback
-            self.final_callback = None
-            self._release()
-            self.client.fetch(new_request, final_callback)
-            self.stream.close()
-            return
         response = HTTPResponse(original_request,
                                 self.code, headers=self.headers,
                                 request_time=time.time() - self.start_time,

@@ -10,6 +10,10 @@ The default implementation is `simple_httpclient`, and this is expected
 to be suitable for most users' needs.  However, some applications may wish
 to switch to `curl_httpclient` for reasons such as the following:
 
+* `curl_httpclient` has some features not found in `simple_httpclient`,
+  including support for HTTP proxies and the ability to use a specified
+  network interface.
+
 * `curl_httpclient` is more likely to be compatible with sites that are
   not-quite-compliant with the HTTP spec, or sites that use little-exercised
   features of HTTP.
@@ -50,9 +54,11 @@ class HTTPClient(object):
         except httpclient.HTTPError, e:
             print "Error:", e
     """
-    def __init__(self):
+    def __init__(self, async_client_class=None):
         self._io_loop = IOLoop()
-        self._async_client = AsyncHTTPClient(self._io_loop)
+        if async_client_class is None:
+            async_client_class = AsyncHTTPClient
+        self._async_client = async_client_class(self._io_loop)
         self._response = None
         self._closed = False
 
@@ -387,12 +393,15 @@ def main():
     define("print_headers", type=bool, default=False)
     define("print_body", type=bool, default=True)
     define("follow_redirects", type=bool, default=True)
+    define("validate_cert", type=bool, default=True)
     args = parse_command_line()
     client = HTTPClient()
     for arg in args:
         try:
             response = client.fetch(arg,
-                                    follow_redirects=options.follow_redirects)
+                                    follow_redirects=options.follow_redirects,
+                                    validate_cert=options.validate_cert,
+                                    )
         except HTTPError, e:
             if e.response is not None:
                 response = e.response

@@ -44,7 +44,33 @@ class ContentLengthHandler(RequestHandler):
         self.set_header("Content-Length", self.get_argument("value"))
         self.write("ok")
 
+class HeadHandler(RequestHandler):
+    def head(self):
+        self.set_header("Content-Length", "7")
+
+class NoContentHandler(RequestHandler):
+    def get(self):
+        if self.get_argument("error", None):
+            self.set_header("Content-Length", "7")
+        self.set_status(204)
+
+class SeeOther303PostHandler(RequestHandler):
+    def post(self):
+        assert self.request.body == b("blah")
+        self.set_header("Location", "/303_get")
+        self.set_status(303)
+
+class SeeOther303GetHandler(RequestHandler):
+    def get(self):
+        assert not self.request.body
+        self.write("ok")
+
+
 class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
+    def setUp(self):
+        super(SimpleHTTPClientTestCase, self).setUp()
+        self.http_client = SimpleAsyncHTTPClient(self.io_loop)
+
     def get_app(self):
         # callable objects to finish pending /trigger requests
         self.triggers = collections.deque()
@@ -56,6 +82,10 @@ class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
             url("/hang", HangHandler),
             url("/hello", HelloWorldHandler),
             url("/content_length", ContentLengthHandler),
+            url("/head", HeadHandler),
+            url("/no_content", NoContentHandler),
+            url("/303_post", SeeOther303PostHandler),
+            url("/303_get", SeeOther303GetHandler),
             ], gzip=True)
 
     def test_singleton(self):
@@ -134,6 +164,14 @@ class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
         self.assertTrue(response.effective_url.endswith("/countdown/2"))
         self.assertTrue(response.headers["Location"].endswith("/countdown/1"))
 
+    def test_303_redirect(self):
+       response = self.fetch("/303_post", method="POST", body="blah")
+       self.assertEqual(200, response.code)
+       self.assertTrue(response.request.url.endswith("/303_post"))
+       self.assertTrue(response.effective_url.endswith("/303_get"))
+       #request is the original request, is a POST still
+       self.assertEqual("POST", response.request.method)
+
     def test_request_timeout(self):
         response = self.fetch('/hang', request_timeout=0.1)
         self.assertEqual(response.code, 599)
@@ -147,7 +185,7 @@ class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
         try:
             self.http_server.listen(self.get_http_port(), address='::1')
         except socket.gaierror, e:
-            if e.errno == socket.EAI_ADDRFAMILY:
+            if e.args[0] == socket.EAI_ADDRFAMILY:
                 # python supports ipv6, but it's not configured on the network
                 # interface, so skip this test.
                 return
@@ -172,4 +210,21 @@ class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
         response = self.fetch("/content_length?value=2,4")
         self.assertEqual(response.code, 599)
         response = self.fetch("/content_length?value=2,%202,3")
+        self.assertEqual(response.code, 599)
+
+    def test_head_request(self):
+        response = self.fetch("/head", method="HEAD")
+        self.assertEqual(response.code, 200)
+        self.assertEqual(response.headers["content-length"], "7")
+        self.assertFalse(response.body)
+
+    def test_no_content(self):
+        response = self.fetch("/no_content")
+        self.assertEqual(response.code, 204)
+        # 204 status doesn't need a content-length, but tornado will
+        # add a zero content-length anyway.
+        self.assertEqual(response.headers["Content-length"], "0")
+
+        # 204 status with non-zero content length is malformed
+        response = self.fetch("/no_content?error=1")
         self.assertEqual(response.code, 599)

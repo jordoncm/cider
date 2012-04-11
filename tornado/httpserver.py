@@ -205,11 +205,13 @@ class HTTPConnection(object):
             disconnect = True
         else:
             connection_header = self._request.headers.get("Connection")
+            if connection_header is not None:
+                connection_header = connection_header.lower()
             if self._request.supports_http_1_1():
                 disconnect = connection_header == "close"
             elif ("Content-Length" in self._request.headers
                     or self._request.method in ("HEAD", "GET")):
-                disconnect = connection_header != "Keep-Alive"
+                disconnect = connection_header != "keep-alive"
             else:
                 disconnect = True
         self._request = None
@@ -322,7 +324,7 @@ class HTTPRequest(object):
     .. attribute:: protocol
 
        The protocol used, either "http" or "https".  If `HTTPServer.xheaders`
-       is seet, will pass along the protocol used by a load balancer if
+       is set, will pass along the protocol used by a load balancer if
        reported via an ``X-Scheme`` header.
 
     .. attribute:: host
@@ -362,6 +364,8 @@ class HTTPRequest(object):
             # Squid uses X-Forwarded-For, others use X-Real-Ip
             self.remote_ip = self.headers.get(
                 "X-Real-Ip", self.headers.get("X-Forwarded-For", remote_ip))
+            if not self._valid_ip(self.remote_ip):
+                self.remote_ip = remote_ip
             # AWS uses X-Forwarded-Proto
             self.protocol = self.headers.get(
                 "X-Scheme", self.headers.get("X-Forwarded-Proto", protocol))
@@ -405,7 +409,7 @@ class HTTPRequest(object):
                     self._cookies.load(
                         native_str(self.headers["Cookie"]))
                 except Exception:
-                    self._cookies = None
+                    self._cookies = {}
         return self._cookies
 
     def write(self, chunk, callback=None):
@@ -457,3 +461,16 @@ class HTTPRequest(object):
         args = ", ".join(["%s=%r" % (n, getattr(self, n)) for n in attrs])
         return "%s(%s, headers=%s)" % (
             self.__class__.__name__, args, dict(self.headers))
+
+    def _valid_ip(self, ip):
+        try:
+            res = socket.getaddrinfo(ip, 0, socket.AF_UNSPEC,
+                                     socket.SOCK_STREAM,
+                                     0, socket.AI_NUMERICHOST)
+            return bool(res)
+        except socket.gaierror, e:
+            if e.args[0] == socket.EAI_NONAME:
+                return False
+            raise
+        return True
+

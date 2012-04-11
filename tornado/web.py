@@ -69,6 +69,7 @@ import os.path
 import re
 import stat
 import sys
+import threading
 import time
 import tornado
 import traceback
@@ -97,6 +98,9 @@ class RequestHandler(object):
     RequestHandler class.
     """
     SUPPORTED_METHODS = ("GET", "HEAD", "POST", "DELETE", "PUT", "OPTIONS")
+
+    _template_loaders = {}  # {path: template.BaseLoader}
+    _template_loader_lock = threading.Lock()
 
     def __init__(self, application, request, **kwargs):
         self.application = application
@@ -167,18 +171,31 @@ class RequestHandler(object):
         raise HTTPError(405)
 
     def prepare(self):
-        """Called before the actual handler method.
+        """Called at the beginning of a request before `get`/`post`/etc.
 
-        Useful to override in a handler if you want a common bottleneck for
-        all of your requests.
+        Override this method to perform common initialization regardless
+        of the request method.
+        """
+        pass
+
+    def on_finish(self):
+        """Called after the end of a request.
+
+        Override this method to perform cleanup, logging, etc.
+        This method is a counterpart to `prepare`.  ``on_finish`` may
+        not produce any output, as it is called after the response
+        has been sent to the client.
         """
         pass
 
     def on_connection_close(self):
         """Called in async handlers if the client closed the connection.
 
-        You may override this to clean up resources associated with
-        long-lived connections.
+        Override this to clean up resources associated with
+        long-lived connections.  Note that this method is called only if
+        the connection was closed during asynchronous processing; if you
+        need to do cleanup after every request override `on_finish`
+        instead.
 
         Proxies may keep a connection open for a time (perhaps
         indefinitely) after the client has gone away, so this method
@@ -322,7 +339,7 @@ class RequestHandler(object):
 
     def get_cookie(self, name, default=None):
         """Gets the value of the cookie with the given name, else default."""
-        if name in self.request.cookies:
+        if self.request.cookies is not None and name in self.request.cookies:
             return self.request.cookies[name].value
         return default
 
@@ -406,11 +423,21 @@ class RequestHandler(object):
         return decode_signed_value(self.application.settings["cookie_secret"],
                                    name, value, max_age_days=max_age_days)
 
-    def redirect(self, url, permanent=False):
-        """Sends a redirect to the given (optionally relative) URL."""
+    def redirect(self, url, permanent=False, status=None):
+        """Sends a redirect to the given (optionally relative) URL.
+
+        If the ``status`` argument is specified, that value is used as the
+        HTTP status code; otherwise either 301 (permanent) or 302
+        (temporary) is chosen based on the ``permanent`` argument.
+        The default is 302 (temporary).
+        """
         if self._headers_written:
             raise Exception("Cannot redirect after headers have been written")
-        self.set_status(301 if permanent else 302)
+        if status is None:
+            status = 301 if permanent else 302
+        else:
+            assert isinstance(status, int) and 300 <= status <= 399
+        self.set_status(status)
         # Remove whitespace
         url = re.sub(b(r"[\x00-\x20]+"), "", utf8(url))
         self.set_header("Location", urlparse.urljoin(utf8(self.request.uri),
@@ -537,12 +564,13 @@ class RequestHandler(object):
             while frame.f_code.co_filename == web_file:
                 frame = frame.f_back
             template_path = os.path.dirname(frame.f_code.co_filename)
-        if not getattr(RequestHandler, "_templates", None):
-            RequestHandler._templates = {}
-        if template_path not in RequestHandler._templates:
-            loader = self.create_template_loader(template_path)
-            RequestHandler._templates[template_path] = loader
-        t = RequestHandler._templates[template_path].load(template_name)
+        with RequestHandler._template_loader_lock:
+            if template_path not in RequestHandler._template_loaders:
+                loader = self.create_template_loader(template_path)
+                RequestHandler._template_loaders[template_path] = loader
+            else:
+                loader = RequestHandler._template_loaders[template_path]
+        t = loader.load(template_name)
         args = dict(
             handler=self,
             request=self.request,
@@ -641,6 +669,7 @@ class RequestHandler(object):
             self.request.finish()
             self._log()
         self._finished = True
+        self.on_finish()
 
     def send_error(self, status_code=500, **kwargs):
         """Sends the given HTTP error code to the browser.
@@ -857,7 +886,7 @@ class RequestHandler(object):
         return '<input type="hidden" name="_xsrf" value="' + \
             escape.xhtml_escape(self.xsrf_token) + '"/>'
 
-    def static_url(self, path):
+    def static_url(self, path, include_host=None):
         """Returns a static URL for the given relative static file path.
 
         This method requires you set the 'static_path' setting in your
@@ -869,15 +898,20 @@ class RequestHandler(object):
         returned content. The signature is based on the content of the
         file.
 
-        If this handler has a "include_host" attribute, we include the
-        full host for every static URL, including the "http://". Set
-        this attribute for handlers whose output needs non-relative static
-        path names.
+        By default this method returns URLs relative to the current
+        host, but if ``include_host`` is true the URL returned will be
+        absolute.  If this handler has an ``include_host`` attribute,
+        that value will be used as the default for all `static_url`
+        calls that do not pass ``include_host`` as a keyword argument.
         """
         self.require_setting("static_path", "static_url")
         static_handler_class = self.settings.get(
             "static_handler_class", StaticFileHandler)
-        if getattr(self, "include_host", False):
+
+        if include_host is None:
+            include_host = getattr(self, "include_host", False)
+
+        if include_host:
             base = self.request.protocol + "://" + self.request.host
         else:
             base = ""
@@ -1170,7 +1204,7 @@ class Application(object):
 
         # Automatically reload modified modules
         if self.settings.get("debug") and not wsgi:
-            import autoreload
+            from tornado import autoreload
             autoreload.start()
 
     def listen(self, port, address="", **kwargs):
@@ -1320,10 +1354,10 @@ class Application(object):
         # In debug mode, re-compile templates and reload static files on every
         # request so you don't need to restart to see changes
         if self.settings.get("debug"):
-            if getattr(RequestHandler, "_templates", None):
-                for loader in RequestHandler._templates.values():
+            with RequestHandler._template_loader_lock:
+                for loader in RequestHandler._template_loaders.values():
                     loader.reset()
-            RequestHandler._static_hashes = {}
+            StaticFileHandler.reset()
 
         handler._execute(transforms, *args, **kwargs)
         return handler
@@ -1424,17 +1458,22 @@ class StaticFileHandler(RequestHandler):
     CACHE_MAX_AGE = 86400*365*10 #10 years
 
     _static_hashes = {}
+    _lock = threading.Lock()  # protects _static_hashes
 
     def initialize(self, path, default_filename=None):
         self.root = os.path.abspath(path) + os.path.sep
         self.default_filename = default_filename
 
+    @classmethod
+    def reset(cls):
+        with cls._lock:
+            cls._static_hashes = {}
+
     def head(self, path):
         self.get(path, include_body=False)
 
     def get(self, path, include_body=True):
-        if os.path.sep != "/":
-            path = path.replace("/", os.path.sep)
+        path = self.parse_url_path(path)
         abspath = os.path.abspath(os.path.join(self.root, path))
         # os.path.abspath strips a trailing /
         # it needs to be temporarily added back for requests to root/
@@ -1483,13 +1522,16 @@ class StaticFileHandler(RequestHandler):
                 self.set_status(304)
                 return
 
-        if not include_body:
-            return
-        file = open(abspath, "rb")
-        try:
-            self.write(file.read())
-        finally:
-            file.close()
+        with open(abspath, "rb") as file:
+            data = file.read()
+            hasher = hashlib.sha1()
+            hasher.update(data)
+            self.set_header("Etag", '"%s"' % hasher.hexdigest())
+            if include_body:
+                self.write(data)
+            else:
+                assert self.request.method == "HEAD"
+                self.set_header("Content-Length", len(data))
 
     def set_extra_headers(self, path):
         """For subclass to add extra headers to the response"""
@@ -1517,21 +1559,51 @@ class StaticFileHandler(RequestHandler):
         is the static path being requested.  The url returned should be
         relative to the current host.
         """
-        hashes = cls._static_hashes
-        abs_path = os.path.join(settings["static_path"], path)
-        if abs_path not in hashes:
-            try:
-                f = open(abs_path, "rb")
-                hashes[abs_path] = hashlib.md5(f.read()).hexdigest()
-                f.close()
-            except Exception:
-                logging.error("Could not open static file %r", path)
-                hashes[abs_path] = None
         static_url_prefix = settings.get('static_url_prefix', '/static/')
-        if hashes.get(abs_path):
-            return static_url_prefix + path + "?v=" + hashes[abs_path][:5]
-        else:
-            return static_url_prefix + path
+        version_hash = cls.get_version(settings, path)
+        if version_hash:
+            return static_url_prefix + path + "?v=" + version_hash
+        return static_url_prefix + path
+
+    @classmethod
+    def get_version(cls, settings, path):
+        """Generate the version string to be used in static URLs.
+
+        This method may be overridden in subclasses (but note that it
+        is a class method rather than a static method).  The default
+        implementation uses a hash of the file's contents.
+
+        ``settings`` is the `Application.settings` dictionary and ``path``
+        is the relative location of the requested asset on the filesystem.
+        The returned value should be a string, or ``None`` if no version
+        could be determined.
+        """
+        abs_path = os.path.join(settings["static_path"], path)
+        with cls._lock:
+            hashes = cls._static_hashes
+            if abs_path not in hashes:
+                try:
+                    f = open(abs_path, "rb")
+                    hashes[abs_path] = hashlib.md5(f.read()).hexdigest()
+                    f.close()
+                except Exception:
+                    logging.error("Could not open static file %r", path)
+                    hashes[abs_path] = None
+            hsh = hashes.get(abs_path)
+            if hsh:
+                return hsh[:5]
+        return None
+
+    def parse_url_path(self, url_path):
+        """Converts a static URL path into a filesystem path.
+
+        ``url_path`` is the path component of the URL with
+        ``static_url_prefix`` removed.  The return value should be
+        filesystem path relative to ``static_path``.
+        """
+        if os.path.sep != "/":
+            url_path = url_path.replace("/", os.path.sep)
+        return url_path
 
 
 class FallbackHandler(RequestHandler):

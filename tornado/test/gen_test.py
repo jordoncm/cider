@@ -57,6 +57,33 @@ class GenTest(AsyncTestCase):
             1/0
         self.assertRaises(ZeroDivisionError, self.run_gen, f)
 
+    def test_exception_in_task_phase1(self):
+        def fail_task(callback):
+            1/0
+
+        @gen.engine
+        def f():
+            try:
+                yield gen.Task(fail_task)
+                raise Exception("did not get expected exception")
+            except ZeroDivisionError:
+                self.stop()
+        self.run_gen(f)
+
+    def test_exception_in_task_phase2(self):
+        # This is the case that requires the use of stack_context in gen.engine
+        def fail_task(callback):
+            self.io_loop.add_callback(lambda: 1/0)
+
+        @gen.engine
+        def f():
+            try:
+                yield gen.Task(fail_task)
+                raise Exception("did not get expected exception")
+            except ZeroDivisionError:
+                self.stop()
+        self.run_gen(f)
+
     def test_with_arg(self):
         @gen.engine
         def f():
@@ -247,11 +274,36 @@ class GenTaskHandler(RequestHandler):
         response.rethrow()
         self.finish(b("got response: ") + response.body)
 
+class GenExceptionHandler(RequestHandler):
+    @asynchronous
+    @gen.engine
+    def get(self):
+        # This test depends on the order of the two decorators.
+        io_loop = self.request.connection.stream.io_loop
+        yield gen.Task(io_loop.add_callback)
+        raise Exception("oops")
+
+class GenYieldExceptionHandler(RequestHandler):
+    @asynchronous
+    @gen.engine
+    def get(self):
+        io_loop = self.request.connection.stream.io_loop
+        # Test the interaction of the two stack_contexts.
+        def fail_task(callback):
+            io_loop.add_callback(lambda: 1/0)
+        try:
+            yield gen.Task(fail_task)
+            raise Exception("did not get expected exception")
+        except ZeroDivisionError:
+            self.finish('ok')
+
 class GenWebTest(AsyncHTTPTestCase, LogTrapTestCase):
     def get_app(self):
         return Application([
                 ('/sequence', GenSequenceHandler),
                 ('/task', GenTaskHandler),
+                ('/exception', GenExceptionHandler),
+                ('/yield_exception', GenYieldExceptionHandler),
                 ])
 
     def test_sequence_handler(self):
@@ -261,3 +313,12 @@ class GenWebTest(AsyncHTTPTestCase, LogTrapTestCase):
     def test_task_handler(self):
         response = self.fetch('/task?url=%s' % url_escape(self.get_url('/sequence')))
         self.assertEqual(response.body, b("got response: 123"))
+
+    def test_exception_handler(self):
+        # Make sure we get an error and not a timeout
+        response = self.fetch('/exception')
+        self.assertEqual(500, response.code)
+
+    def test_yield_exception_handler(self):
+        response = self.fetch('/yield_exception')
+        self.assertEqual(response.body, b('ok'))
