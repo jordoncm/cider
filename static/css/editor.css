@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Cider.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 html, body {
     overflow: hidden;
 }
@@ -26,34 +25,10 @@ pre {
     padding: 0;
 }
 
-#header {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: 51px;
-    border-bottom: 1px solid #9F9F9F;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
 #editor {
     position: absolute;
-    top: 52px;
+    top: 40px;
     right: 0;
-    bottom: 0;
+    bottom: 40px;
     left: 0;
-}
-
-.buttons {
-    float: right;
-    margin-top: 10px;
-}
-
-.header {
-    margin: 8px;
-}
-
-.path {
-    font-family: monospace;
 }

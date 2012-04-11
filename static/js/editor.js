@@ -73,31 +73,28 @@ function save() {
     oldDirty = dirty;
     dirty = false;
     var text = editor.getSession().getValue();
-    new Ajax.Request(
-        '../save-file/',
-        {
-            method : 'post',
-            parameters : {
-                file : file,
-                text : text
-            },
-            onSuccess : function(transport) {
-                var response = transport.responseText.evalJSON();
-                
-                if(!response.success) {
-                    if(!dirty) {
-                        dirty = oldDirty;
-                    }
-                }
-                
+    $.ajax({
+        url : '../save-file/',
+        type : 'POST',
+        dataType : 'json',
+        data : {
+            file : file,
+            text : text
+        },
+        success : function(response) {
+            if(!response.success) {
                 if(!dirty) {
-                    document.getElementById('save').innerHTML = 'Saved';
-                } else {
-                    document.getElementById('save').innerHTML = 'Save';
+                    dirty = oldDirty;
                 }
-                
-                saving = false;
             }
+            
+            if(!dirty) {
+                document.getElementById('save').innerHTML = 'Saved';
+            } else {
+                document.getElementById('save').innerHTML = 'Save';
+            }
+            
+            saving = false;
         }
-    );
+    });
 }
