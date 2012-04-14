@@ -282,9 +282,7 @@ application = tornado.web.Application([
     (r'/save-file/?', SaveFileHandler),
     (r'/file-manager/?', FileManagerHandler),
     (r'/download/?', DownloadHandler),
-    (r'/create-folder/?', CreateFolderHandler),
-    (r'/ace/(.*)', tornado.web.StaticFileHandler, {'path' : 'ace'}),
-    (r'/javascript/(.*)', tornado.web.StaticFileHandler, {'path' : 'javascript'})
+    (r'/create-folder/?', CreateFolderHandler)
 ], **settings)
 
 if __name__ == '__main__':
