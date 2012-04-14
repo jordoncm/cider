@@ -23,10 +23,17 @@ from operator import itemgetter
 
 import json
 import os
+import sys
 import time
 import tornado.ioloop
 import tornado.template
 import tornado.web
+
+try:
+    __file__
+except NameError:
+    if hasattr(sys, 'frozen') and sys.frozen in ('windows_exe', 'console_exe'):
+        __file__ = os.path.dirname(os.path.abspath(sys.executable))
 
 def getConfigurationValue(key):
     try:
@@ -54,14 +61,6 @@ class IndexHandler(tornado.web.RequestHandler):
         self.write(loader.load('index.html').generate(
             title = 'Dashboard - Cider',
             terminalLink = terminalLink
-        ))
-
-class IDEHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.set_header('Content-Type', 'text/html')
-        loader = tornado.template.Loader('templates')
-        self.write(loader.load('ide.html').generate(
-            title = 'IDE - Cider'
         ))
 
 class EditorHandler(tornado.web.RequestHandler):
@@ -272,6 +271,10 @@ class DeleteFileHandler(tornado.web.RequestHandler):
 class DeleteFolderHandler(tornado.web.RequestHandler):
     pass
 
+settings = {
+    'static_path' : os.path.join(os.path.dirname(__file__), 'static')
+}
+
 application = tornado.web.Application([
     (r'/', IndexHandler),
     (r'/ide/?', IDEHandler),
@@ -280,13 +283,9 @@ application = tornado.web.Application([
     (r'/file-manager/?', FileManagerHandler),
     (r'/download/?', DownloadHandler),
     (r'/create-folder/?', CreateFolderHandler),
-    (r'/ace/(.*)', tornado.web.StaticFileHandler, {'path' : './ace'}),
-    (r'/images/(.*)', tornado.web.StaticFileHandler, {'path' : './images'}),
-    (r'/javascript/(.*)', tornado.web.StaticFileHandler, {'path' : './javascript'}),
-    (r'/static/(.*)', tornado.web.StaticFileHandler, {'path' : './static'}),
-    (r'/favicon.ico', tornado.web.StaticFileHandler, {'path' : './static/favicon.ico'}),
-    (r'/(.*)', tornado.web.StaticFileHandler, {'path' : './css'})
-])
+    (r'/ace/(.*)', tornado.web.StaticFileHandler, {'path' : 'ace'}),
+    (r'/javascript/(.*)', tornado.web.StaticFileHandler, {'path' : 'javascript'})
+], **settings)
 
 if __name__ == '__main__':
     application.listen(3333)

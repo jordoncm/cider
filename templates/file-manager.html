@@ -60,31 +60,31 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
             {% if file['isFile'] == True %}
               {% if path != '' %}
                 <td class="icon">
-                  <a href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return ide.openFile('{{ path }}/{{ file['name'] }}');">
-                    <img src="../images/icon/file.png" />
+                  <a href="../editor/?file={{ path }}/{{ file['name'] }}">
+                    <img src="../static/images/icon/file.png" />
                   </a>
                 </td>
                 <td>
-                  <a href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return ide.openFile('{{ path }}/{{ file['name'] }}');">{{ file['name'] }}</a>
+                  <a href="../editor/?file={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a>
                 </td>
                 <td>
                   <div class="btn-group" style="float: right;">
-                    <a class="btn btn-mini" href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return ide.openFile('{{ path }}/{{ file['name'] }}');">Edit</a>
+                    <a class="btn btn-mini" href="../editor/?file={{ path }}/{{ file['name'] }}">Edit</a>
                     <a class="btn btn-mini" href="../download/?file={{ path }}/{{ file['name'] }}">Download</a>
                   </div>
                 </td>
               {% else %}
                 <td class="icon">
-                  <a href="../editor/?file={{ file['name'] }}" onclick="return ide.openFile('{{ file['name'] }}');">
-                    <img src="../images/icon/file.png" />
+                  <a href="../editor/?file={{ file['name'] }}">
+                    <img src="../static/images/icon/file.png" />
                   </a>
                 </td>
                 <td>
-                  <a href="../editor/?file={{ file['name'] }}" onclick="return ide.openFile('{{ file['name'] }}');">{{ file['name'] }}</a>
+                  <a href="../editor/?file={{ file['name'] }}">{{ file['name'] }}</a>
                 </td>
                 <td>
                   <div class="btn-group" style="float: right;">
-                    <a class="btn btn-mini" href="../editor/?file={{ file['name'] }}" onclick="return ide.openFile('{{ file['name'] }}');">Edit</a>
+                    <a class="btn btn-mini" href="../editor/?file={{ file['name'] }}">Edit</a>
                     <a class="btn btn-mini" href="../download/?file={{ file['name'] }}">Download</a>
                   </div>
                 </td>
@@ -93,7 +93,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
               {% if path != '' %}
                 <td class="icon">
                   <a href="../file-manager/?path={{ path }}/{{ file['name'] }}">
-                    <img src="../images/icon/folder.png" />
+                    <img src="../static/images/icon/folder.png" />
                   </a>
                 </td>
                 <td>
@@ -107,7 +107,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
               {% else %}
                 <td class="icon">
                   <a href="../file-manager/?path={{ file['name'] }}">
-                    <img src="../images/icon/folder.png" />
+                    <img src="../static/images/icon/folder.png" />
                   </a>
                 </td>
                 <td>
@@ -145,6 +145,5 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
     
     <script type="text/javascript">var path = '{{ path }}';</script>
     <script src="../static/js/file-manager.js" type="text/javascript"></script>
-    <script src="../javascript/ide-enable.js" type="text/javascript"></script>
   </body>
 </html>
