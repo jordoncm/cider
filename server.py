@@ -277,7 +277,6 @@ settings = {
 
 application = tornado.web.Application([
     (r'/', IndexHandler),
-    (r'/ide/?', IDEHandler),
     (r'/editor/?', EditorHandler),
     (r'/save-file/?', SaveFileHandler),
     (r'/file-manager/?', FileManagerHandler),
