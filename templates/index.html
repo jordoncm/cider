@@ -30,7 +30,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container-fluid">
-          <div class="brand">Cider</div>
+          <div class="brand">&nbsp;</div>
         </div>
       </div>
     </div>
@@ -50,7 +50,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
                 <p><a class="btn btn-primary" href="./file-manager/">Launch File Manager &raquo;</a></p>
               </div>
               <div class="span4">
-                {% if terminalLink != None %}
+                {% if terminalLink != None and terminalLink != '' %}
                   <h2>Terminal</h2>
                   <p>Web-based terminal.</p>
                   <p><a class="btn btn-primary" href="{{ terminalLink }}">Launch Terminal &raquo;</a></p>
@@ -59,6 +59,14 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
               <div class="span4">&nbsp;</div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="navbar navbar-fixed-bottom">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <div class="brand">Cider</div>
         </div>
       </div>
     </div>

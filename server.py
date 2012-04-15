@@ -20,14 +20,17 @@
 # 
 
 from operator import itemgetter
+from Tkinter import *
 
 import json
 import os
 import sys
+import thread
 import time
 import tornado.ioloop
 import tornado.template
 import tornado.web
+import webbrowser
 
 try:
     __file__
@@ -284,6 +287,16 @@ application = tornado.web.Application([
     (r'/create-folder/?', CreateFolderHandler)
 ], **settings)
 
-if __name__ == '__main__':
+def start():
     application.listen(3333)
     tornado.ioloop.IOLoop.instance().start()
+
+if __name__ == '__main__':
+    thread.start_new_thread(start, ())
+    webbrowser.open_new_tab('http://localhost:3333')
+    
+    root = Tk()
+    root.withdraw()
+    menu = Menu(root)
+    root.config(menu=menu)
+    root.mainloop()

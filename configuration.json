@@ -1,4 +1,4 @@
 {
-    "basePathAdjustment" : "..",
-    "terminalLink" : "https://[host]:4200"
+    "basePathAdjustment" : "/",
+    "terminalLink" : ""
 }

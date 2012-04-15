@@ -1,42 +1,64 @@
-from distutils.core import setup
+# from distutils.core import setup
+from setuptools import setup
 
-import glob
-import py2exe
 import os
+import sys
 
-def find_data_files(source, target, patterns):
-    """Locates the specified data-files and returns the matches
-    in a data_files compatible format.
+def buildDataFilesPaths(source, target, paths):
+    dataFiles = []
+    
+    filesOnLevel = []
+    for path in paths:
+        if os.path.isfile(os.path.join(source, path)):
+            filesOnLevel.append(os.path.join(target, path))
+        elif os.path.isdir(os.path.join(source, path)):
+            print os.path.join(source, path)
+            dataFiles.extend(buildDataFilesPaths(
+                os.path.join(source, path),
+                os.path.join(target, path),
+                os.listdir(os.path.join(source, path))
+            ))
+    
+    if len(filesOnLevel):
+        dataFiles.append((source, filesOnLevel))
+    
+    return dataFiles
 
-    source is the root of the source data tree.
-        Use '' or '.' for current directory.
-    target is the root of the target data tree.
-        Use '' or '.' for the distribution directory.
-    patterns is a sequence of glob-patterns for the
-        files you want to copy.
-    """
-    if glob.has_magic(source) or glob.has_magic(target):
-        raise ValueError("Magic not allowed in src, target")
-    ret = {}
-    for pattern in patterns:
-        pattern = os.path.join(source, pattern)
-        for filename in glob.glob(pattern):
-            if os.path.isfile(filename):
-                targetpath = os.path.join(target, os.path.relpath(filename, source))
-                path = os.path.dirname(targetpath)
-                ret.setdefault(path,[]).append(filename)
-    return sorted(ret.items())
-
-setup(
-    console = ['server.py'],
-    data_files = find_data_files('', '', [
-        'ace/*',
-        'static/*',
-        'license.txt',
-        'readme.txt'
-    ]),
-    options = {
-        'py2exe' : {
+APP = ['server.py']
+DATA_FILES = buildDataFilesPaths('', '', [
+    'static',
+    'templates',
+    'configuration.json',
+    'license.txt',
+    'readme.txt'
+])
+OPTIONS = {
+    'py2app' : {
+        'plist' : {
         }
-    }
-)
+    },
+    'py2exe' : {}
+}
+
+if sys.platform == 'darwin':
+    setup(
+        name = 'Cider',
+        version = '0.3',
+        author = 'Jordon Mears',
+        description = ('Web-based IDE'),
+        app = APP,
+        data_files = DATA_FILES,
+        options = OPTIONS,
+        setup_requires = ['py2app']
+    )
+elif sys.platform == 'win32':
+    setup(
+        name = 'Cider',
+        version = '0.3',
+        author = 'Jordon Mears',
+        description = ('Web-based IDE'),
+        console = APP,
+        data_files = DATA_FILES,
+        options = OPTIONS,
+        setup_requires = ['py2exe']
+    )
