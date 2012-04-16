@@ -20,7 +20,13 @@
 # 
 
 from operator import itemgetter
-from Tkinter import *
+
+gui = False
+try:
+    from Tkinter import *
+    gui = True
+except ImportError:
+    gui = False
 
 import json
 import os
@@ -295,8 +301,12 @@ if __name__ == '__main__':
     thread.start_new_thread(start, ())
     webbrowser.open_new_tab('http://localhost:3333')
     
-    root = Tk()
-    root.withdraw()
-    menu = Menu(root)
-    root.config(menu=menu)
-    root.mainloop()
+    if gui == True:
+        root = Tk()
+        root.withdraw()
+        menu = Menu(root)
+        root.config(menu = menu)
+        root.mainloop()
+    else:
+        while(True):
+            time.sleep(10)
