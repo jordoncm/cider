@@ -1,8 +1,11 @@
-# from distutils.core import setup
-from setuptools import setup
-
 import os
 import sys
+
+if sys.platform == 'win32':
+    from distutils.core import setup
+    import py2exe
+elif sys.platform == 'darwin':
+    from setuptools import setup
 
 def buildDataFilesPaths(source, target, paths):
     dataFiles = []
@@ -37,7 +40,9 @@ OPTIONS = {
         'plist' : {
         }
     },
-    'py2exe' : {}
+    'py2exe' : {
+        'excludes' : ['Tkinter']
+    }
 }
 
 if sys.platform == 'darwin':
@@ -59,6 +64,5 @@ elif sys.platform == 'win32':
         description = ('Web-based IDE'),
         console = APP,
         data_files = DATA_FILES,
-        options = OPTIONS,
-        setup_requires = ['py2exe']
+        options = OPTIONS
     )
