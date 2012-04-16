@@ -298,15 +298,18 @@ def start():
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
-    thread.start_new_thread(start, ())
-    webbrowser.open_new_tab('http://localhost:3333')
-    
-    if gui == True:
-        root = Tk()
-        root.withdraw()
-        menu = Menu(root)
-        root.config(menu = menu)
-        root.mainloop()
-    else:
-        while(True):
-            time.sleep(10)
+    try:
+        thread.start_new_thread(start, ())
+        webbrowser.open_new_tab('http://localhost:3333')
+        
+        if gui == True:
+            root = Tk()
+            root.withdraw()
+            menu = Menu(root)
+            root.config(menu = menu)
+            root.mainloop()
+        else:
+            while(True):
+                time.sleep(10)
+    except KeyboardInterrupt:
+        sys.exit(0)
