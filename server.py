@@ -105,7 +105,7 @@ class EditorHandler(tornado.web.RequestHandler):
         
         ext = file[(file.rfind('.') + 1):]
 
-        if ext == 'c' or ext == 'cpp':
+        if ext == 'c' or ext == 'cpp' or ext == 'h':
             mode = 'c_cpp'
         elif ext == 'cs':
             mode = 'csharp'
