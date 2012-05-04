@@ -152,6 +152,55 @@ function save() {
     });
 }
 
+function setTabWidth(width) {
+    if(width !== '' && !isNaN(width)) {
+        editor.getSession().setTabSize(parseInt(width));
+    }
+}
+
+function setHighlightMode(mode) {
+    switch(mode) {
+        case 'c_cpp':
+        case 'clojure':
+        case 'coffee':
+        case 'coldfusion':
+        case 'csharp':
+        case 'css':
+        case 'golang':
+        case 'groovy':
+        case 'haxe':
+        case 'html':
+        case 'java':
+        case 'javascript':
+        case 'json':
+        case 'latex':
+        case 'less':
+        case 'liquid':
+        case 'lua':
+        case 'markdown':
+        case 'ocaml':
+        case 'perl':
+        case 'pgsql':
+        case 'php':
+        case 'powershell':
+        case 'python':
+        case 'ruby':
+        case 'scad':
+        case 'scala':
+        case 'scss':
+        case 'sh':
+        case 'sql':
+        case 'svg':
+        case 'text':
+        case 'textile':
+        case 'xml':
+        case 'xquery':
+            var Mode = require('ace/mode/' + mode).Mode;
+            editor.getSession().setMode(new Mode());
+            break;
+    }
+}
+
 function find() {
     var element = document.getElementById('find');
     element.select();
