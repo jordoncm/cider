@@ -30,6 +30,7 @@ except ImportError:
 
 import json
 import os
+import string
 import sys
 import thread
 import time
@@ -52,6 +53,20 @@ def getConfigurationValue(key):
         )).read())[key]
     except:
         return None
+
+def isTextFile(file):
+    sample = open(file).read(512)
+    if not sample:
+        return True
+    if '\0' in sample:
+        return False
+    text = sample.translate(
+        string.maketrans('', ''),
+        ''.join(map(chr, range(32, 127)) + list('\n\r\t\b'))
+    )
+    if len(text) / len(sample) > 0.30:
+        return False
+    return True
 
 BASE_PATH_ADJUSTMENT = getConfigurationValue('basePathAdjustment')
 if BASE_PATH_ADJUSTMENT == None:
@@ -233,11 +248,14 @@ class FileManagerHandler(tornado.web.RequestHandler):
         files.sort(key = lambda x: x.encode().lower())
         
         for i in range(len(files)):
+            isFile = os.path.isfile(os.path.join(base, path, files[i]))
+            confirm = ''
+            if isFile and not isTextFile(os.path.join(base, path, files[i])):
+                confirm = 'binary'
             files[i] = {
                 'name' : files[i],
-                'isFile' : os.path.isfile(
-                    os.path.join(base, path, files[i])
-                )
+                'isFile' : isFile,
+                'confirm' : confirm
             }
         
         files = sorted(files, key = itemgetter('isFile'))

@@ -60,3 +60,17 @@ function createFolder() {
         );
     }
 }
+
+function confirmOpen(type) {
+    switch(type) {
+        case 'binary':
+            return confirm(
+                'This appears to be a binary file. Are you sure you want to open it?'
+            );
+            break;
+        case 'large':
+            break;
+        default:
+            return true;
+    }
+}
