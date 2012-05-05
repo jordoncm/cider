@@ -28,6 +28,7 @@ try:
 except ImportError:
     gui = False
 
+import getpass
 import json
 import os
 import string
@@ -71,6 +72,13 @@ def isTextFile(file):
 BASE_PATH_ADJUSTMENT = getConfigurationValue('basePathAdjustment')
 if BASE_PATH_ADJUSTMENT == None:
     BASE_PATH_ADJUSTMENT = '..'
+elif BASE_PATH_ADJUSTMENT == '~':
+    if 'darwin' in sys.platform:
+        BASE_PATH_ADJUSTMENT = '/Users/' + getpass.getuser()
+    elif 'win' in sys.platform:
+        BASE_PATH_ADJUSTMENT = 'C:\\Users\\' + getpass.getuser()
+    else:
+        BASE_PATH_ADJUSTMENT = '/home/' + getpass.getuser()
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
