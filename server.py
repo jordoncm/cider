@@ -248,9 +248,12 @@ class FileManagerHandler(tornado.web.RequestHandler):
         files.sort(key = lambda x: x.encode().lower())
         
         for i in range(len(files)):
-            isFile = os.path.isfile(os.path.join(base, path, files[i]))
+            file = os.path.join(base, path, files[i])
+            isFile = os.path.isfile(file)
             confirm = ''
-            if isFile and not isTextFile(os.path.join(base, path, files[i])):
+            if isFile and os.path.getsize(file) > 10485760:
+                confirm = 'large'
+            if isFile and not isTextFile(file):
                 confirm = 'binary'
             files[i] = {
                 'name' : files[i],

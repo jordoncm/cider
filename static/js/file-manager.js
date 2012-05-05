@@ -69,6 +69,9 @@ function confirmOpen(type) {
             );
             break;
         case 'large':
+            return confirm(
+                'This file is larger than 10MB. It may not perform well in the browser. Are you sure you want to open it?'
+            );
             break;
         default:
             return true;
