@@ -269,7 +269,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
                     'isFile' : isFile,
                     'confirm' : confirm
                 }
-            except OSError:
+            except:
                 pass
         
         files = sorted(files, key = itemgetter('isFile'))
