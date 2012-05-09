@@ -252,27 +252,30 @@ class FileManagerHandler(tornado.web.RequestHandler):
         base = os.path.join(os.path.dirname(__file__), BASE_PATH_ADJUSTMENT)
         
         files = []
-        fileList = os.listdir(os.path.join(base, path))
-        files.sort(key = lambda x: x.encode().lower())
-        
-        for i in range(len(fileList)):
-            try:
-                file = os.path.join(base, path, fileList[i])
-                isFile = os.path.isfile(file)
-                confirm = ''
-                if isFile and os.path.getsize(file) > 10485760:
-                    confirm = 'large'
-                if isFile and not isTextFile(file):
-                    confirm = 'binary'
-                files.append({
-                    'name' : fileList[i],
-                    'isFile' : isFile,
-                    'confirm' : confirm
-                })
-            except IOError:
-                pass
-        
-        files = sorted(files, key = itemgetter('isFile'))
+        try:
+            fileList = os.listdir(os.path.join(base, path))
+            files.sort(key = lambda x: x.encode().lower())
+            
+            for i in range(len(fileList)):
+                try:
+                    file = os.path.join(base, path, fileList[i])
+                    isFile = os.path.isfile(file)
+                    confirm = ''
+                    if isFile and os.path.getsize(file) > 10485760:
+                        confirm = 'large'
+                    if isFile and not isTextFile(file):
+                        confirm = 'binary'
+                    files.append({
+                        'name' : fileList[i],
+                        'isFile' : isFile,
+                        'confirm' : confirm
+                    })
+                except IOError:
+                    pass
+            
+            files = sorted(files, key = itemgetter('isFile'))
+        except:
+            pass
         
         if path != '' and path.rfind('/') > -1:
             up = path[:path.rfind('/')]
