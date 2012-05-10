@@ -48,7 +48,7 @@ OPTIONS = {
 if sys.platform == 'darwin':
     setup(
         name = 'Cider',
-        version = '0.3',
+        version = '0.4',
         author = 'Jordon Mears',
         description = ('Web-based IDE'),
         app = APP,
@@ -59,7 +59,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     setup(
         name = 'Cider',
-        version = '0.3',
+        version = '0.4',
         author = 'Jordon Mears',
         description = ('Web-based IDE'),
         console = APP,
