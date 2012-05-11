@@ -31,6 +31,7 @@ except ImportError:
 import getpass
 import json
 import os
+import pickledb
 import string
 import sys
 import thread
@@ -38,7 +39,10 @@ import time
 import tornado.ioloop
 import tornado.template
 import tornado.web
+import tornado.websocket
 import webbrowser
+
+import collaborate
 
 try:
     __file__
@@ -355,6 +359,21 @@ class DeleteFileHandler(tornado.web.RequestHandler):
 class DeleteFolderHandler(tornado.web.RequestHandler):
     pass
 
+class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
+    def open(self):
+        self.file = None
+        collaborate.FileSessionManager().registerSession(self)
+    def on_message(self, message):
+        messageObject = json.loads(message)
+        if messageObject['t'] == 'f':
+            self.file = messageObject['f']
+        elif messageObject['t'] == 'd' and self.file != None:
+            collaborate.FileSessionManager().notify(self, messageObject)
+        elif messageObject['t'] == 'i' and self.file != None:
+            collaborate.FileSessionManager().notify(self, messageObject)
+    def on_close(self):
+        collaborate.FileSessionManager().unregisterSession(self)
+
 settings = {
     'static_path' : os.path.join(os.path.dirname(__file__), 'static')
 }
@@ -365,17 +384,18 @@ application = tornado.web.Application([
     (r'/save-file/?', SaveFileHandler),
     (r'/file-manager/?', FileManagerHandler),
     (r'/download/?', DownloadHandler),
-    (r'/create-folder/?', CreateFolderHandler)
+    (r'/create-folder/?', CreateFolderHandler),
+    (r'/ws/?', EditorWebSocketHandler)
 ], **settings)
 
 def start():
-    application.listen(3333)
+    application.listen(2222)
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
     try:
         thread.start_new_thread(start, ())
-        webbrowser.open_new_tab('http://localhost:3333')
+        # webbrowser.open_new_tab('http://localhost:3333')
         
         if gui == True:
             root = Tk()

@@ -21,6 +21,10 @@ var editor = null;
 var dirty = false;
 var oldDirty = false;
 var saving = false;
+var socket = null;
+var sockectSuppress = false;
+
+var Range = require('ace/range').Range;
 
 window.onload = function() {
     editor = ace.edit('editor');
@@ -29,6 +33,7 @@ window.onload = function() {
         var Mode = require('ace/mode/' + mode).Mode;
         editor.getSession().setMode(new Mode());
     }
+    editor.getSession().getDocument().setNewLineMode('unix');
     editor.getSession().setTabSize(tabWidth);
     editor.getSession().setUseSoftTabs(true);
     editor.getSession().setValue(
@@ -41,9 +46,44 @@ window.onload = function() {
         )
     );
     
-    editor.getSession().on('change', function() {
+    editor.getSession().on('change', function(e) {
         document.getElementById('save').innerHTML = 'Save';
         dirty = true;
+        
+        if(socket && !sockectSuppress) {
+            var data = e.data;
+            var p = 0;
+            var lines = editor.getSession().getDocument().getLines(0, data.range.start.row);
+            for(var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                p += (i < data.range.start.row) ? line.length : data.range.start.column;
+            }
+            p += data.range.start.row;
+            
+            var message = {
+                p : p
+            };
+            switch(data.action) {
+                case 'insertText':
+                    message.i = data.text;
+                    message.t = 'i';
+                    break;
+                case 'insertLines':
+                    message.i = data.lines.join('\n') + '\n';
+                    message.t = 'i';
+                    break;
+                case 'removeText':
+                    message.d = data.text;
+                    message.t = 'i';
+                    break;
+                case 'removeLines':
+                    message.d = data.lines.join('\n') + '\n';
+                    message.t = 'd';
+                    break;
+            }
+            console.log(JSON.stringify(message));
+            socket.send(JSON.stringify(message));
+        }
     });
     
     editor.commands.addCommand({
@@ -85,7 +125,55 @@ window.onload = function() {
         },
         exec : findPrevious
     });
+    
+    try {
+        socket = new WebSocket('ws://' + location.host + '/ws/');
+        socket.onopen = function() {
+            var kvp = location.search.substr(1).split('&');
+            var args = {};
+            for(var i = 0; i < kvp.length; i++) {
+                try {
+                    var tmp = kvp[i].split('=');
+                    args[tmp[0]] = tmp[1];
+                } catch(e) {}
+            }
+            socket.send('{"t":"f","f":"' + args.file + '","v":-1}');
+        };
+        socket.onmessage = function(m) {
+            console.log(m.data);
+            var data = JSON.parse(m.data);
+            var lines = editor.getSession().getDocument().getAllLines();
+            sockectSuppress = true;
+            switch(data.t) {
+                case 'd':
+                    var range = Range.fromPoints(
+                        getOffset(data.p, lines),
+                        getOffset((data.p + data.d.length), lines)
+                    );
+                    editor.getSession().getDocument().remove(range);
+                    break;
+                case 'i':
+                    editor.getSession().getDocument().insert(getOffset(data.p, lines), data.i);
+                    break;
+            }
+            sockectSuppress = false;
+        };
+    } catch(e) {}
 };
+
+function getOffset(offset, lines) {
+    for(var row = 0; row < lines.length; row++) {
+        var line = lines[row];
+        if(offset <= line.length) {
+            break;
+        }
+        offset -= lines[row].length + 1;
+    }
+    return {
+        row : row,
+        column : offset
+    };
+}
 
 window.onbeforeunload = function() {
     if(dirty) {
