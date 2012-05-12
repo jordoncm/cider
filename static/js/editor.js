@@ -28,6 +28,7 @@ var Range = require('ace/range').Range;
 
 window.onload = function() {
     editor = ace.edit('editor');
+    editor.setReadOnly(true);
     editor.setTheme('ace/theme/eclipse');
     if(typeof mode != 'undefined') {
         var Mode = require('ace/mode/' + mode).Mode;
@@ -74,7 +75,7 @@ window.onload = function() {
                     break;
                 case 'removeText':
                     message.d = data.text;
-                    message.t = 'i';
+                    message.t = 'd';
                     break;
                 case 'removeLines':
                     message.d = data.lines.join('\n') + '\n';
@@ -138,27 +139,39 @@ window.onload = function() {
                 } catch(e) {}
             }
             socket.send('{"t":"f","f":"' + args.file + '","v":-1}');
+            editor.setReadOnly(false);
         };
         socket.onmessage = function(m) {
             console.log(m.data);
-            var data = JSON.parse(m.data);
-            var lines = editor.getSession().getDocument().getAllLines();
-            sockectSuppress = true;
-            switch(data.t) {
-                case 'd':
-                    var range = Range.fromPoints(
-                        getOffset(data.p, lines),
-                        getOffset((data.p + data.d.length), lines)
-                    );
-                    editor.getSession().getDocument().remove(range);
-                    break;
-                case 'i':
-                    editor.getSession().getDocument().insert(getOffset(data.p, lines), data.i);
-                    break;
+            var dataList = JSON.parse(m.data);
+            for(var i = 0; i < dataList.length; i++) {
+                var data = dataList[i];
+                var lines = editor.getSession().getDocument().getAllLines();
+                sockectSuppress = true;
+                switch(data.t) {
+                    case 'd':
+                        var range = Range.fromPoints(
+                            getOffset(data.p, lines),
+                            getOffset((data.p + data.d.length), lines)
+                        );
+                        editor.getSession().getDocument().remove(range);
+                        break;
+                    case 'i':
+                        editor.getSession().getDocument().insert(
+                            getOffset(data.p, lines),
+                            data.i
+                        );
+                        break;
+                    case 's':
+                        makeSaved();
+                        break;
+                }
+                sockectSuppress = false;
             }
-            sockectSuppress = false;
         };
-    } catch(e) {}
+    } catch(e) {
+        editor.setReadOnly(false);
+    }
 };
 
 function getOffset(offset, lines) {
@@ -238,6 +251,11 @@ function save() {
             saving = false;
         }
     });
+}
+
+function makeSaved() {
+    dirty = false;
+    document.getElementById('save').innerHTML = 'Saved';
 }
 
 function setTabWidth(width) {

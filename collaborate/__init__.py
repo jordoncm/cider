@@ -14,4 +14,13 @@ class FileSessionManager(object):
     def notify(self, source, message):
         for i in self.sessions:
             if i != source and i.file == source.file:
-                i.write_message(json.dumps(message))
+                i.write_message(json.dumps([message]))
+    def broadcast(self, file, message):
+        for i in self.sessions:
+            if i.file == file:
+                i.write_message(json.dumps([message]))
+    def hasSessions(self, file):
+        for i in self.sessions:
+            if i.file == file:
+                return True
+        return False

@@ -29,6 +29,7 @@ except ImportError:
     gui = False
 
 import getpass
+import hashlib
 import json
 import os
 import pickledb
@@ -223,16 +224,30 @@ class SaveFileHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header('Content-Type', 'application/json')
         try:
+            file = self.get_argument('file', '').replace('..', '').strip('/')
             f = open(
                 os.path.join(
                     os.path.dirname(__file__),
                     BASE_PATH_ADJUSTMENT,
-                    self.get_argument('file', '').replace('..', '').strip('/')
+                    file
                 ),
                 'w'
             )
             f.write(self.get_argument('text'))
             f.close()
+            
+            db = pickledb.load(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    'patch',
+                    hashlib.sha224(file).hexdigest()
+                ),
+                True
+            )
+            db.lrem('diffs')
+            db.lcreate('diffs')
+            
+            collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
             
             success = True
             notification = 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
@@ -371,8 +386,35 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
             collaborate.FileSessionManager().notify(self, messageObject)
         elif messageObject['t'] == 'i' and self.file != None:
             collaborate.FileSessionManager().notify(self, messageObject)
+        
+        db = pickledb.load(
+            os.path.join(
+                os.path.dirname(__file__),
+                'patch',
+                hashlib.sha224(self.file).hexdigest()
+            ),
+            True
+        )
+        if messageObject['t'] == 'f':
+            if db.get('diffs') == None:
+                db.lcreate('diffs')
+            else:
+                self.write_message(json.dumps(db.lgetall('diffs')))
+        else:
+            db.ladd('diffs', messageObject)
     def on_close(self):
+        file = self.file
         collaborate.FileSessionManager().unregisterSession(self)
+        if collaborate.FileSessionManager().hasSessions(file) == False:
+            db = pickledb.load(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    'patch',
+                    hashlib.sha224(file).hexdigest()
+                ),
+                True
+            )
+            db.deldb()
 
 settings = {
     'static_path' : os.path.join(os.path.dirname(__file__), 'static')
@@ -389,13 +431,13 @@ application = tornado.web.Application([
 ], **settings)
 
 def start():
-    application.listen(2222)
+    application.listen(3333)
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
     try:
         thread.start_new_thread(start, ())
-        # webbrowser.open_new_tab('http://localhost:3333')
+        webbrowser.open_new_tab('http://localhost:3333')
         
         if gui == True:
             root = Tk()
