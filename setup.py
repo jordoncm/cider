@@ -29,6 +29,7 @@ def buildDataFilesPaths(source, target, paths):
 
 APP = ['server.py']
 DATA_FILES = buildDataFilesPaths('', '', [
+    'patch',
     'static',
     'templates',
     'configuration.json',
