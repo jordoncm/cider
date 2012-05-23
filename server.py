@@ -51,14 +51,14 @@ except NameError:
     if hasattr(sys, 'frozen') and sys.frozen in ('windows_exe', 'console_exe'):
         __file__ = os.path.dirname(os.path.abspath(sys.executable))
 
-def getConfigurationValue(key):
+def getConfigurationValue(key, default = None):
     try:
         return json.loads(open(os.path.join(
             os.path.dirname(__file__),
             'configuration.json'
         )).read())[key]
     except:
-        return None
+        return default
 
 def isTextFile(file):
     sample = open(file).read(512)
@@ -431,13 +431,15 @@ application = tornado.web.Application([
 ], **settings)
 
 def start():
-    application.listen(3333)
+    application.listen(getConfigurationValue('port', 3333))
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
     try:
         thread.start_new_thread(start, ())
-        webbrowser.open_new_tab('http://localhost:3333')
+        webbrowser.open_new_tab(
+            'http://localhost:' + str(getConfigurationValue('port', 3333))
+        )
         
         if gui == True:
             root = Tk()

@@ -1,4 +1,5 @@
 {
     "basePathAdjustment" : "~",
+    "port" : 3333,
     "terminalLink" : ""
 }
