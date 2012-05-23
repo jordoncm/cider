@@ -327,4 +327,6 @@ function search(needle) {
     if(needle && needle !== '') {
         editor.find(needle);
     }
+    
+    return false;
 }

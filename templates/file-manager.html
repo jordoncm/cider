@@ -133,7 +133,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
             <a class="btn" href="javascript:void(0);" onclick="createFile();">New File</a>
             <a class="btn" href="javascript:void(0);" onclick="createFolder();">New Folder</a>
           </div>
-          <form class="navbar-form pull-right">
+          <form class="navbar-form pull-right" onsubmit="return createFile();">
             <input id="name" type="text" class="span3" placeholder="Enter Name" />&nbsp;
           </form>
         </div>

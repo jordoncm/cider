@@ -39,6 +39,8 @@ function createFile() {
             '_blank'
         );
     }
+    
+    return false;
 }
 
 function createFolder() {
@@ -59,6 +61,8 @@ function createFolder() {
             }
         );
     }
+    
+    return false;
 }
 
 function confirmOpen(type) {
