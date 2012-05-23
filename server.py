@@ -437,9 +437,10 @@ def start():
 if __name__ == '__main__':
     try:
         thread.start_new_thread(start, ())
-        webbrowser.open_new_tab(
-            'http://localhost:' + str(getConfigurationValue('port', 3333))
-        )
+        if getConfigurationValue('suppressBrowser', False) == False:
+            webbrowser.open_new_tab(
+                'http://localhost:' + str(getConfigurationValue('port', 3333))
+            )
         
         if gui == True:
             root = Tk()

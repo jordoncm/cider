@@ -1,5 +1,6 @@
 {
     "basePathAdjustment" : "~",
     "port" : 3333,
+    "suppressBrowser" : false,
     "terminalLink" : ""
 }
