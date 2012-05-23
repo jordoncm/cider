@@ -273,7 +273,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
         files = []
         try:
             fileList = os.listdir(os.path.join(base, path))
-            files.sort(key = lambda x: x.encode().lower())
+            fileList.sort(key = lambda x: x.encode().lower())
             
             for i in range(len(fileList)):
                 try:
