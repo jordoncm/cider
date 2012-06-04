@@ -1,5 +1,5 @@
 /**
- * This work is copyright 2011 Jordon Mears. All rights reserved.
+ * This work is copyright 2012 Jordon Mears. All rights reserved.
  * 
  * This file is part of Cider.
  * 
@@ -17,316 +17,160 @@
  * along with Cider.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var editor = null;
-var dirty = false;
-var oldDirty = false;
-var saving = false;
-var socket = null;
-var sockectSuppress = false;
+cider.namespace('cider.editor');
 
-var Range = require('ace/range').Range;
+cider.editor.save = function() {
+    $('#save').html('Saving...');
+    editorObj.setDirty(false);
+    fileObj.save(editorObj.getText());
+};
 
-window.onload = function() {
-    editor = ace.edit('editor');
-    editor.setReadOnly(true);
-    editor.setTheme('ace/theme/eclipse');
-    if(typeof mode != 'undefined') {
-        var Mode = require('ace/mode/' + mode).Mode;
-        editor.getSession().setMode(new Mode());
-    }
-    editor.getSession().getDocument().setNewLineMode('unix');
-    editor.getSession().setTabSize(tabWidth);
-    editor.getSession().setUseSoftTabs(true);
-    editor.getSession().setValue(
-        editor.getSession().getValue().replace(
-            /[~]lb/g,
-            decodeURIComponent('%7B')
-        ).replace(
-            /[~]rb/g,
-            decodeURIComponent('%7D')
-        )
-    );
-    
-    editor.getSession().on('change', function(e) {
-        document.getElementById('save').innerHTML = 'Save';
-        dirty = true;
-        
-        if(socket && !sockectSuppress) {
-            var data = e.data;
-            var p = 0;
-            var lines = editor.getSession().getDocument().getLines(0, data.range.start.row);
-            for(var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                p += (i < data.range.start.row) ? line.length : data.range.start.column;
-            }
-            p += data.range.start.row;
-            
-            var message = {
-                p : p
-            };
-            switch(data.action) {
-                case 'insertText':
-                    message.i = data.text;
-                    message.t = 'i';
-                    break;
-                case 'insertLines':
-                    message.i = data.lines.join('\n') + '\n';
-                    message.t = 'i';
-                    break;
-                case 'removeText':
-                    message.d = data.text;
-                    message.t = 'd';
-                    break;
-                case 'removeLines':
-                    message.d = data.lines.join('\n') + '\n';
-                    message.t = 'd';
-                    break;
-            }
-            console.log(JSON.stringify(message));
-            socket.send(JSON.stringify(message));
+cider.editor.saveCallback = function(response) {
+    if(!response.success) {
+        if(!editorObj.isDirty()) {
+            editorObj.revertDirty();
         }
-    });
+    }
     
-    editor.commands.addCommand({
-        name : 'save',
-        bindKey : {
-            win : 'Ctrl-S',
-            mac : 'Command-S',
-            sender : 'editor'
-        },
-        exec : save
-    });
-    
-    editor.commands.addCommand({
-        name : 'find',
-        bindKey : {
-            win : 'Ctrl-F',
-            mac : 'Command-F',
-            sender : 'editor'
-        },
-        exec : find
-    });
-    
-    editor.commands.addCommand({
-        name : 'findNext',
-        bindKey : {
-            win : 'Ctrl-G',
-            mac : 'Command-G',
-            sender : 'editor'
-        },
-        exec : findNext
-    });
-    
-    editor.commands.addCommand({
-        name : 'findPrevious',
-        bindKey : {
-            win : 'Ctrl-Shift-G',
-            mac : 'Command-Shift-G',
-            sender : 'editor'
-        },
-        exec : findPrevious
-    });
-    
-    try {
-        socket = new WebSocket('ws://' + location.host + '/ws/');
-        socket.onopen = function() {
-            var kvp = location.search.substr(1).split('&');
-            var args = {};
-            for(var i = 0; i < kvp.length; i++) {
-                try {
-                    var tmp = kvp[i].split('=');
-                    args[tmp[0]] = tmp[1];
-                } catch(e) {}
-            }
-            socket.send('{"t":"f","f":"' + args.file + '","v":-1}');
-            editor.setReadOnly(false);
-        };
-        socket.onmessage = function(m) {
-            console.log(m.data);
-            var dataList = JSON.parse(m.data);
-            for(var i = 0; i < dataList.length; i++) {
-                var data = dataList[i];
-                var lines = editor.getSession().getDocument().getAllLines();
-                sockectSuppress = true;
-                switch(data.t) {
-                    case 'd':
-                        var range = Range.fromPoints(
-                            getOffset(data.p, lines),
-                            getOffset((data.p + data.d.length), lines)
-                        );
-                        editor.getSession().getDocument().remove(range);
-                        break;
-                    case 'i':
-                        editor.getSession().getDocument().insert(
-                            getOffset(data.p, lines),
-                            data.i
-                        );
-                        break;
-                    case 's':
-                        makeSaved();
-                        break;
-                }
-                sockectSuppress = false;
-            }
-        };
-    } catch(e) {
-        editor.setReadOnly(false);
+    if(!editorObj.isDirty()) {
+        $('#save').html('Saved');
+    } else {
+        $('#save').html('Save');
     }
 };
 
-function getOffset(offset, lines) {
-    for(var row = 0; row < lines.length; row++) {
-        var line = lines[row];
-        if(offset <= line.length) {
-            break;
-        }
-        offset -= lines[row].length + 1;
+cider.editor.makeSaved = function() {
+    editorObj.setDirty(false);
+    $('#save').html('Saved');
+};
+
+cider.editor.setTabWidth = function(width) {
+    editorObj.setTabWidth(width);
+};
+
+cider.editor.setHighlightMode = function(mode) {
+    editorObj.setMode(mode);
+};
+
+cider.editor.find = function() {
+    var element = $('#find');
+    element.select();
+    if(element.val() !== '') {
+        search(element.val());
     }
-    return {
-        row : row,
-        column : offset
+};
+
+cider.editor.findNext = function() {
+    editorObj.findNext();
+};
+
+cider.editor.findPrevious = function() {
+    editorObj.findPrevious();
+};
+
+cider.editor.search = function(needle) {
+    if(needle && needle !== '') {
+        editorObj.find(needle);
+    }
+    
+    return false;
+};
+
+var editorObj = null;
+var fileObj = null;
+var socketObj = null;
+
+$(function() {
+    var editorSettings = {
+        editorId : 'editor',
+        tabWidth : tabWidth,
+        shortcuts : {
+            save : cider.editor.save,
+            find : cider.editor.find
+        },
+        change : function(e, diff) {
+            $('#save').html('Save');
+            socketObj.send(diff);
+        }
     };
-}
+    if(typeof mode != 'undefined') {
+        editorSettings.mode = mode;
+    }
+    editorObj = new cider.editor.Editor(editorSettings);
+    
+    fileObj = new cider.editor.File({
+        file : file,
+        saveCallback : cider.editor.saveCallback
+    });
+    
+    try {
+        socketObj = new cider.editor.Socket({
+            openCallback : function() {
+                var kvp = location.search.substr(1).split('&');
+                var args = {};
+                for(var i = 0; i < kvp.length; i++) {
+                    try {
+                        var tmp = kvp[i].split('=');
+                        args[tmp[0]] = tmp[1];
+                    } catch(e) {}
+                }
+                socketObj.send({t : 'f', f : args.file, v : -1});
+                editorObj.setReadOnly(false);
+            },
+            messageCallback : function(m) {
+                var dataList = JSON.parse(m.data);
+                for(var i = 0; i < dataList.length; i++) {
+                    var data = dataList[i];
+                    socketObj.suppress = true;
+                    switch(data.t) {
+                        case 'd':
+                        case 'i':
+                            editorObj.executeDiff(data);
+                            break;
+                        case 's':
+                            cider.editor.makeSaved();
+                            break;
+                    }
+                    socketObj.suppress = false;
+                }
+            }
+        });
+    } catch(e) {
+        editorObj.setReadOnly(false);
+        console.log(e);
+    }
+});
 
 window.onbeforeunload = function() {
-    if(dirty) {
+    /* $(window).unload does not appear to be consistent. */
+    if(editorObj.isDirty()) {
         return 'Document has unsaved changes; changes will be lost.';
     }
     
-    if(saving) {
+    if(fileObj.isSaving()) {
         return 'Save operation in progress; changes could be lost.';
     }
 };
 
-window.onkeydown = function(e) {
+$(window).keydown(function(e) {
     if(e.ctrlKey || e.metaKey) {
         switch(e.keyCode) {
             case 'F'.charCodeAt(0):
                 e.preventDefault();
-                find();
+                cider.editor.find();
                 break;
             case 'G'.charCodeAt(0):
                 e.preventDefault();
                 if(e.shiftKey) {
-                    findPrevious();
+                    cider.editor.findPrevious();
                 } else {
-                    findNext();
+                    cider.editor.findNext();
                 }
                 break;
             case 'S'.charCodeAt(0):
                 e.preventDefault();
-                save();
+                cider.editor.save();
                 break;
         }
     }
-}
-
-function save() {
-    saving = true;
-    document.getElementById('save').innerHTML = 'Saving...';
-    oldDirty = dirty;
-    dirty = false;
-    var text = editor.getSession().getValue();
-    $.ajax({
-        url : '../save-file/',
-        type : 'POST',
-        dataType : 'json',
-        data : {
-            file : file,
-            text : text
-        },
-        success : function(response) {
-            if(!response.success) {
-                if(!dirty) {
-                    dirty = oldDirty;
-                }
-            }
-            
-            if(!dirty) {
-                document.getElementById('save').innerHTML = 'Saved';
-            } else {
-                document.getElementById('save').innerHTML = 'Save';
-            }
-            
-            saving = false;
-        }
-    });
-}
-
-function makeSaved() {
-    dirty = false;
-    document.getElementById('save').innerHTML = 'Saved';
-}
-
-function setTabWidth(width) {
-    if(width !== '' && !isNaN(width)) {
-        editor.getSession().setTabSize(parseInt(width));
-    }
-}
-
-function setHighlightMode(mode) {
-    switch(mode) {
-        case 'c_cpp':
-        case 'clojure':
-        case 'coffee':
-        case 'coldfusion':
-        case 'csharp':
-        case 'css':
-        case 'golang':
-        case 'groovy':
-        case 'haxe':
-        case 'html':
-        case 'java':
-        case 'javascript':
-        case 'json':
-        case 'latex':
-        case 'less':
-        case 'liquid':
-        case 'lua':
-        case 'markdown':
-        case 'ocaml':
-        case 'perl':
-        case 'pgsql':
-        case 'php':
-        case 'powershell':
-        case 'python':
-        case 'ruby':
-        case 'scad':
-        case 'scala':
-        case 'scss':
-        case 'sh':
-        case 'sql':
-        case 'svg':
-        case 'text':
-        case 'textile':
-        case 'xml':
-        case 'xquery':
-            var Mode = require('ace/mode/' + mode).Mode;
-            editor.getSession().setMode(new Mode());
-            break;
-    }
-}
-
-function find() {
-    var element = document.getElementById('find');
-    element.select();
-    if(element.value !== '') {
-        search(element.value);
-    }
-}
-
-function findNext() {
-    editor.findNext();
-}
-
-function findPrevious() {
-    editor.findPrevious();
-}
-
-function search(needle) {
-    if(needle && needle !== '') {
-        editor.find(needle);
-    }
-    
-    return false;
-}
+});

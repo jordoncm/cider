@@ -17,8 +17,10 @@
  * along with Cider.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function getCreateParameter() {
-    var name = document.getElementById('name').value;
+cider.namespace('cider.filemanager');
+
+cider.filemanager.getCreateParameter = function() {
+    var name = $('#name').val();
     
     var parameter = '';
     if(path != '') {
@@ -28,12 +30,12 @@ function getCreateParameter() {
     }
     
     return parameter;
-}
+};
 
-function createFile() {
-    var parameter = getCreateParameter();
+cider.filemanager.createFile = function() {
+    var parameter = cider.filemanager.getCreateParameter();
     
-    if(document.getElementById('name').value != '') {
+    if($('#name').val() != '') {
         window.open(
             '../editor/?file=' + encodeURIComponent(parameter),
             '_blank'
@@ -41,12 +43,12 @@ function createFile() {
     }
     
     return false;
-}
+};
 
-function createFolder() {
-    var parameter = getCreateParameter();
+cider.filemanager.createFolder = function() {
+    var parameter = cider.filemanager.getCreateParameter();
     
-    if(document.getElementById('name').value != '') {
+    if($('#name').val() != '') {
         $.getJSON(
             '../create-folder/',
             {
@@ -63,9 +65,9 @@ function createFolder() {
     }
     
     return false;
-}
+};
 
-function confirmOpen(type) {
+cider.filemanager.confirmOpen = function(type) {
     switch(type) {
         case 'binary':
             return confirm(
@@ -80,4 +82,4 @@ function confirmOpen(type) {
         default:
             return true;
     }
-}
+};
