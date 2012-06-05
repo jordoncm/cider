@@ -76,9 +76,38 @@ cider.editor.search = function(needle) {
     return false;
 };
 
+cider.editor.initTabWidth = function() {
+    var tmp = preferencesObj.get('stw');
+    console.log(tmp);
+    if(tmp) {
+        $('#stw').val(preferencesObj.get('stw'));
+        if(!markup) {
+            cider.editor.setTabWidth(parseInt(tmp));
+        }
+    }
+    tmp = preferencesObj.get('stwm');
+    if(tmp) {
+        $('#stwm').val(preferencesObj.get('stwm'));
+        if(markup) {
+            cider.editor.setTabWidth(parseInt(tmp));
+        }
+    }
+};
+
+cider.editor.saveTabWidth = function(type, width) {
+    if(markup && type == 'stwm') {
+        cider.editor.setTabWidth(width);
+    }
+    if(!markup && type == 'stw') {
+        cider.editor.setTabWidth(width);
+    }
+    preferencesObj.set(type, width);
+};
+
 var editorObj = null;
 var fileObj = null;
 var socketObj = null;
+var preferencesObj = null;
 
 $(function() {
     var editorSettings = {
@@ -102,6 +131,10 @@ $(function() {
         file : file,
         saveCallback : cider.editor.saveCallback
     });
+    
+    preferencesObj = new cider.editor.Preferences();
+    
+    cider.editor.initTabWidth();
     
     try {
         socketObj = new cider.editor.Socket({

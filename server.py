@@ -130,6 +130,7 @@ class EditorHandler(tornado.web.RequestHandler):
             saveText = 'Save'
         
         tabWidth = 4
+        markup = False
         
         ext = file[(file.rfind('.') + 1):]
 
@@ -154,6 +155,7 @@ class EditorHandler(tornado.web.RequestHandler):
         elif ext == 'htm' or ext == 'html' or ext == 'mustache' or ext == 'tpl':
             mode = 'html'
             tabWidth = 2
+            markup = True
         elif ext == 'java':
             mode = 'java'
         elif ext == 'js':
@@ -197,11 +199,13 @@ class EditorHandler(tornado.web.RequestHandler):
         elif ext == 'svg':
             mode = 'svg'
             tabWidth = 2
+            markup = True
         elif ext == 'textile':
             mode = 'textile'
         elif ext == 'xml' or ext == 'kml':
             mode = 'xml'
             tabWidth = 2
+            markup = True
         elif ext == 'xq' or ext == 'xqy' or ext == 'xquery':
             mode = 'xquery'
         else:
@@ -217,6 +221,7 @@ class EditorHandler(tornado.web.RequestHandler):
             text = text,
             mode = mode,
             tabWidth = tabWidth,
+            markup = markup,
             saveText = saveText
         ))
 
