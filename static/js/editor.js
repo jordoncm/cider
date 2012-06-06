@@ -78,7 +78,6 @@ cider.editor.search = function(needle) {
 
 cider.editor.initTabWidth = function() {
     var tmp = preferencesObj.get('stw');
-    console.log(tmp);
     if(tmp) {
         $('#stw').val(preferencesObj.get('stw'));
         if(!markup) {
@@ -132,7 +131,7 @@ $(function() {
         saveCallback : cider.editor.saveCallback
     });
     
-    preferencesObj = new cider.editor.Preferences();
+    preferencesObj = new cider.Preferences();
     
     cider.editor.initTabWidth();
     

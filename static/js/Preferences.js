@@ -1,6 +1,6 @@
-cider.namespace('cider.editor');
+cider.namespace('cider');
 
-cider.editor.Preferences = function(config) {
+cider.Preferences = function(config) {
     this.get = function(key) {
         var value = localStorage.getItem(key);
         if(value) {
@@ -18,6 +18,9 @@ cider.editor.Preferences = function(config) {
         } else {
             localStorage.setItem(key, value);
         }
+    };
+    this.remove = function(key) {
+        localStorage.removeItem(key);
     };
     
     this.init = function(config) {};
