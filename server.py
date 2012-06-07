@@ -382,11 +382,24 @@ class DeleteFolderHandler(tornado.web.RequestHandler):
 class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         self.file = None
+        self.name = None
         collaborate.FileSessionManager().registerSession(self)
     def on_message(self, message):
         messageObject = json.loads(message)
         if messageObject['t'] == 'f':
             self.file = messageObject['f']
+            self.name = messageObject['n']
+            sessions = collaborate.FileSessionManager().getSessions(self.file)
+            names = []
+            for i in sessions:
+                names.append(i.name)
+            collaborate.FileSessionManager().broadcast(
+                self.file,
+                {
+                    't' : 'n',
+                    'n' : names
+                }
+            )
         elif messageObject['t'] == 'd' and self.file != None:
             collaborate.FileSessionManager().notify(self, messageObject)
         elif messageObject['t'] == 'i' and self.file != None:
@@ -410,6 +423,17 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         file = self.file
         collaborate.FileSessionManager().unregisterSession(self)
+        sessions = collaborate.FileSessionManager().getSessions(file)
+        names = []
+        for i in sessions:
+            names.append(i.name)
+        collaborate.FileSessionManager().broadcast(
+            self.file,
+            {
+                't' : 'n',
+                'n' : names
+            }
+        )
         if collaborate.FileSessionManager().hasSessions(file) == False:
             db = pickledb.load(
                 os.path.join(

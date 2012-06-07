@@ -24,3 +24,9 @@ class FileSessionManager(object):
             if i.file == file:
                 return True
         return False
+    def getSessions(self, file):
+        tmp = []
+        for i in self.sessions:
+            if i.file == file:
+                tmp.append(i)
+        return tmp

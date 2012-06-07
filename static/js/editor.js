@@ -103,6 +103,15 @@ cider.editor.saveTabWidth = function(type, width) {
     preferencesObj.set(type, width);
 };
 
+cider.editor.generateId = function() {
+    var text = '';
+    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for(var i = 0; i < 5; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+};
+
 var editorObj = null;
 var fileObj = null;
 var socketObj = null;
@@ -146,10 +155,15 @@ $(function() {
                         args[tmp[0]] = tmp[1];
                     } catch(e) {}
                 }
-                socketObj.send({t : 'f', f : args.file, v : -1});
+                var name = preferencesObj.get('sname');
+                if(!name) {
+                    name = 'cider-' + cider.editor.generateId();
+                }
+                socketObj.send({t : 'f', f : args.file, v : -1, n : name});
                 editorObj.setReadOnly(false);
             },
             messageCallback : function(m) {
+                console.log(m.data);
                 var dataList = JSON.parse(m.data);
                 for(var i = 0; i < dataList.length; i++) {
                     var data = dataList[i];
@@ -161,6 +175,15 @@ $(function() {
                             break;
                         case 's':
                             cider.editor.makeSaved();
+                            break;
+                        case 'n':
+                            $('#editorsTitle').html(data.n.length + ' editors');
+                            $('#editorsList li').remove();
+                            for(var j = 0; j < data.n.length; j++) {
+                                $('#editorsList').append(
+                                    '<li><a>' + data.n[j] + '</a></li>'
+                                );
+                            }
                             break;
                     }
                     socketObj.suppress = false;
