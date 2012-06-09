@@ -31,6 +31,7 @@ except ImportError:
 import getpass
 import hashlib
 import json
+import logging
 import os
 import pickledb
 import string
@@ -44,6 +45,7 @@ import tornado.websocket
 import webbrowser
 
 import collaborate
+import log
 
 try:
     __file__
@@ -125,7 +127,8 @@ class EditorHandler(tornado.web.RequestHandler):
             text = f.read().replace('{', '~' + 'lb').replace('}', '~' + 'rb')
             
             saveText = 'Saved'
-        except Exception:
+        except Exception as e:
+            log.warn(e)
             text = ''
             saveText = 'Save'
         
@@ -256,7 +259,8 @@ class SaveFileHandler(tornado.web.RequestHandler):
             
             success = True
             notification = 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
-        except:
+        except Exception as e:
+            log.error(e)
             success = False
             notification = 'save failed'
         
@@ -294,12 +298,12 @@ class FileManagerHandler(tornado.web.RequestHandler):
                         'isFile' : isFile,
                         'confirm' : confirm
                     })
-                except IOError:
-                    pass
+                except IOError as e:
+                    log.warn(e)
             
             files = sorted(files, key = itemgetter('isFile'))
-        except:
-            pass
+        except Exception as e:
+            log.warn(e)
         
         if path != '' and path.rfind('/') > -1:
             up = path[:path.rfind('/')]
@@ -342,7 +346,8 @@ class DownloadHandler(tornado.web.RequestHandler):
                 BASE_PATH_ADJUSTMENT,
                 file
             ))
-        except Exception:
+        except Exception as e:
+            log.error(e)
             data = None
             length = 0
         
@@ -460,7 +465,10 @@ application = tornado.web.Application([
 ], **settings)
 
 def start():
-    application.listen(getConfigurationValue('port', 3333))
+    log.msg('Starting server...')
+    port = getConfigurationValue('port', 3333)
+    log.msg('Listening on port ' + str(port) + '.')
+    application.listen(port)
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
