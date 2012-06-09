@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # 
-# This work is copyright 2011 Jordon Mears. All rights reserved.
+# This work is copyright 2012 Jordon Mears. All rights reserved.
 # 
 # This file is part of Cider.
 # 
