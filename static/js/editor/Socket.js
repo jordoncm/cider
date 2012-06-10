@@ -61,6 +61,14 @@ cider.editor.Socket = function(config) {
         this.socket.onmessage = function(m) {
             closure.handleMessage(m);
         };
+        this.socket.onerror = function(e) {
+            console.log('socket error');
+            console.log(e);
+        };
+        this.socket.onclose = function(e) {
+            console.log('socket close');
+            console.log(e);
+        };
     };
     this.init(config);
 };
