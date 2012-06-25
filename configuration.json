@@ -1,5 +1,8 @@
 {
     "basePathAdjustment" : "~",
+    "cookieSecret" : "",
+    "dropboxKey" : "",
+    "dropboxSecret" : "",
     "port" : 3333,
     "suppressBrowser" : false,
     "terminalLink" : ""

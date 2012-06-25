@@ -28,13 +28,10 @@ try:
 except ImportError:
     gui = False
 
-import getpass
 import hashlib
 import json
-import logging
 import os
 import pickledb
-import string
 import sys
 import thread
 import time
@@ -146,9 +143,9 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
 
 settings = {
     'autoescape' : None,
-    'cookie_secret' : '12oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=',
-    'dropbox_consumer_key' : 'rvs2rp86wlxbssd',
-    'dropbox_consumer_secret' : 't4dzxao7h6w4vhk',
+    'cookie_secret' : util.getConfigurationValue('cookieSecret', 'insecureSecret'),
+    'dropbox_consumer_key' : util.getConfigurationValue('dropboxKey', ''),
+    'dropbox_consumer_secret' : util.getConfigurationValue('dropboxSecret', ''),
     'login_url' : '/',
     'static_path' : os.path.join(os.path.dirname(__file__), 'static'),
 }
