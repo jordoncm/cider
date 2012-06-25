@@ -1,6 +1,6 @@
 {
     "basePathAdjustment" : "~",
-    "cookieSecret" : "",
+    "cookieSecret" : "aW5zZWN1cmVTZWNyZXQ=",
     "dropboxKey" : "",
     "dropboxSecret" : "",
     "port" : 3333,
