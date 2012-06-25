@@ -19,8 +19,6 @@
 # along with Cider.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-from operator import itemgetter
-
 gui = False
 try:
     from Tkinter import *
@@ -143,7 +141,7 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
 
 settings = {
     'autoescape' : None,
-    'cookie_secret' : util.getConfigurationValue('cookieSecret', 'insecureSecret'),
+    'cookie_secret' : util.getConfigurationValue('cookieSecret', 'aW5zZWN1cmVTZWNyZXQ='),
     'dropbox_consumer_key' : util.getConfigurationValue('dropboxKey', ''),
     'dropbox_consumer_secret' : util.getConfigurationValue('dropboxSecret', ''),
     'login_url' : '/',
@@ -153,7 +151,7 @@ settings = {
 application = tornado.web.Application([
     (r'/', IndexHandler),
     (r'/ws/?', EditorWebSocketHandler),
-    (r'/auth/dropbox/', handlers.auth.dropbox),
+    (r'/auth/dropbox/?', handlers.auth.dropbox.DropboxHandler),
     (r'/dropbox/create-folder/?', handlers.folder.DropboxCreateFolderHandler),
     (r'/dropbox/download/?', handlers.download.DropboxHandler),
     (r'/dropbox/editor/?', handlers.editor.DropboxHandler),
