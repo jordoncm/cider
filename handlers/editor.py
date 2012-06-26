@@ -34,7 +34,7 @@ def getModeTabWidthMarkup(ext):
         mode = 'groovy'
     elif ext == 'hx':
         mode = 'haxe'
-    elif ext == 'htm' or ext == 'html' or ext == 'mustache' or ext == 'tpl':
+    elif ext == 'htm' or ext == 'html' or ext == 'mustache' or ext == 'tpl' or ext == 'shtml':
         mode = 'html'
         tabWidth = 2
         markup = True
