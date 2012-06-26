@@ -56,8 +56,6 @@ except NameError:
     if hasattr(sys, 'frozen') and sys.frozen in ('windows_exe', 'console_exe'):
         __file__ = os.path.dirname(os.path.abspath(sys.executable))
 
-BASE_PATH_ADJUSTMENT = util.getBasePathAdjustment()
-
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         terminalLink = util.getConfigurationValue('terminalLink')

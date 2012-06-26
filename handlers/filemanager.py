@@ -8,8 +8,6 @@ import handlers.auth.dropbox
 import log
 import util
 
-BASE_PATH_ADJUSTMENT = util.getBasePathAdjustment()
-
 class DropboxHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox.Mixin):
     @tornado.web.authenticated
     @tornado.web.asynchronous
@@ -57,7 +55,7 @@ class FileSystemHandler(tornado.web.RequestHandler):
     def get(self):
         path = self.get_argument('path', '').replace('..', '').strip('/')
         title = path + ' - Cider'
-        base = os.path.join(os.path.dirname(__file__), BASE_PATH_ADJUSTMENT)
+        base = os.path.join(os.path.dirname(__file__), util.getBasePathAdjustment())
         
         files = []
         try:

@@ -6,8 +6,6 @@ import handlers.auth.dropbox
 import log
 import util
 
-BASE_PATH_ADJUSTMENT = util.getBasePathAdjustment()
-
 def getMode(ext):
     mode, tabWidth, markup = getModeTabWidthMarkup(ext)
     return mode
@@ -174,7 +172,7 @@ class FileSystemHandler(tornado.web.RequestHandler):
             f = open(
                 os.path.join(
                     os.path.dirname(__file__),
-                    BASE_PATH_ADJUSTMENT,
+                    util.getBasePathAdjustment(),
                     file
                 ),
                 'r'

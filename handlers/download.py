@@ -5,8 +5,6 @@ import handlers.auth.dropbox
 import log
 import util
 
-BASE_PATH_ADJUSTMENT = util.getBasePathAdjustment()
-
 class DropboxHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox.Mixin):
     @tornado.web.authenticated
     @tornado.web.asynchronous
@@ -50,7 +48,7 @@ class FileSystemHandler(tornado.web.RequestHandler):
             f = open(
                 os.path.join(
                     os.path.dirname(__file__),
-                    BASE_PATH_ADJUSTMENT,
+                    util.getBasePathAdjustment(),
                     file
                 ),
                 'rb'
@@ -58,7 +56,7 @@ class FileSystemHandler(tornado.web.RequestHandler):
             data = f.read()
             length = os.path.getsize(os.path.join(
                 os.path.dirname(__file__),
-                BASE_PATH_ADJUSTMENT,
+                util.getBasePathAdjustment(),
                 file
             ))
         except Exception as e:
