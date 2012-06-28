@@ -68,11 +68,13 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
           including a local file system, Dropbox, Google Drive, SSH and more. 
           Choose an option below.</p>
           <hr />
-          <div>
-            <h3>Local File System</h3>
-            <p>Browse and edit files on the local disk.</p>
-            <p><a class="btn btn-primary" href="./file/file-manager/">Launch &raquo;</a></p>
-          </div>
+          {% if enableLocalFileSystem %}
+            <div>
+              <h3>Local File System</h3>
+              <p>Browse and edit files on the local disk.</p>
+              <p><a class="btn btn-primary" href="./file/file-manager/">Launch &raquo;</a></p>
+            </div>
+          {% end %}
           <div>
             <h3>Dropbox</h3>
             <p>Browse and edit files from a <a href="http://www.dropbox.com">Dropbox</a> account.</p>
@@ -85,7 +87,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
     <div class="navbar navbar-fixed-bottom">
       <div class="navbar-inner">
         <div class="container-fluid">
-          <div class="brand">Cider</div>
+          <div class="brand"><a href="" style="color: #FFFFFF;">Cider</a></div>
         </div>
       </div>
     </div>

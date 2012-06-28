@@ -68,7 +68,11 @@ class IndexHandler(tornado.web.RequestHandler):
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
             title = 'Dashboard - Cider',
-            terminalLink = terminalLink
+            terminalLink = terminalLink,
+            enableLocalFileSystem = util.getConfigurationValue(
+                'enableLocalFileSystem',
+                True
+            )
         ))
 
 class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
@@ -146,7 +150,7 @@ settings = {
     'static_path' : os.path.join(os.path.dirname(__file__), 'static'),
 }
 
-application = tornado.web.Application([
+urls = [
     (r'/', IndexHandler),
     (r'/ws/?', EditorWebSocketHandler),
     (r'/auth/dropbox/?', handlers.auth.dropbox.DropboxHandler),
@@ -154,13 +158,19 @@ application = tornado.web.Application([
     (r'/dropbox/download/?', handlers.download.DropboxHandler),
     (r'/dropbox/editor/?', handlers.editor.DropboxHandler),
     (r'/dropbox/file-manager/?', handlers.filemanager.DropboxHandler),
-    (r'/dropbox/save-file/?', handlers.file.DropboxSaveFileHandler),
-    (r'/file/create-folder/?', handlers.folder.FileSystemCreateFolderHandler),
-    (r'/file/download/?', handlers.download.FileSystemHandler),
-    (r'/file/editor/?', handlers.editor.FileSystemHandler),
-    (r'/file/file-manager/?', handlers.filemanager.FileSystemHandler),
-    (r'/file/save-file/?', handlers.file.FileSystemSaveFileHandler)
-], **settings)
+    (r'/dropbox/save-file/?', handlers.file.DropboxSaveFileHandler)
+]
+
+if util.getConfigurationValue('enableLocalFileSystem', True):
+    urls = urls + [
+        (r'/file/create-folder/?', handlers.folder.FileSystemCreateFolderHandler),
+        (r'/file/download/?', handlers.download.FileSystemHandler),
+        (r'/file/editor/?', handlers.editor.FileSystemHandler),
+        (r'/file/file-manager/?', handlers.filemanager.FileSystemHandler),
+        (r'/file/save-file/?', handlers.file.FileSystemSaveFileHandler)
+    ]
+
+application = tornado.web.Application(urls, **settings)
 
 def start():
     log.msg('Starting server...')

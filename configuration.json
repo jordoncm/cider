@@ -3,6 +3,7 @@
     "cookieSecret" : "aW5zZWN1cmVTZWNyZXQ=",
     "dropboxKey" : "",
     "dropboxSecret" : "",
+    "enableLocalFileSystem" : true,
     "port" : 3333,
     "suppressBrowser" : false,
     "terminalLink" : ""
