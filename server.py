@@ -157,14 +157,18 @@ settings = {
 
 urls = [
     (r'/', IndexHandler),
-    (r'/ws/?', EditorWebSocketHandler),
-    (r'/auth/dropbox/?', handlers.auth.dropbox.DropboxHandler),
-    (r'/dropbox/create-folder/?', handlers.folder.DropboxCreateFolderHandler),
-    (r'/dropbox/download/?', handlers.download.DropboxHandler),
-    (r'/dropbox/editor/?', handlers.editor.DropboxHandler),
-    (r'/dropbox/file-manager/?', handlers.filemanager.DropboxHandler),
-    (r'/dropbox/save-file/?', handlers.file.DropboxSaveFileHandler)
+    (r'/ws/?', EditorWebSocketHandler)
 ]
+
+if util.getConfigurationValue('dropboxKey', '') != '' and util.getConfigurationValue('dropboxSecret', '') != '':
+    urls = urls + [
+        (r'/auth/dropbox/?', handlers.auth.dropbox.DropboxHandler),
+        (r'/dropbox/create-folder/?', handlers.folder.DropboxCreateFolderHandler),
+        (r'/dropbox/download/?', handlers.download.DropboxHandler),
+        (r'/dropbox/editor/?', handlers.editor.DropboxHandler),
+        (r'/dropbox/file-manager/?', handlers.filemanager.DropboxHandler),
+        (r'/dropbox/save-file/?', handlers.file.DropboxSaveFileHandler)
+    ]
 
 if util.getConfigurationValue('enableLocalFileSystem', True):
     urls = urls + [
