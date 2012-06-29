@@ -64,6 +64,10 @@ class IndexHandler(tornado.web.RequestHandler):
             host = host[:host.find(':')]
             terminalLink = terminalLink.replace('[host]', host)
         
+        enableDropbox = False
+        if util.getConfigurationValue('dropboxKey', '') != '' and util.getConfigurationValue('dropboxSecret', '') != '':
+            enableDropbox = True
+        
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
@@ -72,7 +76,8 @@ class IndexHandler(tornado.web.RequestHandler):
             enableLocalFileSystem = util.getConfigurationValue(
                 'enableLocalFileSystem',
                 True
-            )
+            ),
+            enableDropbox = enableDropbox
         ))
 
 class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):

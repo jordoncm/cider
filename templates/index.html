@@ -64,9 +64,8 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
         </div>
         <div class="span4">
           <h2>File Managers</h2>
-          <p>Cider supports connecting to many different types of file storage 
-          including a local file system, Dropbox, Google Drive, SSH and more. 
-          Choose an option below.</p>
+          <p>Cider supports connecting to different types of file storage 
+          including a local file system and Dropbox. Choose an option below.</p>
           <hr />
           {% if enableLocalFileSystem %}
             <div>
@@ -75,11 +74,13 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
               <p><a class="btn btn-primary" href="./file/file-manager/">Launch &raquo;</a></p>
             </div>
           {% end %}
-          <div>
-            <h3>Dropbox</h3>
-            <p>Browse and edit files from a <a href="http://www.dropbox.com">Dropbox</a> account.</p>
-            <p><a class="btn btn-primary" href="./dropbox/file-manager/">Launch &raquo;</a></p>
-          </div>
+          {% if enableDropbox %}
+            <div>
+              <h3>Dropbox</h3>
+              <p>Browse and edit files from a <a href="http://www.dropbox.com">Dropbox</a> account.</p>
+              <p><a class="btn btn-primary" href="./dropbox/file-manager/">Launch &raquo;</a></p>
+            </div>
+          {% end %}
         </div>
       </div>
     </div>
