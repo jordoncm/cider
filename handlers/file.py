@@ -48,18 +48,21 @@ class FileSystemSaveFileHandler(tornado.web.RequestHandler):
             f.write(self.get_argument('text'))
             f.close()
             
-            db = pickledb.load(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    'patch',
-                    hashlib.sha224(file).hexdigest()
-                ),
-                True
-            )
-            db.lrem('diffs')
-            db.lcreate('diffs')
-            
-            collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
+            try:
+                db = pickledb.load(
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        'patch',
+                        hashlib.sha224(file).hexdigest()
+                    ),
+                    True
+                )
+                db.lrem('diffs')
+                db.lcreate('diffs')
+                
+                collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
+            except:
+                pass
             
             success = True
             notification = 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
