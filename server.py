@@ -184,11 +184,15 @@ if __name__ == '__main__':
             )
         
         if gui == True:
-            root = Tk()
-            root.withdraw()
-            menu = Menu(root)
-            root.config(menu = menu)
-            root.mainloop()
+            try:
+                root = Tk()
+                root.withdraw()
+                menu = Menu(root)
+                root.config(menu = menu)
+                root.mainloop()
+            except:
+                while(True):
+                    time.sleep(10)
         else:
             while(True):
                 time.sleep(10)
