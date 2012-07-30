@@ -55,7 +55,7 @@ class FileSystemHandler(tornado.web.RequestHandler):
     def get(self):
         path = self.get_argument('path', '').replace('..', '').strip('/')
         title = path + ' - Cider'
-        base = os.path.join(os.path.dirname(__file__), util.getBasePathAdjustment())
+        base = util.getBasePathAdjustment()
         
         files = []
         try:

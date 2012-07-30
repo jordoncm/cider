@@ -4,18 +4,11 @@ import os
 import string
 import sys
 
-try:
-    __file__
-except NameError:
-    if hasattr(sys, 'frozen') and sys.frozen in ('windows_exe', 'console_exe'):
-        __file__ = os.path.dirname(os.path.abspath(sys.executable))
-
 def getConfigurationValue(key, default = None):
     try:
-        return json.loads(open(os.path.join(
-            os.path.dirname(__file__),
+        return json.loads(open(
             'configuration.json'
-        )).read())[key]
+        ).read())[key]
     except:
         return default
 
