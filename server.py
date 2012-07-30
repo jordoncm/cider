@@ -29,7 +29,6 @@ except ImportError:
 import hashlib
 import json
 import os
-import pickledb
 import sys
 import thread
 import time
@@ -106,21 +105,16 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
         elif messageObject['t'] == 'i' and self.file != None:
             collaborate.FileSessionManager().notify(self, messageObject)
         
-        db = pickledb.load(
-            os.path.join(
-                os.path.dirname(__file__),
-                'patch',
-                hashlib.sha224(self.file).hexdigest()
-            ),
-            True
-        )
+        id = hashlib.sha224(self.file).hexdigest()
         if messageObject['t'] == 'f':
-            if db.get('diffs') == None:
-                db.lcreate('diffs')
+            if collaborate.FileDiffManager().hasDiff(id) == False:
+                collaborate.FileDiffManager().createDiff(id)
             else:
-                self.write_message(json.dumps(db.lgetall('diffs')))
+                self.write_message(
+                    json.dumps(collaborate.FileDiffManager().getAll(id))
+                )
         else:
-            db.ladd('diffs', messageObject)
+            collaborate.FileDiffManager().add(id, messageObject)
     def on_close(self):
         file = self.file
         collaborate.FileSessionManager().unregisterSession(self)
@@ -136,15 +130,8 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
             }
         )
         if collaborate.FileSessionManager().hasSessions(file) == False:
-            db = pickledb.load(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    'patch',
-                    hashlib.sha224(file).hexdigest()
-                ),
-                True
-            )
-            db.deldb()
+            id = hashlib.sha224(self.file).hexdigest()
+            collaborate.FileDiffManager().removeDiff(id)
 
 settings = {
     'autoescape' : None,

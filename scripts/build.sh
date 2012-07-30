@@ -19,11 +19,8 @@ cp readme.txt build/cider-$VERSION/
 cp server.py build/cider-$VERSION/
 cp log.py build/cider-$VERSION/
 cp collaborate.py build/cider-$VERSION/
-cp pickledb.py build/cider-$VERSION/
 
 cd build
-mkdir cider-$VERSION/patch
-chmod 777 cider-$VERSION/patch
 tar -czf cider-$VERSION.tar.gz cider-$VERSION
 
 cd ..

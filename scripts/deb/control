@@ -1,0 +1,12 @@
+Source: cider
+Section: devel
+Priority: optional
+Maintainer: Jordon Mears <jordoncm@gmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.2
+
+Package: cider
+Architecture: any
+Depends: python (>=2.6.5-ubuntu1)
+Description: Web-based IDE
+ Provides a web based file manager and IDE like code editor.

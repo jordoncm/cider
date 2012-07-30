@@ -1,11 +1,11 @@
 import hashlib
 import json
 import os
-import pickledb
 import time
 import tornado.template
 import tornado.web
 
+import collaborate
 import handlers.auth.dropbox
 import log
 import util
@@ -25,6 +25,14 @@ class DropboxSaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.aut
         if not response:
             self.authorize_redirect('/auth/dropbox/')
             return
+        file = self.get_argument('file', '').replace('..', '').strip('/')
+        try:
+            id = hashlib.sha224(file).hexdigest()
+            collaborate.FileDiffManager().removeDiff(id)
+            collaborate.FileDiffManager().createDiff(id)
+            collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
+        except:
+            pass
         self.finish(self.write(json.dumps({
             'success' : True,
             'notification' : 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
@@ -49,17 +57,9 @@ class FileSystemSaveFileHandler(tornado.web.RequestHandler):
             f.close()
             
             try:
-                db = pickledb.load(
-                    os.path.join(
-                        os.path.dirname(__file__),
-                        'patch',
-                        hashlib.sha224(file).hexdigest()
-                    ),
-                    True
-                )
-                db.lrem('diffs')
-                db.lcreate('diffs')
-                
+                id = hashlib.sha224(file).hexdigest()
+                collaborate.FileDiffManager().removeDiff(id)
+                collaborate.FileDiffManager().createDiff(id)
                 collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
             except:
                 pass

@@ -49,3 +49,28 @@ class FileSessionManager(object):
             if i.file == file:
                 tmp.append(i)
         return tmp
+
+class FileDiffManager(object):
+    _instance = None
+    diffs = {}
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(FileDiffManager, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+    def createDiff(self, id):
+        if self.hasDiff(id) == False:
+            self.diffs[id] = []
+    def hasDiff(self, id):
+        return id in self.diffs
+    def removeDiff(self, id):
+        if self.hasDiff(id) == True:
+            del self.diffs[id]
+    def getAll(self, id):
+        if self.hasDiff(id) == True:
+            self.diffs[id]
+        else:
+            return []
+    def add(self, id, diff):
+        if self.hasDiff(id) == False:
+            self.createDiff(id)
+        self.diffs[id].append(diff)
