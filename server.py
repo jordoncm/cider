@@ -191,9 +191,11 @@ if __name__ == '__main__':
                 root.config(menu = menu)
                 root.mainloop()
             except:
+                log.msg('Graphical main loop failed, using time sleep instead.')
                 while(True):
                     time.sleep(10)
         else:
+            log.msg('Graphical libraries not present, using time sleep instead.')
             while(True):
                 time.sleep(10)
     except KeyboardInterrupt:
