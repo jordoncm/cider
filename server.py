@@ -190,7 +190,9 @@ if __name__ == '__main__':
                 menu = Menu(root)
                 root.config(menu = menu)
                 root.mainloop()
-            except:
+            except KeyboardInterrupt:
+                sys.exit()
+            except Exception:
                 log.msg('Graphical main loop failed, using time sleep instead.')
                 while(True):
                     time.sleep(10)
@@ -199,4 +201,4 @@ if __name__ == '__main__':
             while(True):
                 time.sleep(10)
     except KeyboardInterrupt:
-        sys.exit(0)
+        sys.exit()
