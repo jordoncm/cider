@@ -32,14 +32,3 @@ pre {
     bottom: 40px;
     left: 0;
 }
-
-.buttons {
-    z-index: 10;
-    width: 310px;
-    background-color: #2C2C2C;
-    position: absolute;
-    right: 20px;
-    top: 0;
-    background-image: -moz-linear-gradient(center top , #333333, #222222);
-    background-repeat: repeat-x;
-}
