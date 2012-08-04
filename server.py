@@ -41,11 +41,8 @@ import webbrowser
 
 import collaborate
 import handlers.auth.dropbox
-import handlers.download
-import handlers.editor
+import handlers.dropbox
 import handlers.file
-import handlers.filemanager
-import handlers.folder
 import log
 import util
 
@@ -150,20 +147,20 @@ urls = [
 if util.getConfigurationValue('dropboxKey', '') != '' and util.getConfigurationValue('dropboxSecret', '') != '':
     urls = urls + [
         (r'/auth/dropbox/?', handlers.auth.dropbox.DropboxHandler),
-        (r'/dropbox/create-folder/?', handlers.folder.DropboxCreateFolderHandler),
-        (r'/dropbox/download/?', handlers.download.DropboxHandler),
-        (r'/dropbox/editor/?', handlers.editor.DropboxHandler),
-        (r'/dropbox/file-manager/?', handlers.filemanager.DropboxHandler),
-        (r'/dropbox/save-file/?', handlers.file.DropboxSaveFileHandler)
+        (r'/dropbox/create-folder/?', handlers.dropbox.CreateFolderHandler),
+        (r'/dropbox/download/?', handlers.dropbox.DownloadHandler),
+        (r'/dropbox/editor/?', handlers.dropbox.EditorHandler),
+        (r'/dropbox/file-manager/?', handlers.dropbox.FileManagerHandler),
+        (r'/dropbox/save-file/?', handlers.dropbox.SaveFileHandler)
     ]
 
 if util.getConfigurationValue('enableLocalFileSystem', True):
     urls = urls + [
-        (r'/file/create-folder/?', handlers.folder.FileSystemCreateFolderHandler),
-        (r'/file/download/?', handlers.download.FileSystemHandler),
-        (r'/file/editor/?', handlers.editor.FileSystemHandler),
-        (r'/file/file-manager/?', handlers.filemanager.FileSystemHandler),
-        (r'/file/save-file/?', handlers.file.FileSystemSaveFileHandler)
+        (r'/file/create-folder/?', handlers.file.CreateFolderHandler),
+        (r'/file/download/?', handlers.file.DownloadHandler),
+        (r'/file/editor/?', handlers.file.EditorHandler),
+        (r'/file/file-manager/?', handlers.file.FileManagerHandler),
+        (r'/file/save-file/?', handlers.file.SaveFileHandler)
     ]
 
 application = tornado.web.Application(urls, **settings)
