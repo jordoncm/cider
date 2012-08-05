@@ -19,58 +19,75 @@
 
 import json
 
+
 class FileSessionManager(object):
+    
     _instance = None
     sessions = []
+    
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(FileSessionManager, cls).__new__(cls, *args, **kwargs)
         return cls._instance
-    def registerSession(self, fs):
+    
+    def register_session(self, fs):
         self.sessions.append(fs)
-    def unregisterSession(self, fs):
+    
+    def unregister_session(self, fs):
         self.sessions.remove(fs)
+    
     def notify(self, source, message):
         for i in self.sessions:
             if i != source and i.file == source.file:
                 i.write_message(json.dumps([message]))
+    
     def broadcast(self, file, message):
         for i in self.sessions:
             if i.file == file:
                 i.write_message(json.dumps([message]))
-    def hasSessions(self, file):
+    
+    def has_sessions(self, file):
         for i in self.sessions:
             if i.file == file:
                 return True
         return False
-    def getSessions(self, file):
+    
+    def get_sessions(self, file):
         tmp = []
         for i in self.sessions:
             if i.file == file:
                 tmp.append(i)
         return tmp
 
+
 class FileDiffManager(object):
+    
     _instance = None
     diffs = {}
+    
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(FileDiffManager, cls).__new__(cls, *args, **kwargs)
         return cls._instance
-    def createDiff(self, id):
-        if self.hasDiff(id) == False:
+    
+    def create_diff(self, id):
+        if self.has_diff(id) == False:
             self.diffs[id] = []
-    def hasDiff(self, id):
+    
+    def has_diff(self, id):
         return id in self.diffs
-    def removeDiff(self, id):
-        if self.hasDiff(id) == True:
+    
+    def remove_diff(self, id):
+        if self.has_diff(id) == True:
             del self.diffs[id]
-    def getAll(self, id):
-        if self.hasDiff(id) == True:
+    
+    def get_all(self, id):
+        if self.has_diff(id) == True:
             self.diffs[id]
         else:
             return []
+    
     def add(self, id, diff):
-        if self.hasDiff(id) == False:
-            self.createDiff(id)
+        if self.has_diff(id) == False:
+            self.create_diff(id)
         self.diffs[id].append(diff)

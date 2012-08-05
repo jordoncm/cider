@@ -32,7 +32,6 @@ import os
 import sys
 import thread
 import time
-import tornado.auth
 import tornado.ioloop
 import tornado.template
 import tornado.web
@@ -52,41 +51,46 @@ except NameError:
     if hasattr(sys, 'frozen') and sys.frozen in ('windows_exe', 'console_exe'):
         __file__ = os.path.dirname(os.path.abspath(sys.executable))
 
+
 class IndexHandler(tornado.web.RequestHandler):
+    
     def get(self):
-        terminalLink = util.getConfigurationValue('terminalLink')
-        if terminalLink != None:
+        terminal_link = util.get_configuration_value('terminalLink')
+        if terminal_link != None:
             host = self.request.host
             host = host[:host.find(':')]
-            terminalLink = terminalLink.replace('[host]', host)
+            terminal_link = terminal_link.replace('[host]', host)
         
-        enableDropbox = False
-        if util.getConfigurationValue('dropboxKey', '') != '' and util.getConfigurationValue('dropboxSecret', '') != '':
-            enableDropbox = True
+        enable_dropbox = False
+        if util.get_configuration_value('dropboxKey', '') != '' and util.get_configuration_value('dropboxSecret', '') != '':
+            enable_dropbox = True
         
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
             title = 'Dashboard - Cider',
-            terminalLink = terminalLink,
-            enableLocalFileSystem = util.getConfigurationValue(
+            terminalLink = terminal_link,
+            enableLocalFileSystem = util.get_configuration_value(
                 'enableLocalFileSystem',
                 True
             ),
-            enableDropbox = enableDropbox
+            enableDropbox = enable_dropbox
         ))
 
+
 class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
+    
     def open(self):
         self.file = None
         self.name = None
-        collaborate.FileSessionManager().registerSession(self)
+        collaborate.FileSessionManager().register_session(self)
+    
     def on_message(self, message):
-        messageObject = json.loads(message)
-        if messageObject['t'] == 'f':
-            self.file = messageObject['f']
-            self.name = messageObject['n']
-            sessions = collaborate.FileSessionManager().getSessions(self.file)
+        message_object = json.loads(message)
+        if message_object['t'] == 'f':
+            self.file = message_object['f']
+            self.name = message_object['n']
+            sessions = collaborate.FileSessionManager().get_sessions(self.file)
             names = []
             for i in sessions:
                 names.append(i.name)
@@ -97,25 +101,26 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
                     'n' : names
                 }
             )
-        elif messageObject['t'] == 'd' and self.file != None:
-            collaborate.FileSessionManager().notify(self, messageObject)
-        elif messageObject['t'] == 'i' and self.file != None:
-            collaborate.FileSessionManager().notify(self, messageObject)
+        elif message_object['t'] == 'd' and self.file != None:
+            collaborate.FileSessionManager().notify(self, message_object)
+        elif message_object['t'] == 'i' and self.file != None:
+            collaborate.FileSessionManager().notify(self, message_object)
         
         id = hashlib.sha224(self.file).hexdigest()
-        if messageObject['t'] == 'f':
-            if collaborate.FileDiffManager().hasDiff(id) == False:
-                collaborate.FileDiffManager().createDiff(id)
+        if message_object['t'] == 'f':
+            if collaborate.FileDiffManager().has_diff(id) == False:
+                collaborate.FileDiffManager().create_diff(id)
             else:
                 self.write_message(
-                    json.dumps(collaborate.FileDiffManager().getAll(id))
+                    json.dumps(collaborate.FileDiffManager().get_all(id))
                 )
         else:
-            collaborate.FileDiffManager().add(id, messageObject)
+            collaborate.FileDiffManager().add(id, message_object)
+    
     def on_close(self):
         file = self.file
-        collaborate.FileSessionManager().unregisterSession(self)
-        sessions = collaborate.FileSessionManager().getSessions(file)
+        collaborate.FileSessionManager().unregister_session(self)
+        sessions = collaborate.FileSessionManager().get_sessions(file)
         names = []
         for i in sessions:
             names.append(i.name)
@@ -126,15 +131,15 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
                 'n' : names
             }
         )
-        if collaborate.FileSessionManager().hasSessions(file) == False:
+        if collaborate.FileSessionManager().has_sessions(file) == False:
             id = hashlib.sha224(self.file).hexdigest()
-            collaborate.FileDiffManager().removeDiff(id)
+            collaborate.FileDiffManager().remove_diff(id)
 
 settings = {
     'autoescape' : None,
-    'cookie_secret' : util.getConfigurationValue('cookieSecret', 'aW5zZWN1cmVTZWNyZXQ='),
-    'dropbox_consumer_key' : util.getConfigurationValue('dropboxKey', ''),
-    'dropbox_consumer_secret' : util.getConfigurationValue('dropboxSecret', ''),
+    'cookie_secret' : util.get_configuration_value('cookieSecret', 'aW5zZWN1cmVTZWNyZXQ='),
+    'dropbox_consumer_key' : util.get_configuration_value('dropboxKey', ''),
+    'dropbox_consumer_secret' : util.get_configuration_value('dropboxSecret', ''),
     'login_url' : '/',
     'static_path' : os.path.join(os.path.dirname(__file__), 'static'),
 }
@@ -144,7 +149,7 @@ urls = [
     (r'/ws/?', EditorWebSocketHandler)
 ]
 
-if util.getConfigurationValue('dropboxKey', '') != '' and util.getConfigurationValue('dropboxSecret', '') != '':
+if util.get_configuration_value('dropboxKey', '') != '' and util.get_configuration_value('dropboxSecret', '') != '':
     urls = urls + [
         (r'/auth/dropbox/?', handlers.auth.dropbox.DropboxHandler),
         (r'/dropbox/create-folder/?', handlers.dropbox.CreateFolderHandler),
@@ -154,7 +159,7 @@ if util.getConfigurationValue('dropboxKey', '') != '' and util.getConfigurationV
         (r'/dropbox/save-file/?', handlers.dropbox.SaveFileHandler)
     ]
 
-if util.getConfigurationValue('enableLocalFileSystem', True):
+if util.get_configuration_value('enableLocalFileSystem', True):
     urls = urls + [
         (r'/file/create-folder/?', handlers.file.CreateFolderHandler),
         (r'/file/download/?', handlers.file.DownloadHandler),
@@ -165,9 +170,10 @@ if util.getConfigurationValue('enableLocalFileSystem', True):
 
 application = tornado.web.Application(urls, **settings)
 
+
 def start():
     log.msg('Starting server...')
-    port = util.getConfigurationValue('port', 3333)
+    port = util.get_configuration_value('port', 3333)
     log.msg('Listening on port ' + str(port) + '.')
     application.listen(port)
     tornado.ioloop.IOLoop.instance().start()
@@ -175,9 +181,9 @@ def start():
 if __name__ == '__main__':
     try:
         thread.start_new_thread(start, ())
-        if util.getConfigurationValue('suppressBrowser', False) == False:
+        if util.get_configuration_value('suppressBrowser', False) == False:
             webbrowser.open_new_tab(
-                'http://localhost:' + str(util.getConfigurationValue('port', 3333))
+                'http://localhost:' + str(util.get_configuration_value('port', 3333))
             )
         
         if gui == True:

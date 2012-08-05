@@ -149,9 +149,9 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
             save_text = 'Saved'
         
         ext = file[(file.rfind('.') + 1):]
-        mode = util.getMode(ext)
-        tab_width = util.getTabWidth(ext)
-        markup = util.isMarkup(ext)
+        mode = util.get_mode(ext)
+        tab_width = util.get_tab_width(ext)
+        markup = util.is_markup(ext)
         
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
@@ -243,8 +243,8 @@ class SaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropb
         file = self.get_argument('file', '').replace('..', '').strip('/')
         try:
             id = hashlib.sha224(file).hexdigest()
-            collaborate.FileDiffManager().removeDiff(id)
-            collaborate.FileDiffManager().createDiff(id)
+            collaborate.FileDiffManager().remove_diff(id)
+            collaborate.FileDiffManager().create_diff(id)
             collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
         except:
             pass

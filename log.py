@@ -17,14 +17,18 @@
 # along with Cider.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
+
 def msg(message):
     print str(message)
+
 
 def info(message):
     print 'INFO: ' + str(message)
 
+
 def warn(message):
     print 'WARNING: ' + str(message)
+
 
 def error(message):
     print 'ERROR: ' + str(message)

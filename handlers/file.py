@@ -45,7 +45,7 @@ class CreateFolderHandler(tornado.web.RequestHandler):
             
             os.mkdir(os.path.join(
                 os.path.dirname(__file__),
-                util.getBasePathAdjustment(),
+                util.get_base_path_adjustment(),
                 path
             ))
             
@@ -79,7 +79,7 @@ class DownloadHandler(tornado.web.RequestHandler):
             f = open(
                 os.path.join(
                     os.path.dirname(__file__),
-                    util.getBasePathAdjustment(),
+                    util.get_base_path_adjustment(),
                     file
                 ),
                 'rb'
@@ -87,7 +87,7 @@ class DownloadHandler(tornado.web.RequestHandler):
             data = f.read()
             length = os.path.getsize(os.path.join(
                 os.path.dirname(__file__),
-                util.getBasePathAdjustment(),
+                util.get_base_path_adjustment(),
                 file
             ))
         except Exception as e:
@@ -126,7 +126,7 @@ class EditorHandler(tornado.web.RequestHandler):
             f = open(
                 os.path.join(
                     os.path.dirname(__file__),
-                    util.getBasePathAdjustment(),
+                    util.get_base_path_adjustment(),
                     file
                 ),
                 'r'
@@ -140,9 +140,9 @@ class EditorHandler(tornado.web.RequestHandler):
             save_text = 'Save'
         
         ext = file[(file.rfind('.') + 1):]
-        mode = util.getMode(ext)
-        tab_width = util.getTabWidth(ext)
-        markup = util.isMarkup(ext)
+        mode = util.get_mode(ext)
+        tab_width = util.get_tab_width(ext)
+        markup = util.is_markup(ext)
         
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
@@ -166,7 +166,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
         """GET request; takes path as an argument."""
         path = self.get_argument('path', '').replace('..', '').strip('/')
         title = path + ' - Cider'
-        base = util.getBasePathAdjustment()
+        base = util.get_base_path_adjustment()
         
         files = []
         try:
@@ -180,7 +180,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
                     confirm = ''
                     if is_file and os.path.getsize(file) > 10485760:
                         confirm = 'large'
-                    if is_file and not util.isTextFile(file):
+                    if is_file and not util.is_text_file(file):
                         confirm = 'binary'
                     files.append({
                         'name' : file_list[i],
@@ -224,7 +224,7 @@ class SaveFileHandler(tornado.web.RequestHandler):
             f = open(
                 os.path.join(
                     os.path.dirname(__file__),
-                    util.getBasePathAdjustment(),
+                    util.get_base_path_adjustment(),
                     file
                 ),
                 'w'
@@ -234,8 +234,8 @@ class SaveFileHandler(tornado.web.RequestHandler):
             
             try:
                 id = hashlib.sha224(file).hexdigest()
-                collaborate.FileDiffManager().removeDiff(id)
-                collaborate.FileDiffManager().createDiff(id)
+                collaborate.FileDiffManager().remove_diff(id)
+                collaborate.FileDiffManager().create_diff(id)
                 collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
             except:
                 pass

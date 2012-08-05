@@ -1,3 +1,22 @@
+# 
+# This work is copyright 2012 Jordon Mears. All rights reserved.
+# 
+# This file is part of Cider.
+# 
+# Cider is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# Cider is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with Cider.  If not, see <http://www.gnu.org/licenses/>.
+# 
+
 import getpass
 import json
 import os
@@ -5,7 +24,7 @@ import string
 import sys
 
 
-def getConfigurationValue(key, default = None):
+def get_configuration_value(key, default=None):
     try:
         return json.loads(open(
             'configuration.json'
@@ -14,7 +33,7 @@ def getConfigurationValue(key, default = None):
         return default
 
 
-def isTextFile(file):
+def is_text_file(file):
     sample = open(file).read(512)
     if not sample:
         return True
@@ -29,27 +48,27 @@ def isTextFile(file):
     return True
 
 
-def getBasePathAdjustment():
-    BASE_PATH_ADJUSTMENT = getConfigurationValue('basePathAdjustment')
-    if BASE_PATH_ADJUSTMENT == None:
-        BASE_PATH_ADJUSTMENT = '..'
-    elif BASE_PATH_ADJUSTMENT == '~':
+def get_base_path_adjustment():
+    base_path_adjustment = get_configuration_value('basePathAdjustment')
+    if base_path_adjustment == None:
+        base_path_adjustment = '..'
+    elif base_path_adjustment == '~':
         if 'darwin' in sys.platform:
-            BASE_PATH_ADJUSTMENT = '/Users/' + getpass.getuser()
+            base_path_adjustment = '/Users/' + getpass.getuser()
         elif 'win' in sys.platform:
-            BASE_PATH_ADJUSTMENT = 'C:\\Users\\' + getpass.getuser()
+            base_path_adjustment = 'C:\\Users\\' + getpass.getuser()
         else:
-            BASE_PATH_ADJUSTMENT = '/home/' + getpass.getuser()
-    return BASE_PATH_ADJUSTMENT
+            base_path_adjustment = '/home/' + getpass.getuser()
+    return base_path_adjustment
 
 
-def getMode(ext):
-    mode, tabWidth, markup = getModeTabWidthMarkup(ext)
+def get_mode(ext):
+    mode, tab_width, markup = get_mode_tab_width_markup(ext)
     return mode
 
 
-def getModeTabWidthMarkup(ext):
-    tabWidth = 4
+def get_mode_tab_width_markup(ext):
+    tab_width = 4
     markup = False
     
     if ext == 'c' or ext == 'cpp' or ext == 'h' or ext == 'hpp':
@@ -72,7 +91,7 @@ def getModeTabWidthMarkup(ext):
         mode = 'haxe'
     elif ext == 'htm' or ext == 'html' or ext == 'mustache' or ext == 'tpl' or ext == 'shtml':
         mode = 'html'
-        tabWidth = 2
+        tab_width = 2
         markup = True
     elif ext == 'java':
         mode = 'java'
@@ -116,27 +135,27 @@ def getModeTabWidthMarkup(ext):
         mode = 'sql'
     elif ext == 'svg':
         mode = 'svg'
-        tabWidth = 2
+        tab_width = 2
         markup = True
     elif ext == 'textile':
         mode = 'textile'
     elif ext == 'xml' or ext == 'kml':
         mode = 'xml'
-        tabWidth = 2
+        tab_width = 2
         markup = True
     elif ext == 'xq' or ext == 'xqy' or ext == 'xquery':
         mode = 'xquery'
     else:
         mode = 'text'
     
-    return mode, tabWidth, markup
+    return mode, tab_width, markup
 
 
-def getTabWidth(ext):
-    mode, tabWidth, markup = getModeTabWidthMarkup(ext)
-    return tabWidth
+def get_tab_width(ext):
+    mode, tab_width, markup = get_mode_tab_width_markup(ext)
+    return tab_width
 
 
-def isMarkup(ext):
-    mode, tabWidth, markup = getModeTabWidthMarkup(ext)
+def is_markup(ext):
+    mode, tab_width, markup = get_mode_tab_width_markup(ext)
     return markup
