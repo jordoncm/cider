@@ -156,15 +156,15 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.finish(loader.load('editor.html').generate(
-            fileName = file_name,
+            file_name = file_name,
             path = path,
             title = title,
             file = file,
             text = text,
             mode = mode,
-            tabWidth = tab_width,
+            tab_width = tab_width,
             markup = markup,
-            saveText = save_text
+            save_text = save_text
         ))
 
 
@@ -195,11 +195,11 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
         for file in response['contents']:
             files.append({
                 'name' : os.path.basename(file['path']),
-                'isFile' : not file['is_dir'],
+                'is_file' : not file['is_dir'],
                 'confirm' : ''
             })
         files = sorted(files, key = lambda x: x['name'].encode().lower())
-        files = sorted(files, key = itemgetter('isFile'))
+        files = sorted(files, key = itemgetter('is_file'))
         
         if path != '' and path.rfind('/') > -1:
             up = path[:path.rfind('/')]
@@ -212,7 +212,7 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
             title = title,
             base = base,
             path = path,
-            filesList = files,
+            files_list = files,
             up = up
         ))
 

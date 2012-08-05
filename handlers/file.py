@@ -147,15 +147,15 @@ class EditorHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('editor.html').generate(
-            fileName = file_name,
+            file_name = file_name,
             path = path,
             title = title,
             file = file,
             text = text,
             mode = mode,
-            tabWidth = tab_width,
+            tab_width = tab_width,
             markup = markup,
-            saveText = save_text
+            save_text = save_text
         ))
 
 
@@ -184,13 +184,13 @@ class FileManagerHandler(tornado.web.RequestHandler):
                         confirm = 'binary'
                     files.append({
                         'name' : file_list[i],
-                        'isFile' : is_file,
+                        'is_file' : is_file,
                         'confirm' : confirm
                     })
                 except IOError as e:
                     log.warn(e)
             
-            files = sorted(files, key = itemgetter('isFile'))
+            files = sorted(files, key = itemgetter('is_file'))
         except Exception as e:
             log.warn(e)
         
@@ -205,7 +205,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
             title = title,
             base = base,
             path = path,
-            filesList = files,
+            files_list = files,
             up = up
         ))
 

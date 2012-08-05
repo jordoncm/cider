@@ -69,12 +69,12 @@ class IndexHandler(tornado.web.RequestHandler):
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
             title = 'Dashboard - Cider',
-            terminalLink = terminal_link,
-            enableLocalFileSystem = util.get_configuration_value(
+            terminal_link = terminal_link,
+            enable_local_file_system = util.get_configuration_value(
                 'enableLocalFileSystem',
                 True
             ),
-            enableDropbox = enable_dropbox
+            enable_dropbox = enable_dropbox
         ))
 
 

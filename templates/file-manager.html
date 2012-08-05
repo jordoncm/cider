@@ -55,9 +55,9 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
             </td>
           </tr>
         {% end %}
-        {% for file in filesList %}
+        {% for file in files_list %}
           <tr>
-            {% if file['isFile'] == True %}
+            {% if file['is_file'] == True %}
               {% if path != '' %}
                 <td class="icon">
                   <a href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">
