@@ -30,24 +30,24 @@ elif sys.platform == 'darwin':
 
 
 def build_data_files_paths(source, target, paths):
-    dataFiles = []
+    data_files = []
     
-    filesOnLevel = []
+    files_on_level = []
     for path in paths:
         if os.path.isfile(os.path.join(source, path)):
-            filesOnLevel.append(os.path.join(target, path))
+            files_on_level.append(os.path.join(target, path))
         elif os.path.isdir(os.path.join(source, path)):
             print os.path.join(source, path)
-            dataFiles.extend(buildDataFilesPaths(
+            data_files.extend(build_data_files_paths(
                 os.path.join(source, path),
                 os.path.join(target, path),
                 os.listdir(os.path.join(source, path))
             ))
     
-    if len(filesOnLevel):
-        dataFiles.append((source, filesOnLevel))
+    if len(files_on_level):
+        data_files.append((source, files_on_level))
     
-    return dataFiles
+    return data_files
 
 APP = ['server.py']
 DATA_FILES = build_data_files_paths('', '', [
