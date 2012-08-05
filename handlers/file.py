@@ -50,11 +50,11 @@ class CreateFolderHandler(tornado.web.RequestHandler):
             ))
             
             self.write(json.dumps({
-                'success' : True
+                'success': True
             }))
         except:
             self.write(json.dumps({
-                'success' : False
+                'success': False
             }))
 
 
@@ -147,15 +147,15 @@ class EditorHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('editor.html').generate(
-            file_name = file_name,
-            path = path,
-            title = title,
-            file = file,
-            text = text,
-            mode = mode,
-            tab_width = tab_width,
-            markup = markup,
-            save_text = save_text
+            file_name=file_name,
+            path=path,
+            title=title,
+            file=file,
+            text=text,
+            mode=mode,
+            tab_width=tab_width,
+            markup=markup,
+            save_text=save_text
         ))
 
 
@@ -171,7 +171,7 @@ class FileManagerHandler(tornado.web.RequestHandler):
         files = []
         try:
             file_list = os.listdir(os.path.join(base, path))
-            file_list.sort(key = lambda x: x.encode().lower())
+            file_list.sort(key=lambda x: x.encode().lower())
             
             for i in range(len(file_list)):
                 try:
@@ -183,14 +183,14 @@ class FileManagerHandler(tornado.web.RequestHandler):
                     if is_file and not util.is_text_file(file):
                         confirm = 'binary'
                     files.append({
-                        'name' : file_list[i],
-                        'is_file' : is_file,
-                        'confirm' : confirm
+                        'name': file_list[i],
+                        'is_file': is_file,
+                        'confirm': confirm
                     })
                 except IOError as e:
                     log.warn(e)
             
-            files = sorted(files, key = itemgetter('is_file'))
+            files = sorted(files, key=itemgetter('is_file'))
         except Exception as e:
             log.warn(e)
         
@@ -202,11 +202,11 @@ class FileManagerHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('file-manager.html').generate(
-            title = title,
-            base = base,
-            path = path,
-            files_list = files,
-            up = up
+            title=title,
+            base=base,
+            path=path,
+            files_list=files,
+            up=up
         ))
 
 
@@ -236,7 +236,7 @@ class SaveFileHandler(tornado.web.RequestHandler):
                 id = hashlib.sha224(file).hexdigest()
                 collaborate.FileDiffManager().remove_diff(id)
                 collaborate.FileDiffManager().create_diff(id)
-                collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
+                collaborate.FileSessionManager().broadcast(file, {'t': 's'})
             except:
                 pass
             
@@ -248,9 +248,10 @@ class SaveFileHandler(tornado.web.RequestHandler):
             notification = 'save failed'
         
         self.write(json.dumps({
-            'success' : success,
-            'notification' : notification
+            'success': success,
+            'notification': notification
         }))
+    
     def post(self):
         """Post request; same logic as the GET request."""
         self.get()

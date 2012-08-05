@@ -45,9 +45,9 @@ class CreateFolderHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.d
         path = self.get_argument('path', '').replace('..', '').strip('/')
         self.dropbox_request(
             '/fileops/create_folder',
-            access_token = self.current_user['access_token'],
-            callback = self.async_callback(self.get_callback),
-            post_args = {'root' : 'dropbox', 'path' : path}
+            access_token=self.current_user['access_token'],
+            callback=self.async_callback(self.get_callback),
+            post_args={'root': 'dropbox', 'path': path}
         )
     
     def get_callback(self, response):
@@ -60,7 +60,7 @@ class CreateFolderHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.d
             return
         
         self.finish(json.dumps({
-            'success' : True
+            'success': True
         }))
 
 
@@ -77,8 +77,8 @@ class DownloadHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropb
         file = self.get_argument('file', '').replace('..', '').strip('/')
         self.dropbox_request(
             '/files/dropbox/' + file,
-            access_token = self.current_user['access_token'],
-            callback = self.async_callback(self.get_callback)
+            access_token=self.current_user['access_token'],
+            callback=self.async_callback(self.get_callback)
         )
     
     def get_callback(self, response):
@@ -118,8 +118,8 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
         file = self.get_argument('file', '').replace('..', '').strip('/')
         self.dropbox_request(
             '/files/dropbox/' + file,
-            access_token = self.current_user['access_token'],
-            callback = self.async_callback(self.get_callback)
+            access_token=self.current_user['access_token'],
+            callback=self.async_callback(self.get_callback)
         )
     
     def get_callback(self, response):
@@ -156,15 +156,15 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.finish(loader.load('editor.html').generate(
-            file_name = file_name,
-            path = path,
-            title = title,
-            file = file,
-            text = text,
-            mode = mode,
-            tab_width = tab_width,
-            markup = markup,
-            save_text = save_text
+            file_name=file_name,
+            path=path,
+            title=title,
+            file=file,
+            text=text,
+            mode=mode,
+            tab_width=tab_width,
+            markup=markup,
+            save_text=save_text
         ))
 
 
@@ -178,8 +178,8 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
         path = self.get_argument('path', '').replace('..', '').strip('/')
         self.dropbox_request(
             '/metadata/dropbox/' + path,
-            access_token = self.current_user['access_token'],
-            callback = self.async_callback(self.get_callback)
+            access_token=self.current_user['access_token'],
+            callback=self.async_callback(self.get_callback)
         )
     
     def get_callback(self, response):
@@ -194,12 +194,12 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
         files = []
         for file in response['contents']:
             files.append({
-                'name' : os.path.basename(file['path']),
-                'is_file' : not file['is_dir'],
-                'confirm' : ''
+                'name': os.path.basename(file['path']),
+                'is_file': not file['is_dir'],
+                'confirm': ''
             })
-        files = sorted(files, key = lambda x: x['name'].encode().lower())
-        files = sorted(files, key = itemgetter('is_file'))
+        files = sorted(files, key=lambda x: x['name'].encode().lower())
+        files = sorted(files, key=itemgetter('is_file'))
         
         if path != '' and path.rfind('/') > -1:
             up = path[:path.rfind('/')]
@@ -209,11 +209,11 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.finish(loader.load('file-manager.html').generate(
-            title = title,
-            base = base,
-            path = path,
-            files_list = files,
-            up = up
+            title=title,
+            base=base,
+            path=path,
+            files_list=files,
+            up=up
         ))
 
 
@@ -230,9 +230,9 @@ class SaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropb
         file = self.get_argument('file', '').replace('..', '').strip('/')
         self.dropbox_put(
             '/files_put/dropbox/' + file,
-            access_token = self.current_user['access_token'],
-            callback = self.async_callback(self.get_callback),
-            put_args = self.get_argument('text')
+            access_token=self.current_user['access_token'],
+            callback=self.async_callback(self.get_callback),
+            put_args=self.get_argument('text')
         )
     
     def get_callback(self, response):
@@ -245,12 +245,12 @@ class SaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropb
             id = hashlib.sha224(file).hexdigest()
             collaborate.FileDiffManager().remove_diff(id)
             collaborate.FileDiffManager().create_diff(id)
-            collaborate.FileSessionManager().broadcast(file, {'t' : 's'})
+            collaborate.FileSessionManager().broadcast(file, {'t': 's'})
         except:
             pass
         self.finish(self.write(json.dumps({
-            'success' : True,
-            'notification' : 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
+            'success': True,
+            'notification': 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
         })))
     
     def post(self):

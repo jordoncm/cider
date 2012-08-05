@@ -6,14 +6,23 @@ import urllib
 
 import log
 
+
 class Mixin(tornado.auth.OAuthMixin):
+    
     _OAUTH_VERSION = '1.0'
     _OAUTH_REQUEST_TOKEN_URL = 'https://api.dropbox.com/1/oauth/request_token'
     _OAUTH_ACCESS_TOKEN_URL = 'https://api.dropbox.com/1/oauth/access_token'
     _OAUTH_AUTHORIZE_URL = 'https://api.dropbox.com/1/oauth/authorize'
     _OAUTH_NO_CALLBACKS = False
     
-    def dropbox_put(self, path, callback, access_token = None, put_args = None, **args):
+    def dropbox_put(
+        self,
+        path,
+        callback,
+        access_token=None,
+        put_args=None,
+        **args
+    ):
         # Add the OAuth resource request signature if we have credentials
         url = 'https://api-content.dropbox.com/1' + path
         if access_token:
@@ -24,7 +33,7 @@ class Mixin(tornado.auth.OAuthMixin):
                 url,
                 access_token,
                 all_args,
-                method = method
+                method=method
             )
             args.update(oauth)
         if args:
@@ -33,12 +42,19 @@ class Mixin(tornado.auth.OAuthMixin):
         http = tornado.httpclient.AsyncHTTPClient()
         http.fetch(
             url,
-            method = 'PUT',
-            body = put_args,
-            callback = callback
+            method='PUT',
+            body=put_args,
+            callback=callback
         )
     
-    def dropbox_request(self, path, callback, access_token = None, post_args = None, **args):
+    def dropbox_request(
+        self,
+        path,
+        callback,
+        access_token=None,
+        post_args=None,
+        **args
+    ):
         # Add the OAuth resource request signature if we have credentials
         pathList = path.split('/')
         pathPart = pathList[0]
@@ -57,7 +73,7 @@ class Mixin(tornado.auth.OAuthMixin):
                 url,
                 access_token,
                 all_args,
-                method = method
+                method=method
             )
             args.update(oauth)
         if args:
@@ -67,12 +83,12 @@ class Mixin(tornado.auth.OAuthMixin):
         if post_args is not None:
             http.fetch(
                 url,
-                method = 'POST',
-                body = urllib.urlencode(post_args),
-                callback = callback
+                method='POST',
+                body=urllib.urlencode(post_args),
+                callback=callback
             )
         else:
-            http.fetch(url, callback = callback)
+            http.fetch(url, callback=callback)
 
     def _on_dropbox_request(self, callback, response):
         if response.error:
@@ -90,16 +106,16 @@ class Mixin(tornado.auth.OAuthMixin):
         self.require_setting('dropbox_consumer_key', 'Dropbox OAuth')
         self.require_setting('dropbox_consumer_secret', 'Dropbox OAuth')
         return dict(
-            key = self.settings['dropbox_consumer_key'],
-            secret = self.settings['dropbox_consumer_secret']
+            key=self.settings['dropbox_consumer_key'],
+            secret=self.settings['dropbox_consumer_secret']
         )
 
     def _oauth_get_user(self, access_token, callback):
         callback = self.async_callback(self._parse_user_response, callback)
         self.dropbox_request(
             '/account/info',
-            access_token = access_token,
-            callback = callback
+            access_token=access_token,
+            callback=callback
         )
 
     def _parse_user_response(self, callback, user):
@@ -107,16 +123,21 @@ class Mixin(tornado.auth.OAuthMixin):
             user['username'] = user['uid']
         callback(user)
 
+
 class BaseAuthHandler(tornado.web.RequestHandler):
+    
     def get_current_user(self):
         json = self.get_secure_cookie('user')
         if not json:
             return None
         return tornado.escape.json_decode(json)
+    
     def get_login_url(self):
         return '/auth/dropbox/'
 
+
 class DropboxHandler(BaseAuthHandler, Mixin):
+    
     @tornado.web.asynchronous
     def get(self):
         if self.get_argument('oauth_token', None):
@@ -127,6 +148,7 @@ class DropboxHandler(BaseAuthHandler, Mixin):
                 self.get_argument('next', '/')
             )
         )
+    
     def _on_auth(self, user):
         if not user:
             raise tornado.web.HTTPError(500, 'Dropbox auth failed.')

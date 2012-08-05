@@ -28,7 +28,8 @@ if sys.platform == 'win32':
 elif sys.platform == 'darwin':
     from setuptools import setup
 
-def buildDataFilesPaths(source, target, paths):
+
+def build_data_files_paths(source, target, paths):
     dataFiles = []
     
     filesOnLevel = []
@@ -49,7 +50,7 @@ def buildDataFilesPaths(source, target, paths):
     return dataFiles
 
 APP = ['server.py']
-DATA_FILES = buildDataFilesPaths('', '', [
+DATA_FILES = build_data_files_paths('', '', [
     'patch',
     'static',
     'templates',
@@ -58,33 +59,33 @@ DATA_FILES = buildDataFilesPaths('', '', [
     'readme.txt'
 ])
 OPTIONS = {
-    'py2app' : {
-        'plist' : {
+    'py2app': {
+        'plist': {
         }
     },
-    'py2exe' : {
-        'excludes' : ['Tkinter']
+    'py2exe': {
+        'excludes': ['Tkinter']
     }
 }
 
 if sys.platform == 'darwin':
     setup(
-        name = 'Cider',
-        version = '0.5',
-        author = 'Jordon Mears',
-        description = ('Web-based IDE'),
-        app = APP,
-        data_files = DATA_FILES,
-        options = OPTIONS,
-        setup_requires = ['py2app']
+        name='Cider',
+        version='0.6 alpha',
+        author='Jordon Mears',
+        description=('Web-based IDE'),
+        app=APP,
+        data_files=DATA_FILES,
+        options=OPTIONS,
+        setup_requires=['py2app']
     )
 elif sys.platform == 'win32':
     setup(
-        name = 'Cider',
-        version = '0.5',
-        author = 'Jordon Mears',
-        description = ('Web-based IDE'),
-        console = APP,
-        data_files = DATA_FILES,
-        options = OPTIONS
+        name='Cider',
+        version='0.6 alpha',
+        author='Jordon Mears',
+        description=('Web-based IDE'),
+        console=APP,
+        data_files=DATA_FILES,
+        options=OPTIONS
     )

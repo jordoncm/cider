@@ -56,7 +56,7 @@ class IndexHandler(tornado.web.RequestHandler):
     
     def get(self):
         terminal_link = util.get_configuration_value('terminalLink')
-        if terminal_link != None:
+        if terminal_link is not None:
             host = self.request.host
             host = host[:host.find(':')]
             terminal_link = terminal_link.replace('[host]', host)
@@ -68,13 +68,13 @@ class IndexHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
-            title = 'Dashboard - Cider',
-            terminal_link = terminal_link,
-            enable_local_file_system = util.get_configuration_value(
+            title='Dashboard - Cider',
+            terminal_link=terminal_link,
+            enable_local_file_system=util.get_configuration_value(
                 'enableLocalFileSystem',
                 True
             ),
-            enable_dropbox = enable_dropbox
+            enable_dropbox=enable_dropbox
         ))
 
 
@@ -97,18 +97,18 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
             collaborate.FileSessionManager().broadcast(
                 self.file,
                 {
-                    't' : 'n',
-                    'n' : names
+                    't': 'n',
+                    'n': names
                 }
             )
-        elif message_object['t'] == 'd' and self.file != None:
+        elif message_object['t'] == 'd' and self.file is not None:
             collaborate.FileSessionManager().notify(self, message_object)
-        elif message_object['t'] == 'i' and self.file != None:
+        elif message_object['t'] == 'i' and self.file is not None:
             collaborate.FileSessionManager().notify(self, message_object)
         
         id = hashlib.sha224(self.file).hexdigest()
         if message_object['t'] == 'f':
-            if collaborate.FileDiffManager().has_diff(id) == False:
+            if collaborate.FileDiffManager().has_diff(id) is False:
                 collaborate.FileDiffManager().create_diff(id)
             else:
                 self.write_message(
@@ -127,21 +127,27 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
         collaborate.FileSessionManager().broadcast(
             self.file,
             {
-                't' : 'n',
-                'n' : names
+                't': 'n',
+                'n': names
             }
         )
-        if collaborate.FileSessionManager().has_sessions(file) == False:
+        if collaborate.FileSessionManager().has_sessions(file) is False:
             id = hashlib.sha224(self.file).hexdigest()
             collaborate.FileDiffManager().remove_diff(id)
 
 settings = {
-    'autoescape' : None,
-    'cookie_secret' : util.get_configuration_value('cookieSecret', 'aW5zZWN1cmVTZWNyZXQ='),
-    'dropbox_consumer_key' : util.get_configuration_value('dropboxKey', ''),
-    'dropbox_consumer_secret' : util.get_configuration_value('dropboxSecret', ''),
-    'login_url' : '/',
-    'static_path' : os.path.join(os.path.dirname(__file__), 'static'),
+    'autoescape': None,
+    'cookie_secret': util.get_configuration_value(
+        'cookieSecret',
+        'aW5zZWN1cmVTZWNyZXQ='
+    ),
+    'dropbox_consumer_key': util.get_configuration_value('dropboxKey', ''),
+    'dropbox_consumer_secret': util.get_configuration_value(
+        'dropboxSecret',
+        ''
+    ),
+    'login_url': '/',
+    'static_path': os.path.join(os.path.dirname(__file__), 'static'),
 }
 
 urls = [
@@ -181,17 +187,17 @@ def start():
 if __name__ == '__main__':
     try:
         thread.start_new_thread(start, ())
-        if util.get_configuration_value('suppressBrowser', False) == False:
+        if util.get_configuration_value('suppressBrowser', False) is False:
             webbrowser.open_new_tab(
                 'http://localhost:' + str(util.get_configuration_value('port', 3333))
             )
         
-        if gui == True:
+        if gui is True:
             try:
                 root = Tk()
                 root.withdraw()
                 menu = Menu(root)
-                root.config(menu = menu)
+                root.config(menu=menu)
                 root.mainloop()
             except KeyboardInterrupt:
                 sys.exit()

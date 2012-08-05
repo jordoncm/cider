@@ -50,7 +50,7 @@ def is_text_file(file):
 
 def get_base_path_adjustment():
     base_path_adjustment = get_configuration_value('basePathAdjustment')
-    if base_path_adjustment == None:
+    if base_path_adjustment is None:
         base_path_adjustment = '..'
     elif base_path_adjustment == '~':
         if 'darwin' in sys.platform:

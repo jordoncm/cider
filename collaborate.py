@@ -27,7 +27,11 @@ class FileSessionManager(object):
     
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(FileSessionManager, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(FileSessionManager, cls).__new__(
+                cls,
+                *args,
+                **kwargs
+            )
         return cls._instance
     
     def register_session(self, fs):
@@ -67,27 +71,31 @@ class FileDiffManager(object):
     
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(FileDiffManager, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(FileDiffManager, cls).__new__(
+                cls,
+                *args,
+                **kwargs
+            )
         return cls._instance
     
     def create_diff(self, id):
-        if self.has_diff(id) == False:
+        if self.has_diff(id) is False:
             self.diffs[id] = []
     
     def has_diff(self, id):
         return id in self.diffs
     
     def remove_diff(self, id):
-        if self.has_diff(id) == True:
+        if self.has_diff(id) is True:
             del self.diffs[id]
     
     def get_all(self, id):
-        if self.has_diff(id) == True:
+        if self.has_diff(id) is True:
             self.diffs[id]
         else:
             return []
     
     def add(self, id, diff):
-        if self.has_diff(id) == False:
+        if self.has_diff(id) is False:
             self.create_diff(id)
         self.diffs[id].append(diff)
