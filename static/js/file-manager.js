@@ -56,7 +56,15 @@ cider.filemanager.createFolder = function() {
             },
             function(json) {
                 if(json.success) {
-                    window.location.reload();
+                    var location = window.location;
+                    if(window.location.search == '?') {
+                        location += 'folder=' + $('#name').val();
+                    } else if(window.location.search != '') {
+                        location += '&folder=' + $('#name').val();
+                    } else {
+                        location += '?folder=' + $('#name').val();
+                    }
+                    window.location = location;
                 } else {
                     alert('Folder creation failed.');
                 }

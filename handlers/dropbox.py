@@ -213,7 +213,8 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
             base=base,
             path=path,
             files_list=files,
-            up=up
+            up=up,
+            folder=self.get_argument('folder', '')
         ))
 
 
