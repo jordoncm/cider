@@ -34,6 +34,24 @@ cider.index.initSessionName = function() {
     }
 };
 
+cider.index.sftpValidate = function() {
+    try {
+        var valid = true;
+        var text = 'Please correct the following:';
+        if($('#sftp_host').val() == '') {
+            valid = false;
+            text += '\n - Enter a hostname.'
+        }
+        
+        if(!valid) {
+            alert(text);
+        }
+        return valid;
+    } catch(e) {
+        return false;
+    }
+};
+
 var preferencesObj = new cider.Preferences();
 
 $(function() {

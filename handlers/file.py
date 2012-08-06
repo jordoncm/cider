@@ -207,7 +207,8 @@ class FileManagerHandler(tornado.web.RequestHandler):
             path=path,
             files_list=files,
             up=up,
-            folder=self.get_argument('folder', '')
+            folder=self.get_argument('folder', ''),
+            extra=''
         ))
 
 

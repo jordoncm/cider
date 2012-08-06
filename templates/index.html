@@ -65,7 +65,8 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
         <div class="span4">
           <h2>File Managers</h2>
           <p>Cider supports connecting to different types of file storage 
-          including a local file system and Dropbox. Choose an option below.</p>
+          including a local file system, Dropbox and SFTP/SSH. Choose an option 
+          below.</p>
           <hr />
           {% if enable_local_file_system %}
             <div>
@@ -81,6 +82,13 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
               <p><a class="btn btn-primary" href="./dropbox/file-manager/">Launch &raquo;</a></p>
             </div>
           {% end %}
+          {% if enable_sftp %}
+            <div>
+              <h3>SFTP/SSH</h3>
+              <p>Browse and edit files from any server running an SSH server.</p>
+              <p><a class="btn btn-primary" href="javascript:void(0);" onclick="$('#sftp').modal('show');">Launch &raquo;</a></p>
+            </div>
+          {% end %}
         </div>
       </div>
     </div>
@@ -92,6 +100,48 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
         </div>
       </div>
     </div>
+    
+    {% if enable_sftp %}
+      <div class="modal hide fade" id="sftp">
+        <div class="modal-header">
+          <h3>SFTP/SSH Connection</h3>
+        </div>
+        <div class="modal-body">
+          <form action="./sftp/file-manager/" class="form-horizontal" id="sftpf" method="post" onsubmit="return cider.index.sftpValidate();">
+            <fieldset>
+              <div class="control-group">
+                <label class="control-label">Host</label>
+                <div class="controls">
+                  <input id="sftp_host" name="sftp_host" type="text" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">User</label>
+                <div class="controls">
+                  <input id="sftp_user" name="sftp_user" placeholder="root" type="text" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Password</label>
+                <div class="controls">
+                  <input id="sftp_password" name="sftp_password" type="password" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Path</label>
+                <div class="controls">
+                  <input id="sftp_path" name="sftp_path" placeholder="/" type="text" />
+                </div>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <a class="btn btn-primary" href="javascript:void(0);" onclick="$('#sftpf').submit();">Connect</a>
+          <a class="btn" href="javascript:void(0);" onclick="$('#sftp').modal('hide');">Cancel</a>
+        </div>
+      </div>
+    {% end %}
     
     <script src="static/jquery.min.js" type="text/javascript"></script>
     <script src="static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>

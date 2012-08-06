@@ -19,13 +19,6 @@
 # along with Cider.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-gui = False
-try:
-    from Tkinter import *
-    gui = True
-except ImportError:
-    gui = False
-
 import hashlib
 import json
 import os
@@ -44,6 +37,23 @@ import handlers.dropbox
 import handlers.file
 import log
 import util
+
+gui = False
+try:
+    from Tkinter import *
+    gui = True
+except ImportError:
+    gui = False
+
+sftp = False
+try:
+    import handlers.sftp
+    sftp = True
+except ImportError:
+    sftp = False
+    log.warn(
+        'SFTP support not available. Check dependent libraries pysftp, paramiko and pycrypto.'
+    )
 
 try:
     __file__
@@ -74,7 +84,8 @@ class IndexHandler(tornado.web.RequestHandler):
                 'enableLocalFileSystem',
                 True
             ),
-            enable_dropbox=enable_dropbox
+            enable_dropbox=enable_dropbox,
+            enable_sftp=sftp
         ))
 
 
@@ -172,6 +183,15 @@ if util.get_configuration_value('enableLocalFileSystem', True):
         (r'/file/editor/?', handlers.file.EditorHandler),
         (r'/file/file-manager/?', handlers.file.FileManagerHandler),
         (r'/file/save-file/?', handlers.file.SaveFileHandler)
+    ]
+
+if sftp is True:
+    urls = urls + [
+        (r'/sftp/create-folder/?', handlers.sftp.CreateFolderHandler),
+        (r'/sftp/download/?', handlers.sftp.DownloadHandler),
+        (r'/sftp/editor/?', handlers.sftp.EditorHandler),
+        (r'/sftp/file-manager/?', handlers.sftp.FileManagerHandler),
+        (r'/sftp/save-file/?', handlers.sftp.SaveFileHandler)
     ]
 
 application = tornado.web.Application(urls, **settings)

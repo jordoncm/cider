@@ -62,10 +62,10 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
         {% if path != '' %}
           <tr>
             <td class="icon">&nbsp;</td>
-            <td><a href="?path={{ up }}">..</a></td>
+            <td><a href="?path={{ up }}{{ extra }}">..</a></td>
             <td>
               <div class="btn-group" style="float: right;">
-                <a class="btn btn-mini" href="?path={{ up }}">..</a>
+                <a class="btn btn-mini" href="?path={{ up }}{{ extra }}">..</a>
               </div>
             </td>
           </tr>
@@ -75,62 +75,62 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
             {% if file['is_file'] == True %}
               {% if path != '' %}
                 <td class="icon">
-                  <a href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">
+                  <a href="../editor/?file={{ path }}/{{ file['name'] }}{{ extra }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">
                     <img src="../../static/images/icon/file.png" />
                   </a>
                 </td>
                 <td>
-                  <a href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">{{ file['name'] }}</a>
+                  <a href="../editor/?file={{ path }}/{{ file['name'] }}{{ extra }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">{{ file['name'] }}</a>
                 </td>
                 <td>
                   <div class="btn-group" style="float: right;">
-                    <a class="btn btn-mini" href="../editor/?file={{ path }}/{{ file['name'] }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">Edit</a>
-                    <a class="btn btn-mini" href="../download/?file={{ path }}/{{ file['name'] }}">Download</a>
+                    <a class="btn btn-mini" href="../editor/?file={{ path }}/{{ file['name'] }}{{ extra }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">Edit</a>
+                    <a class="btn btn-mini" href="../download/?file={{ path }}/{{ file['name'] }}{{ extra }}">Download</a>
                   </div>
                 </td>
               {% else %}
                 <td class="icon">
-                  <a href="../editor/?file={{ file['name'] }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">
+                  <a href="../editor/?file={{ file['name'] }}{{ extra }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">
                     <img src="../../static/images/icon/file.png" />
                   </a>
                 </td>
                 <td>
-                  <a href="../editor/?file={{ file['name'] }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">{{ file['name'] }}</a>
+                  <a href="../editor/?file={{ file['name'] }}{{ extra }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">{{ file['name'] }}</a>
                 </td>
                 <td>
                   <div class="btn-group" style="float: right;">
-                    <a class="btn btn-mini" href="../editor/?file={{ file['name'] }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">Edit</a>
-                    <a class="btn btn-mini" href="../download/?file={{ file['name'] }}">Download</a>
+                    <a class="btn btn-mini" href="../editor/?file={{ file['name'] }}{{ extra }}" onclick="return cider.filemanager.confirmOpen('{{ file['confirm'] }}');">Edit</a>
+                    <a class="btn btn-mini" href="../download/?file={{ file['name'] }}{{ extra }}">Download</a>
                   </div>
                 </td>
               {% end %}
             {% else %}
               {% if path != '' %}
                 <td class="icon">
-                  <a href="?path={{ path }}/{{ file['name'] }}">
+                  <a href="?path={{ path }}/{{ file['name'] }}{{ extra }}">
                     <img src="../../static/images/icon/folder.png" />
                   </a>
                 </td>
                 <td>
-                  <a href="?path={{ path }}/{{ file['name'] }}">{{ file['name'] }}</a>
+                  <a href="?path={{ path }}/{{ file['name'] }}{{ extra }}">{{ file['name'] }}</a>
                 </td>
                 <td>
                   <div class="btn-group" style="float: right;">
-                    <a class="btn btn-mini" href="?path={{ path }}/{{ file['name'] }}">Browse</a>
+                    <a class="btn btn-mini" href="?path={{ path }}/{{ file['name'] }}{{ extra }}">Browse</a>
                   </div>
                 </td>
               {% else %}
                 <td class="icon">
-                  <a href="?path={{ file['name'] }}">
+                  <a href="?path={{ file['name'] }}{{ extra }}">
                     <img src="../../static/images/icon/folder.png" />
                   </a>
                 </td>
                 <td>
-                  <a href="?path={{ file['name'] }}">{{ file['name'] }}</a>
+                  <a href="?path={{ file['name'] }}{{ extra }}">{{ file['name'] }}</a>
                 </td>
                 <td>
                   <div class="btn-group" style="float: right;">
-                    <a class="btn btn-mini" href="?path={{ file['name'] }}">Browse</a>
+                    <a class="btn btn-mini" href="?path={{ file['name'] }}{{ extra }}">Browse</a>
                   </div>
                 </td>
               {% end %}
