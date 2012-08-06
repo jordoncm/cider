@@ -21,10 +21,10 @@ from operator import itemgetter
 
 import hashlib
 import json
+import os
 import time
 import tornado.template
 import tornado.web
-import os
 
 import collaborate
 import handlers.auth.dropbox
