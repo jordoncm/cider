@@ -1,18 +1,25 @@
+Cider; collaborative web-based IDE
+==================================
+
 Provides a web based file manager and collaborative IDE like code editor.
 
 Requires Python to be installed in order to run. To start the server simply 
 execute:
 
-python server.py
+    ./cider
 
 This will start an HTTP server listening on port 3333. To access the interface 
 point your browser to http://[your server ip]:3333/.
+
+There are also packaged versions of Cider for certain platforms; see: 
+https://github.com/jordoncm/cider/downloads
 
 WARNING: This utility should only be used on computers with appropriate network 
 security in place as it can allow users modify and execute code on the target 
 system.
 
 Configuration Details
+---------------------
 
 You can modify the file configuration.json and set the following values:
 
@@ -57,6 +64,7 @@ Be sure to keep the JSON in the file valid otherwise it will ignore your
 settings and take defaults.
 
 Note About SFTP/SSH Support
+---------------------------
 
 SFTP/SSH support uses the non-standard Python libraries pysftp, paramiko and 
 pycrypto. None of these are bundled within Cider (unlike tornado). These 
@@ -64,7 +72,7 @@ libraries will need to be installed in order to use SFTP/SSH support in Cider.
 pysftp, paramiko and pycrypto are available in PyPI. This does not apply to the 
 bundled Mac version as Python and all libraries are bundled in the build.
 
-- - - - -
+- - -
 
 This work is copyright 2011 - 2012 Jordon Mears. All rights reserved.
 
@@ -81,4 +89,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Cider.  If not, see <http://www.gnu.org/licenses/>.
+along with Cider.  If not, see .
