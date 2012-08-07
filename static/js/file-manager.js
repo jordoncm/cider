@@ -37,7 +37,7 @@ cider.filemanager.createFile = function() {
     
     if($('#name').val() != '') {
         window.open(
-            '../editor/?file=' + encodeURIComponent(parameter),
+            '../editor/?file=' + encodeURIComponent(parameter) + extra,
             '_blank'
         );
     }
@@ -48,12 +48,22 @@ cider.filemanager.createFile = function() {
 cider.filemanager.createFolder = function() {
     var parameter = cider.filemanager.getCreateParameter();
     
+    var parameters = {};
+    var tmp = extra.split('&');
+    for(var i = 0; i < tmp.length; i++) {
+        if(tmp[i] != '') {
+            try {
+                tmp[i] = tmp[i].split('=');
+                parameters[tmp[i][0]] = tmp[i][1];
+            } catch(e) {}
+        }
+    }
+    parameters.path = parameter;
+    
     if($('#name').val() != '') {
         $.getJSON(
             '../create-folder/',
-            {
-                path : parameter
-            },
+            parameters,
             function(json) {
                 if(json.success) {
                     var location = window.location;
@@ -64,7 +74,7 @@ cider.filemanager.createFolder = function() {
                     } else {
                         location += '?folder=' + $('#name').val();
                     }
-                    window.location = location;
+                    window.location = location + extra;
                 } else {
                     alert('Folder creation failed.');
                 }

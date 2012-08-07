@@ -22,7 +22,17 @@ cider.namespace('cider.editor');
 cider.editor.save = function() {
     $('#save').html('Saving...');
     editorObj.setDirty(false);
-    fileObj.save(editorObj.getText());
+    var parameters = {};
+    var tmp = extra.split('&');
+    for(var i = 0; i < tmp.length; i++) {
+        if(tmp[i] != '') {
+            try {
+                tmp[i] = tmp[i].split('=');
+                parameters[tmp[i][0]] = tmp[i][1];
+            } catch(e) {}
+        }
+    }
+    fileObj.save(editorObj.getText(), parameters);
 };
 
 cider.editor.saveCallback = function(response) {

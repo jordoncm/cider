@@ -155,7 +155,8 @@ class EditorHandler(tornado.web.RequestHandler):
             mode=mode,
             tab_width=tab_width,
             markup=markup,
-            save_text=save_text
+            save_text=save_text,
+            extra=''
         ))
 
 

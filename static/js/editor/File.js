@@ -24,18 +24,22 @@ cider.editor.File = function(config) {
     this.externalSaveCallback = null;
     this.saving = false;
     
-    this.save = function(text) {
+    this.save = function(text, parameters) {
         var closure = this;
+        
+        if(!parameters) {
+            parameters = {};
+        }
+        
+        parameters.file = this.file;
+        parameters.text = text;
         
         this.saving = true;
         $.ajax({
             url : '../save-file/',
             type : 'POST',
             dataType : 'json',
-            data : {
-                file : file,
-                text : text
-            },
+            data : parameters,
             success : function(response) {
                 closure.saveCallback(response);
             }
