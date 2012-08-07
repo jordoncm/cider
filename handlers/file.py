@@ -151,7 +151,7 @@ class EditorHandler(tornado.web.RequestHandler):
             path=path,
             title=title,
             file=file,
-            text=text.replace('<', '<').replace('>', '>'),
+            text=text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
             mode=mode,
             tab_width=tab_width,
             markup=markup,

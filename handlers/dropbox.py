@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with Cider.  If not, see <http://www.gnu.org/licenses/>.
+# along with Cider.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
 # 
 
 from operator import itemgetter
@@ -160,7 +160,7 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
             path=path,
             title=title,
             file=file,
-            text=text.replace('<', '<').replace('>', '>'),
+            text=text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
             mode=mode,
             tab_width=tab_width,
             markup=markup,
