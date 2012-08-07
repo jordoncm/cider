@@ -75,6 +75,10 @@ class IndexHandler(tornado.web.RequestHandler):
         if util.get_configuration_value('dropboxKey', '') != '' and util.get_configuration_value('dropboxSecret', '') != '':
             enable_dropbox = True
         
+        enable_sftp = False
+        if sftp is True and util.get_configuration_value('enableSFTP', True):
+            enable_sftp = True
+        
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
@@ -85,7 +89,7 @@ class IndexHandler(tornado.web.RequestHandler):
                 True
             ),
             enable_dropbox=enable_dropbox,
-            enable_sftp=sftp
+            enable_sftp=enable_sftp
         ))
 
 
@@ -185,7 +189,7 @@ if util.get_configuration_value('enableLocalFileSystem', True):
         (r'/file/save-file/?', handlers.file.SaveFileHandler)
     ]
 
-if sftp is True:
+if sftp is True and util.get_configuration_value('enableSFTP', True):
     urls = urls + [
         (r'/sftp/create-folder/?', handlers.sftp.CreateFolderHandler),
         (r'/sftp/download/?', handlers.sftp.DownloadHandler),

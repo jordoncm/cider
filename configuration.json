@@ -4,6 +4,7 @@
     "dropboxKey" : "",
     "dropboxSecret" : "",
     "enableLocalFileSystem" : true,
+    "enableSFTP" : true,
     "port" : 3333,
     "suppressBrowser" : false,
     "terminalLink" : ""
