@@ -16,7 +16,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with Cider.  If not, see <http://www.gnu.org/licenses/>.
+# along with Cider.  If not, see .
 # 
 
 import os
@@ -56,7 +56,7 @@ DATA_FILES = build_data_files_paths('', '', [
     'templates',
     'configuration.json',
     'license.txt',
-    'readme.txt'
+    'readme.md'
 ])
 OPTIONS = {
     'py2app': {
