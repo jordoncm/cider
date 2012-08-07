@@ -209,7 +209,7 @@ class EditorHandler(BaseHandler):
                 path=path,
                 title=title,
                 file=file,
-                text=text,
+                text=text.replace('<', '<').replace('>', '>'),
                 mode=mode,
                 tab_width=tab_width,
                 markup=markup,
