@@ -41,6 +41,11 @@ pre {
     position: absolute;
     right: 20px;
     top: 0;
-    background-image: -moz-linear-gradient(center top , #333333, #222222);
+    background-image: -moz-linear-gradient(top, #333333, #222222);
+    background-image: -ms-linear-gradient(top, #333333, #222222);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#333333), to(#222222));
+    background-image: -webkit-linear-gradient(top, #333333, #222222);
+    background-image: -o-linear-gradient(top, #333333, #222222);
+    background-image: linear-gradient(top, #333333, #222222);
     background-repeat: repeat-x;
 }
