@@ -54,7 +54,7 @@ class BaseHandler(tornado.web.RequestHandler):
         }
         
         id = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(8))
-        self.set_secure_cookie('sftp-' + id, json.dumps(details))
+        self.set_secure_cookie('sftp-' + id, json.dumps(details), expires_days=None)
         return id
 
 
