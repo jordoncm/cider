@@ -156,7 +156,8 @@ class EditorHandler(tornado.web.RequestHandler):
             tab_width=tab_width,
             markup=markup,
             save_text=save_text,
-            extra=''
+            extra='',
+            prefix=''
         ))
 
 
@@ -209,7 +210,8 @@ class FileManagerHandler(tornado.web.RequestHandler):
             files_list=files,
             up=up,
             folder=self.get_argument('folder', ''),
-            extra=''
+            extra='',
+            prefix=''
         ))
 
 

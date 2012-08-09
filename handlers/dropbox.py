@@ -165,7 +165,8 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
             tab_width=tab_width,
             markup=markup,
             save_text=save_text,
-            extra=''
+            extra='',
+            prefix='dropbox://'
         ))
 
 
@@ -216,7 +217,8 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
             files_list=files,
             up=up,
             folder=self.get_argument('folder', ''),
-            extra=''
+            extra='',
+            prefix='dropbox://'
         ))
 
 

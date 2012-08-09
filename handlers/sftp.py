@@ -214,7 +214,8 @@ class EditorHandler(BaseHandler):
                 tab_width=tab_width,
                 markup=markup,
                 save_text=save_text,
-                extra='&connection=' + id
+                extra='&connection=' + id,
+                prefix='sftp://' + details['user'] + '@' + details['host'] + details['path']
             ))
         else:
             id = self.setup_connection()
@@ -279,7 +280,8 @@ class FileManagerHandler(BaseHandler):
                 files_list=files,
                 up=up,
                 folder=self.get_argument('folder', ''),
-                extra='&connection=' + id
+                extra='&connection=' + id,
+                prefix='sftp://' + details['user'] + '@' + details['host'] + details['path']
             ))
             
             server.close()

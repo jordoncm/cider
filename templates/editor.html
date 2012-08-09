@@ -33,7 +33,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
       <div class="navbar-inner">
         <div class="container-fluid">
           <div class="brand">{{ file_name }}</div>
-          <div class="navbar-text pull-left"><a href="../file-manager/?path={{ path }}" style="color: #999999;">{{ path }}</a></div>
+          <div class="navbar-text pull-left"><a href="../file-manager/?path={{ path }}{{ extra }}" style="color: #999999;">{{ prefix }}{{ path }}</a></div>
           <div class="buttons">
             <div class="btn-group pull-right">
               <a class="btn" href="javascript:void(0);" id="save" onclick="cider.editor.save();">{{ save_text }}</a>
