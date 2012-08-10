@@ -215,7 +215,8 @@ class EditorHandler(BaseHandler):
                 markup=markup,
                 save_text=save_text,
                 extra='&connection=' + id,
-                prefix='sftp://' + details['user'] + '@' + details['host'] + details['path']
+                prefix='sftp://' + details['user'] + '@' + details['host'] + details['path'],
+                salt=id
             ))
         else:
             id = self.setup_connection()
@@ -325,10 +326,11 @@ class SaveFileHandler(BaseHandler):
                 os.remove(tmp_path)
                 
                 try:
-                    id = hashlib.sha224(file).hexdigest()
+                    salt = self.get_argument('salt', '')
+                    id = hashlib.sha224(salt + file).hexdigest()
                     collaborate.FileDiffManager().remove_diff(id)
                     collaborate.FileDiffManager().create_diff(id)
-                    collaborate.FileSessionManager().broadcast(file, {'t': 's'})
+                    collaborate.FileSessionManager().broadcast(file, salt, {'t': 's'})
                 except:
                     pass
                 

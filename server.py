@@ -98,6 +98,7 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         self.file = None
         self.name = None
+        self.salt = None
         collaborate.FileSessionManager().register_session(self)
     
     def on_message(self, message):
@@ -105,12 +106,14 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
         if message_object['t'] == 'f':
             self.file = message_object['f']
             self.name = message_object['n']
-            sessions = collaborate.FileSessionManager().get_sessions(self.file)
+            self.salt = message_object['s']
+            sessions = collaborate.FileSessionManager().get_sessions(self.file, self.salt)
             names = []
             for i in sessions:
                 names.append(i.name)
             collaborate.FileSessionManager().broadcast(
                 self.file,
+                self.salt,
                 {
                     't': 'n',
                     'n': names
@@ -121,7 +124,7 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
         elif message_object['t'] == 'i' and self.file is not None:
             collaborate.FileSessionManager().notify(self, message_object)
         
-        id = hashlib.sha224(self.file).hexdigest()
+        id = hashlib.sha224(self.salt + self.file).hexdigest()
         if message_object['t'] == 'f':
             if collaborate.FileDiffManager().has_diff(id) is False:
                 collaborate.FileDiffManager().create_diff(id)
@@ -133,21 +136,24 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
             collaborate.FileDiffManager().add(id, message_object)
     
     def on_close(self):
-        file = self.file
         collaborate.FileSessionManager().unregister_session(self)
-        sessions = collaborate.FileSessionManager().get_sessions(file)
+        sessions = collaborate.FileSessionManager().get_sessions(
+            self.file,
+            self.salt
+        )
         names = []
         for i in sessions:
             names.append(i.name)
         collaborate.FileSessionManager().broadcast(
             self.file,
+            self.salt,
             {
                 't': 'n',
                 'n': names
             }
         )
-        if collaborate.FileSessionManager().has_sessions(file) is False:
-            id = hashlib.sha224(self.file).hexdigest()
+        if collaborate.FileSessionManager().has_sessions(self.file, self.salt) is False:
+            id = hashlib.sha224(self.salt + self.file).hexdigest()
             collaborate.FileDiffManager().remove_diff(id)
 
 settings = {

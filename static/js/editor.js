@@ -32,6 +32,7 @@ cider.editor.save = function() {
             } catch(e) {}
         }
     }
+    parameters.salt = salt;
     fileObj.save(editorObj.getText(), parameters);
 };
 
@@ -169,7 +170,9 @@ $(function() {
                 if(!name) {
                     name = 'cider-' + cider.editor.generateId();
                 }
-                socketObj.send({t : 'f', f : args.file, v : -1, n : name});
+                socketObj.send(
+                    {t : 'f', f : args.file, v : -1, n : name, s : salt}
+                );
                 editorObj.setReadOnly(false);
             },
             messageCallback : function(m) {

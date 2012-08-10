@@ -157,7 +157,8 @@ class EditorHandler(tornado.web.RequestHandler):
             markup=markup,
             save_text=save_text,
             extra='',
-            prefix=''
+            prefix='',
+            salt=''
         ))
 
 
@@ -238,10 +239,11 @@ class SaveFileHandler(tornado.web.RequestHandler):
             f.close()
             
             try:
-                id = hashlib.sha224(file).hexdigest()
+                salt = self.get_argument('salt', '')
+                id = hashlib.sha224(salt + file).hexdigest()
                 collaborate.FileDiffManager().remove_diff(id)
                 collaborate.FileDiffManager().create_diff(id)
-                collaborate.FileSessionManager().broadcast(file, {'t': 's'})
+                collaborate.FileSessionManager().broadcast(file, salt, {'t': 's'})
             except:
                 pass
             

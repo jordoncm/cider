@@ -166,7 +166,8 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
             markup=markup,
             save_text=save_text,
             extra='',
-            prefix='dropbox://'
+            prefix='dropbox://',
+            salt=self.current_user['uid']
         ))
 
 
@@ -247,10 +248,11 @@ class SaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropb
             return
         file = self.get_argument('file', '').replace('..', '').strip('/')
         try:
-            id = hashlib.sha224(file).hexdigest()
+            salt = self.get_argument('salt', '')
+            id = hashlib.sha224(salt + file).hexdigest()
             collaborate.FileDiffManager().remove_diff(id)
             collaborate.FileDiffManager().create_diff(id)
-            collaborate.FileSessionManager().broadcast(file, {'t': 's'})
+            collaborate.FileSessionManager().broadcast(file, salt, {'t': 's'})
         except:
             pass
         self.finish(self.write(json.dumps({

@@ -19,6 +19,8 @@
 
 import json
 
+import log
+
 
 class FileSessionManager(object):
     
@@ -42,24 +44,24 @@ class FileSessionManager(object):
     
     def notify(self, source, message):
         for i in self.sessions:
-            if i != source and i.file == source.file:
+            if i != source and (i.file == source.file and i.salt == source.salt):
                 i.write_message(json.dumps([message]))
     
-    def broadcast(self, file, message):
+    def broadcast(self, file, salt, message):
         for i in self.sessions:
-            if i.file == file:
+            if i.file == file and i.salt == salt:
                 i.write_message(json.dumps([message]))
     
-    def has_sessions(self, file):
+    def has_sessions(self, file, salt):
         for i in self.sessions:
-            if i.file == file:
+            if i.file == file and i.salt == salt:
                 return True
         return False
     
-    def get_sessions(self, file):
+    def get_sessions(self, file, salt):
         tmp = []
         for i in self.sessions:
-            if i.file == file:
+            if i.file == file and i.salt == salt:
                 tmp.append(i)
         return tmp
 
@@ -91,7 +93,7 @@ class FileDiffManager(object):
     
     def get_all(self, id):
         if self.has_diff(id) is True:
-            self.diffs[id]
+            return self.diffs[id]
         else:
             return []
     
