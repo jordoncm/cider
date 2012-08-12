@@ -35,7 +35,9 @@ rm -f cider_$VERSION.orig.tar.gz
 
 mkdir cider-$VERSION/extra
 cp -a ../scripts/deb/cider cider-$VERSION/extra/
-cp -a ../scripts/deb/cider.json cider-$VERSION/extra/
+cd cider-$VERSION/extra
+ln -s /usr/share/cider/configuration.json cider.json
+cd ../..
 
 cp ../scripts/deb/control cider-$VERSION/debian/
 cp ../scripts/deb/cider.install cider-$VERSION/debian/
