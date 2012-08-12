@@ -19,33 +19,5 @@
 # along with Cider.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-cd `dirname $0`/..
-
-VERSION=$1
-
-./scripts/build.sh $VERSION
-
-cd build
-mv cider-$VERSION.tar.gz cider-$VERSION
-
-cd cider-$VERSION
-dh_make --s -e jordoncm@gmail.com -c GPL -f cider-$VERSION.tar.gz
-cd ..
-rm -f cider_$VERSION.orig.tar.gz
-
-mkdir cider-$VERSION/extra
-cp -a ../scripts/deb/cider cider-$VERSION/extra/
-cp -a ../scripts/deb/cider.json cider-$VERSION/extra/
-
-cp ../scripts/deb/control cider-$VERSION/debian/
-cp ../scripts/deb/cider.install cider-$VERSION/debian/
-cd cider-$VERSION/debian/
-rm -f *ex
-rm -f *EX
-rm -f README*
-rm -rf source
-cd ..
-dpkg-buildpackage
-cd ..
-
-mv cider_$VERSION-1_amd64.deb ../dist/
+cd /usr/share/cider
+python server.py

@@ -1,0 +1,14 @@
+handlers/* usr/share/cider/handlers/
+static/* usr/share/cider/static/
+templates/* usr/share/cider/templates/
+tornado/* usr/share/cider/tornado/
+cider usr/share/cider
+collaborate.py usr/share/cider
+configuration.json usr/share/cider
+license.txt usr/share/cider
+log.py usr/share/cider
+readme.md usr/share/cider
+server.py usr/share/cider
+util.py usr/share/cider
+extra/cider.json etc
+extra/cider usr/bin

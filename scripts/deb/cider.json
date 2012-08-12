@@ -1,0 +1,11 @@
+{
+    "basePathAdjustment" : "~",
+    "cookieSecret" : "aW5zZWN1cmVTZWNyZXQ=",
+    "dropboxKey" : "r5ytq2vluqa9fpy",
+    "dropboxSecret" : "t2sdtfdjkqf1b1v",
+    "enableLocalFileSystem" : true,
+    "enableSFTP" : true,
+    "port" : 3333,
+    "suppressBrowser" : true,
+    "terminalLink" : ""
+}
