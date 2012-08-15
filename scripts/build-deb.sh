@@ -47,7 +47,7 @@ rm -f *EX
 rm -f README*
 rm -rf source
 cd ..
-dpkg-buildpackage
+dpkg-buildpackage -b
 cd ..
 
-mv cider_$VERSION-1_amd64.deb ../dist/
+mv cider_$VERSION-1_all.deb ../dist/

@@ -7,6 +7,7 @@ collaborate.py usr/share/cider
 configuration.json usr/share/cider
 license.txt usr/share/cider
 log.py usr/share/cider
+pysftp.py usr/share/cider
 readme.md usr/share/cider
 server.py usr/share/cider
 util.py usr/share/cider

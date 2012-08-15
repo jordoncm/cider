@@ -40,6 +40,7 @@ cp collaborate.py build/cider-$VERSION/
 cp configuration.json build/cider-$VERSION/
 cp license.txt build/cider-$VERSION/
 cp log.py build/cider-$VERSION/
+cp pysftp.py build/cider-$VERSION/
 cp readme.md build/cider-$VERSION/
 cp server.py build/cider-$VERSION/
 cp util.py build/cider-$VERSION/
