@@ -68,11 +68,12 @@ settings and take defaults.
 Note About SFTP/SSH Support
 ---------------------------
 
-SFTP/SSH support uses the non-standard Python libraries pysftp, paramiko and 
-pycrypto. None of these are bundled within Cider (unlike tornado). These 
-libraries will need to be installed in order to use SFTP/SSH support in Cider. 
-pysftp, paramiko and pycrypto are available in PyPI. This does not apply to the 
-bundled Mac version as Python and all libraries are bundled in the build.
+SFTP/SSH support uses the non-standard Python libraries paramiko and pycrypto. 
+None of these are bundled within Cider (unlike tornado). These libraries will 
+need to be installed in order to use SFTP/SSH support in Cider. paramiko and 
+pycrypto are available in PyPI. This does not apply to the bundled Mac version 
+as Python and all libraries are bundled in the build. Also the Ubuntu deb 
+package pulls in all needed dependencies for SFTP/SSH support. 
 
 About the Project
 -----------------
