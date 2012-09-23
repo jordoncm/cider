@@ -19,7 +19,7 @@
 
 cider.namespace('cider.editor');
 
-Range = require('ace/range').Range;
+Range = ace.require('ace/range').Range;
 
 cider.editor.Editor = function(config) {
     this.editor = null;
@@ -89,7 +89,7 @@ cider.editor.Editor = function(config) {
             case 'xml':
             case 'xquery':
                 this.mode = mode;
-                var Mode = require('ace/mode/' + mode).Mode;
+                var Mode = ace.require('ace/mode/' + mode).Mode;
                 this.editor.getSession().setMode(new Mode());
                 break;
         }
