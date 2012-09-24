@@ -36,16 +36,17 @@ pre {
 
 .buttons {
     z-index: 10;
-    width: 320px;
-    background-color: #2C2C2C;
+    width: 350px;
     position: absolute;
     right: 20px;
     top: 0;
-    background-image: -moz-linear-gradient(top, #333333, #222222);
-    background-image: -ms-linear-gradient(top, #333333, #222222);
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#333333), to(#222222));
-    background-image: -webkit-linear-gradient(top, #333333, #222222);
-    background-image: -o-linear-gradient(top, #333333, #222222);
-    background-image: linear-gradient(top, #333333, #222222);
+    background-color: rgb(250, 250, 250);
+    background-image: -moz-linear-gradient(top, #ffffff, #f2f2f2);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#f2f2f2));
+    background-image: -webkit-linear-gradient(top, #ffffff, #f2f2f2);
+    background-image: -o-linear-gradient(top, #ffffff, #f2f2f2);
+    background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);
     background-repeat: repeat-x;
+    border-bottom: 1px solid rgb(212, 212, 212);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px -1px 0px 0px inset;
 }

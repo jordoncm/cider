@@ -34,7 +34,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
           <div class="navbar-text pull-left"><a href="../file-manager/?path={{ path }}{{ extra }}" style="color: #999999;">{{ prefix }}{{ path }}</a></div>
           <div class="buttons">
             <div class="btn-group pull-right">
-              <a class="btn" href="javascript:void(0);" id="save" onclick="cider.editor.save();">{{ save_text }}</a>
+              <a class="btn btn-primary" href="javascript:void(0);" id="save" onclick="cider.editor.save();">{{ save_text }}</a>
               <a class="btn" href="../download/?file={{ file }}">Download</a>
               <a class="btn" href="javascript:void(0);" onclick="$('#settings').modal('show');">Settings</a>
             </div>
@@ -61,7 +61,7 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
     <div class="navbar navbar-fixed-bottom">
       <div class="navbar-inner">
         <div class="container-fluid">
-          <div class="brand"><a href="../.." style="color: #FFFFFF;">Cider</a></div>
+          <div class="brand"><a href="../.." style="color: rgb(119, 119, 119); text-shadow: 0px 1px 0px rgb(255, 255, 255);">Cider</a></div>
           <div class="btn-group pull-right">
             <a class="btn" href="javascript:void(0);" onclick="cider.editor.findPrevious();">&lt;</a>
             <a class="btn" href="javascript:void(0);" onclick="cider.editor.findNext();">&gt;</a>
