@@ -235,7 +235,7 @@ class SaveFileHandler(tornado.web.RequestHandler):
                 ),
                 'w'
             )
-            f.write(self.get_argument('text'))
+            f.write(self.get_argument('text', strip=False))
             f.close()
             
             try:

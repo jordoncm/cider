@@ -238,7 +238,7 @@ class SaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropb
             '/files_put/dropbox/' + file,
             access_token=self.current_user['access_token'],
             callback=self.async_callback(self.get_callback),
-            put_args=self.get_argument('text')
+            put_args=self.get_argument('text', strip=False)
         )
     
     def get_callback(self, response):
