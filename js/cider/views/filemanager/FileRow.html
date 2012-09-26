@@ -1,0 +1,16 @@
+<tr>
+  <td class="icon">
+    <a href="../editor/?file=<%= path_file_name %><%= extra %>" id="file-icon-<%= i %>">
+      <img src="../../static/images/icon/file.png" />
+    </a>
+  </td>
+  <td>
+    <a href="../editor/?file=<%= path_file_name %><%= extra %>" id="file-name-<%= i %>"><%= file.name %></a>
+  </td>
+  <td>
+    <div class="btn-group" style="float: right;">
+      <a class="btn btn-mini" href="../editor/?file=<%= path_file_name %><%= extra %>" id="file-button-<%= i %>">Edit</a>
+      <a class="btn btn-mini" href="../download/?file=<%= path_file_name %><%= extra %>">Download</a>
+    </div>
+  </td>
+</tr>

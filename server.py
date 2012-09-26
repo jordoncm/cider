@@ -35,6 +35,7 @@ import collaborate
 import handlers.auth.dropbox
 import handlers.dropbox
 import handlers.file
+import js
 import log
 import util
 
@@ -83,13 +84,15 @@ class IndexHandler(tornado.web.RequestHandler):
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
             title='Dashboard - Cider',
-            terminal_link=terminal_link,
-            enable_local_file_system=util.get_configuration_value(
-                'enableLocalFileSystem',
-                True
-            ),
-            enable_dropbox=enable_dropbox,
-            enable_sftp=enable_sftp
+            config=json.dumps({
+                'terminal_link': terminal_link,
+                'enable_local_file_system': util.get_configuration_value(
+                    'enableLocalFileSystem',
+                    True
+                ),
+                'enable_dropbox': enable_dropbox,
+                'enable_sftp': enable_sftp
+            })
         ))
 
 
@@ -173,7 +176,8 @@ settings = {
 
 urls = [
     (r'/', IndexHandler),
-    (r'/ws/?', EditorWebSocketHandler)
+    (r'/ws/?', EditorWebSocketHandler),
+    (r'/js/.*\.js', js.ScriptHandler)
 ]
 
 if util.get_configuration_value('dropboxKey', '') != '' and util.get_configuration_value('dropboxSecret', '') != '':

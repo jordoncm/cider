@@ -147,18 +147,21 @@ class EditorHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('editor.html').generate(
-            file_name=file_name,
-            path=path,
-            title=title,
-            file=file,
-            text=text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
-            mode=mode,
-            tab_width=tab_width,
-            markup=markup,
-            save_text=save_text,
-            extra='',
-            prefix='',
-            salt=''
+            config=json.dumps({
+                'file_name': file_name,
+                'path': path,
+                'title': title,
+                'file': file,
+                'text': text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
+                'mode': mode,
+                'tab_width': tab_width,
+                'markup': markup,
+                'save_text': save_text,
+                'extra': '',
+                'prefix': '',
+                'salt': ''
+            }),
+            title=title
         ))
 
 
@@ -206,13 +209,15 @@ class FileManagerHandler(tornado.web.RequestHandler):
         loader = tornado.template.Loader('templates')
         self.write(loader.load('file-manager.html').generate(
             title=title,
-            base=base,
-            path=path,
-            files_list=files,
-            up=up,
-            folder=self.get_argument('folder', ''),
-            extra='',
-            prefix=''
+            config=json.dumps({
+                'base': base,
+                'path': path,
+                'files_list': files,
+                'up': up,
+                'folder': self.get_argument('folder', ''),
+                'extra': '',
+                'prefix': ''
+            })
         ))
 
 

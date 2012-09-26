@@ -51,7 +51,7 @@ def build_data_files_paths(source, target, paths):
 
 APP = ['server.py']
 DATA_FILES = build_data_files_paths('', '', [
-    'patch',
+    'js',
     'static',
     'templates',
     'configuration.json',

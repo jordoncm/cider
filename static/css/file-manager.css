@@ -17,10 +17,10 @@
  * along with Cider.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#fileList {
+#file-list {
 }
 
-#fileList td.icon {
+#file-list td.icon {
     text-align: center;
     vertical-align: center;
     width: 20px;

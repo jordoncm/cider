@@ -17,21 +17,30 @@
  * along with Cider.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-if(typeof cider != 'object') {
-    var cider = {};
-}
+cider.namespace('cider');
 
-cider.namespace = function(ns) {
-    if(ns && ns !== '') {
-        var parent = cider;
-        ns = ns.split('.');
-        for(var i = 0; i < ns.length; i++) {
-            if(i !== 0 || ns[i] != 'cider') {
-                if(typeof parent[ns[i]] == 'undefined') {
-                    parent[ns[i]] = {};
-                }
-                parent = parent[ns[i]];
-            }
+cider.Preferences = cider.extend();
+
+cider.Preferences.prototype.get = function(key) {
+    var value = localStorage.getItem(key);
+    if(value) {
+        try {
+            return JSON.parse(value);
+        } catch(e) {
+            return value;
         }
     }
+    return value;
+};
+
+cider.Preferences.prototype.set = function(key, value) {
+    if(typeof value == 'object') {
+        localStorage.setItem(key, JSON.stringify(value));
+    } else {
+        localStorage.setItem(key, value);
+    }
+};
+
+cider.Preferences.prototype.remove = function(key) {
+    localStorage.removeItem(key);
 };

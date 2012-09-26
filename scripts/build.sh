@@ -32,6 +32,7 @@ mkdir build
 mkdir build/cider-$VERSION
 
 cp -r handlers build/cider-$VERSION/
+cp -r js build/cider-$VERSION/
 cp -r static build/cider-$VERSION/
 cp -r templates build/cider-$VERSION/
 cp -r tornado build/cider-$VERSION/

@@ -156,18 +156,21 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.finish(loader.load('editor.html').generate(
-            file_name=file_name,
-            path=path,
-            title=title,
-            file=file,
-            text=text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
-            mode=mode,
-            tab_width=tab_width,
-            markup=markup,
-            save_text=save_text,
-            extra='',
-            prefix='dropbox://',
-            salt=self.current_user['uid']
+            config=json.dumps({
+                'file_name': file_name,
+                'path': path,
+                'title': title,
+                'file': file,
+                'text': text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
+                'mode': mode,
+                'tab_width': tab_width,
+                'markup': markup,
+                'save_text': save_text,
+                'extra': '',
+                'prefix': 'dropbox://',
+                'salt': self.current_user['uid']
+            }),
+            title=title
         ))
 
 
@@ -213,13 +216,15 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
         loader = tornado.template.Loader('templates')
         self.finish(loader.load('file-manager.html').generate(
             title=title,
-            base=base,
-            path=path,
-            files_list=files,
-            up=up,
-            folder=self.get_argument('folder', ''),
-            extra='',
-            prefix='dropbox://'
+            config=json.dumps({
+                'base': base,
+                'path': path,
+                'files_list': files,
+                'up': up,
+                'folder': self.get_argument('folder', ''),
+                'extra': '',
+                'prefix': 'dropbox://'
+            })
         ))
 
 

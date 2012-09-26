@@ -1,0 +1,6 @@
+cider/__init__.js
+cider/View.js
+cider/Preferences.js
+cider/views/TopNav.html
+cider/views/BottomNav.html
+cider/views/index/*
