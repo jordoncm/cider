@@ -23,14 +23,20 @@ var saveCallback = function(response) {
     }
     
     if(!editorObj.isDirty()) {
+        $('#save').removeClass('btn-warning');
+        $('#save').addClass('btn-success');
         $('#save').html('Saved');
     } else {
+        $('#save').removeClass('btn-success');
+        $('#save').addClass('btn-warning');
         $('#save').html('Save');
     }
 };
 
 var makeSaved = function() {
     editorObj.setDirty(false);
+    $('#save').removeClass('btn-warning');
+    $('#save').addClass('btn-success');
     $('#save').html('Saved');
 };
 
@@ -113,6 +119,7 @@ $(function() {
         sub_header: config.prefix + config.path,
         extra: new cider.views.editor.Menu().render({
             save_text: config.save_text,
+            save_class: (config.save_text.toLowerCase() == 'saved') ? 'btn-success' : 'btn-warning',
             file: config.file
         })
     }));
@@ -142,6 +149,8 @@ $(function() {
             find : find
         },
         change : function(e, diff) {
+            $('#save').removeClass('btn-success');
+            $('#save').addClass('btn-warning');
             $('#save').html('Save');
             socketObj.send(diff);
         }
