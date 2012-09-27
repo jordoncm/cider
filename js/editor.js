@@ -1,10 +1,17 @@
 var save = function() {
+    if(preferencesObj.get('sttws')) {
+        editorObj.trimLines();
+    }
+    if(preferencesObj.get('ssn')) {
+        editorObj.trimToSingleNewline();
+    }
+    
     $('#save').html('Saving...');
     editorObj.setDirty(false);
     var parameters = {};
     var tmp = config.extra.split('&');
     for(var i = 0; i < tmp.length; i++) {
-        if(tmp[i] != '') {
+        if(tmp[i] !== '') {
             try {
                 tmp[i] = tmp[i].split('=');
                 parameters[tmp[i][0]] = tmp[i][1];
@@ -169,6 +176,13 @@ $(function() {
     
     initTabWidth();
     
+    if(preferencesObj.get('sttws')) {
+        $('#sttws').attr('checked', true);
+    }
+    if(preferencesObj.get('ssn')) {
+        $('#ssn').attr('checked', true);
+    }
+    
     try {
         socketObj = new cider.editor.Socket({
             openCallback : function() {
@@ -227,6 +241,22 @@ $(function() {
     });
     $('#find-next-btn').on('click', findNext);
     $('#find-previous-btn').on('click', findPrevious);
+    
+    $('#stw').on('change', function() {
+        saveTabWidth('stw', $('#stw').val());
+    });
+    $('#stwm').on('change', function() {
+        saveTabWidth('stwm', $('#stwm').val());
+    });
+    $('#shm').on('change', function() {
+        setHighlightMode($('#shm').val());
+    });
+    $('#sttws').on('change', function() {
+        preferencesObj.set('sttws', $('#sttws').is(':checked'));
+    });
+    $('#ssn').on('change', function() {
+        preferencesObj.set('ssn', $('#ssn').is(':checked'));
+    });
     
     window.onbeforeunload = function() {
         /* $(window).unload does not appear to be consistent. */

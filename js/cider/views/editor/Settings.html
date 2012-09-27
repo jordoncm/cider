@@ -8,19 +8,19 @@
         <div class="control-group">
           <label class="control-label" for="stw">Tab Width (code)</label>
           <div class="controls">
-            <input type="text" id="stw" value='4' onchange="cider.editor.saveTabWidth(this.id, this.value);" />
+            <input type="text" id="stw" value='4' />
           </div>
         </div>
         <div class="control-group">
           <label class="control-label" for="stwm">Tab Width (markup)</label>
           <div class="controls">
-            <input type="text" id="stwm" value='2' onchange="cider.editor.saveTabWidth(this.id, this.value);" />
+            <input type="text" id="stwm" value='2' />
           </div>
         </div>
         <div class="control-group">
           <label class="control-label" for="shm">Highlight Mode</label>
           <div class="controls">
-            <select id="shm" onchange="cider.editor.setHighlightMode(this.options[this.selectedIndex].value);">
+            <select id="shm">
               <option value="<%= mode %>">Default - <%= mode %></option>
               <option value="c_cpp">C/C++</option>
               <option value="clojure">Clojure</option>
@@ -61,13 +61,13 @@
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="sttws">Trim Trailing Whitespace (on save)</label>
+          <label class="control-label" for="sttws">Trim Trailing Whitespace<br />(on save)</label>
           <div class="controls">
             <input type="checkbox" id="sttws" />
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="ssn">Force Single Newline (on save)</label>
+          <label class="control-label" for="ssn">Force Single Newline<br />(on save)</label>
           <div class="controls">
             <input type="checkbox" id="ssn" />
           </div>

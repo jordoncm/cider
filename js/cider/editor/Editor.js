@@ -240,6 +240,49 @@ cider.editor.Editor.prototype.getOffset = function(offset, lines) {
     };
 };
 
+cider.editor.Editor.prototype.trimLines = function() {
+    var lines = this.editor.getSession().getDocument().getAllLines();
+    var pos = -1;
+    for(var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if((pos = line.search(/ +$/i)) != -1) {
+            var range = Range.fromPoints(
+                {row: i, column: pos},
+                {row: i, column: line.length}
+            );
+            this.editor.getSession().getDocument().remove(range);
+        }
+    }
+};
+
+cider.editor.Editor.prototype.trimToSingleNewline = function() {
+    var lines = this.editor.getSession().getDocument().getAllLines();
+    if(lines[lines.length - 1].search(/^ *$/i) == -1) {
+        this.editor.getSession().getDocument().insert(
+            {row: lines.length - 1, column: lines[lines.length - 1].length},
+            '\n'
+        );
+    } else {
+        var last = -1;
+        for(var i = lines.length - 1; i >= 0; i--) {
+            var line = lines[i];
+            if(line.search(/^ *$/i) == -1) {
+                last = i;
+                break;
+            }
+        }
+        
+        if(last > -1) {
+            this.editor.getSession().getDocument().removeLines(last + 1, lines.length - 1);
+            
+            this.editor.getSession().getDocument().insert(
+                {row: lines.length - 1, column: lines[lines.length - 1].length},
+                '\n'
+            );
+        }
+    }
+};
+
 cider.editor.Editor.prototype.getText = function() {
     return this.editor.getSession().getValue();
 };
