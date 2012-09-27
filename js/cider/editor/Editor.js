@@ -274,7 +274,6 @@ cider.editor.Editor.prototype.trimToSingleNewline = function() {
         
         if(last > -1) {
             this.editor.getSession().getDocument().removeLines(last + 1, lines.length - 1);
-            
             this.editor.getSession().getDocument().insert(
                 {row: lines.length - 1, column: lines[lines.length - 1].length},
                 '\n'
