@@ -150,7 +150,7 @@ $(function() {
     
     var editorSettings = {
         editorId : 'editor',
-        tabWidth : config.tabWidth,
+        tabWidth : config.tab_width,
         shortcuts : {
             save : save,
             find : find
