@@ -291,4 +291,6 @@ $(function() {
             }
         }
     });
+    
+    editorObj.focus();
 });

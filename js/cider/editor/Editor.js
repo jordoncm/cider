@@ -286,6 +286,10 @@ cider.editor.Editor.prototype.getText = function() {
     return this.editor.getSession().getValue();
 };
 
+cider.editor.Editor.prototype.focus = function() {
+    this.editor.focus();
+};
+
 cider.editor.Editor.prototype.init = function(config) {
     this.editor = ace.edit(config.editorId);
     this.setReadOnly(true);
