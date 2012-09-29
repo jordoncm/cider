@@ -240,7 +240,9 @@ class SaveFileHandler(tornado.web.RequestHandler):
                 ),
                 'w'
             )
-            f.write(self.get_argument('text', strip=False))
+            f.write(
+                self.get_argument('text', strip=False).encode('ascii', 'replace')
+            )
             f.close()
             
             try:

@@ -325,7 +325,9 @@ class SaveFileHandler(BaseHandler):
                 tmp_path = tempfile.mkstemp()
                 tmp_path = tmp_path[1]
                 f = open(tmp_path, 'w')
-                f.write(self.get_argument('text', strip=False))
+                f.write(
+                    self.get_argument('text', strip=False).encode('ascii', 'replace')
+                )
                 f.close()
                 server.put(tmp_path, os.path.join(base, file))
                 os.remove(tmp_path)
