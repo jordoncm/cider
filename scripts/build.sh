@@ -39,6 +39,7 @@ cp -r tornado build/cider-$VERSION/
 cp cider build/cider-$VERSION/
 cp collaborate.py build/cider-$VERSION/
 cp configuration.json build/cider-$VERSION/
+cp js.py build/cider-$VERSION/
 cp license.txt build/cider-$VERSION/
 cp log.py build/cider-$VERSION/
 cp pysftp.py build/cider-$VERSION/

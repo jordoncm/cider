@@ -1,10 +1,12 @@
 handlers/* usr/share/cider/handlers/
+js/* usr/share/cider/js/
 static/* usr/share/cider/static/
 templates/* usr/share/cider/templates/
 tornado/* usr/share/cider/tornado/
 cider usr/share/cider
 collaborate.py usr/share/cider
 configuration.json usr/share/cider
+js.py usr/share/cider
 license.txt usr/share/cider
 log.py usr/share/cider
 pysftp.py usr/share/cider
