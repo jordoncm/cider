@@ -1,32 +1,51 @@
+/**
+ * This work is copyright 2012 Jordon Mears. All rights reserved.
+ *
+ * This file is part of Cider.
+ *
+ * Cider is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Cider is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Cider.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 var getCreateParameter = function() {
     var name = $('#name').val();
-    
+
     var parameter = '';
     if(config.path !== '') {
         parameter = config.path + '/' + name;
     } else {
         parameter = name;
     }
-    
+
     return parameter;
 };
 
 var createFile = function() {
     var parameter = getCreateParameter();
-    
+
     if($('#name').val() !== '') {
         window.open(
             '../editor/?file=' + encodeURIComponent(parameter) + config.extra,
             '_blank'
         );
     }
-    
+
     return false;
 };
 
 var createFolder = function() {
     var parameter = getCreateParameter();
-    
+
     var parameters = {};
     var tmp = config.extra.split('&');
     for(var i = 0; i < tmp.length; i++) {
@@ -38,7 +57,7 @@ var createFolder = function() {
         }
     }
     parameters.path = parameter;
-    
+
     if($('#name').val() !== '') {
         $.getJSON(
             '../create-folder/',
@@ -60,7 +79,7 @@ var createFolder = function() {
             }
         );
     }
-    
+
     return false;
 };
 
@@ -125,7 +144,7 @@ $(function() {
     $('body').append(new cider.views.BottomNav().render({
         right_content: new cider.views.filemanager.CreateFileFolder().render()
     }));
-    
+
     for(var i = 0; i < config.files_list.length; i++) {
         var file = config.files_list[i];
         if(file.is_file) {
@@ -134,15 +153,15 @@ $(function() {
             }, file));
         }
     }
-    
+
     $('#new-file').on('click', function() {
         return createFile();
     });
-    
+
     $('#new-folder').on('click', function() {
         return createFolder();
     });
-    
+
     $('#new-form').on('submit', function() {
         return createFile();
     });
