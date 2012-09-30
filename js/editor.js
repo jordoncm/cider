@@ -5,7 +5,7 @@ var save = function() {
     if(preferencesObj.get('ssn')) {
         editorObj.trimToSingleNewline();
     }
-    
+
     $('#save').html('Saving...');
     editorObj.setDirty(false);
     var parameters = {};
@@ -28,7 +28,7 @@ var saveCallback = function(response) {
             editorObj.revertDirty();
         }
     }
-    
+
     if(!editorObj.isDirty()) {
         $('#save').removeClass('btn-warning');
         $('#save').addClass('btn-success');
@@ -75,7 +75,7 @@ var search = function(needle) {
     if(needle && needle !== '') {
         editorObj.find(needle);
     }
-    
+
     return false;
 };
 
@@ -121,6 +121,17 @@ var socketObj = null;
 var preferencesObj = null;
 
 $(function() {
+    preferencesObj = new cider.Preferences();
+
+    fileObj = new cider.editor.File({
+        file : config.file,
+        saveCallback : saveCallback
+    });
+
+    if(preferencesObj.get('fm-' + fileObj.hash(config.salt))) {
+        config.mode = preferencesObj.get('fm-' + fileObj.hash(config.salt));
+    }
+
     $('body').append(new cider.views.TopNav().render({
         header: config.file_name,
         sub_header: config.prefix + config.path,
@@ -130,24 +141,24 @@ $(function() {
             file: config.file
         })
     }));
-    
+
     $('body').append(new cider.views.editor.Editor().render({
         text: config.text
     }));
-    
+
     $('body').append(new cider.views.BottomNav().render({
         right_content: new cider.views.editor.FindBar().render()
     }));
-    
+
     $('body').append(new cider.views.editor.Settings().render({
         mode: config.mode
     }));
-    
+
     $('#save').on('click', save);
     $('#settings-btn').on('click', function() {
         $('#settings').modal('show');
     });
-    
+
     var editorSettings = {
         editorId : 'editor',
         tabWidth : config.tab_width,
@@ -166,23 +177,16 @@ $(function() {
         editorSettings.mode = config.mode;
     }
     editorObj = new cider.editor.Editor(editorSettings);
-    
-    fileObj = new cider.editor.File({
-        file : config.file,
-        saveCallback : saveCallback
-    });
-    
-    preferencesObj = new cider.Preferences();
-    
+
     initTabWidth();
-    
+
     if(preferencesObj.get('sttws')) {
         $('#sttws').attr('checked', true);
     }
     if(preferencesObj.get('ssn')) {
         $('#ssn').attr('checked', true);
     }
-    
+
     try {
         socketObj = new cider.editor.Socket({
             openCallback : function() {
@@ -235,13 +239,13 @@ $(function() {
         editorObj.setReadOnly(false);
         console.log(e);
     }
-    
+
     $('#find').on('keyup', function() {
         search($('#find').val());
     });
     $('#find-next-btn').on('click', findNext);
     $('#find-previous-btn').on('click', findPrevious);
-    
+
     $('#stw').on('change', function() {
         saveTabWidth('stw', $('#stw').val());
     });
@@ -249,6 +253,7 @@ $(function() {
         saveTabWidth('stwm', $('#stwm').val());
     });
     $('#shm').on('change', function() {
+        preferencesObj.set('fm-' + fileObj.hash(config.salt), $('#shm').val());
         setHighlightMode($('#shm').val());
     });
     $('#sttws').on('change', function() {
@@ -257,18 +262,18 @@ $(function() {
     $('#ssn').on('change', function() {
         preferencesObj.set('ssn', $('#ssn').is(':checked'));
     });
-    
+
     window.onbeforeunload = function() {
         /* $(window).unload does not appear to be consistent. */
         if(editorObj.isDirty()) {
             return 'Document has unsaved changes; changes will be lost.';
         }
-        
+
         if(fileObj.isSaving()) {
             return 'Save operation in progress; changes could be lost.';
         }
     };
-    
+
     $(window).keydown(function(e) {
         if(e.ctrlKey || e.metaKey) {
             switch(e.keyCode) {
@@ -291,6 +296,6 @@ $(function() {
             }
         }
     });
-    
+
     editorObj.focus();
 });
