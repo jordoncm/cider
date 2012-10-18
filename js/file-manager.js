@@ -102,6 +102,7 @@ $(function() {
     $('body').append(new cider.views.TopNav().render({
         header: config.prefix + ((config.path) ? config.path : '&nbsp;'),
         sub_header: '',
+        sub_header_link: '',
         extra: ''
     }));
     if(config.folder) {

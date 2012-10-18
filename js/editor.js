@@ -154,6 +154,7 @@ $(function() {
     $('body').append(new cider.views.TopNav().render({
         header: config.file_name,
         sub_header: config.prefix + config.path,
+        sub_header_link: '../file-manager/?path=' + config.path + config.extra,
         extra: new cider.views.editor.Menu().render({
             save_text: config.save_text,
             save_class: (config.save_text.toLowerCase() == 'saved') ? 'btn-success' : 'btn-warning',

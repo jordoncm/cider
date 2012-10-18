@@ -3,7 +3,11 @@
     <div class="container-fluid">
       <div class="brand"><%= header %></div>
       <% if(sub_header) { %>
-        <div class="navbar-text pull-left"><%= sub_header %></div>
+        <% if(sub_header_link) { %>
+          <div class="navbar-text pull-left"><a href="<%= sub_header_link %>" style="color: #777777;"><%= sub_header %></a></div>
+        <% } else { %>
+          <div class="navbar-text pull-left"><%= sub_header %></div>
+        <% } %>
       <% } %>
       <%= extra %>
     </div>

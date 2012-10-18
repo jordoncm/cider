@@ -21,6 +21,7 @@ $(function() {
     $('body').append(new cider.views.TopNav().render({
         header: '',
         sub_header: '',
+        sub_header_link: '',
         extra: ''
     }));
     $('body').append(new cider.views.index.Content().render(config));
