@@ -100,7 +100,7 @@ var confirmOpen = function(type) {
 
 $(function() {
     $('body').append(new cider.views.TopNav().render({
-        header: config.prefix + (config.path) ? config.path : '&nbsp;',
+        header: config.prefix + ((config.path) ? config.path : '&nbsp;'),
         sub_header: '',
         extra: ''
     }));
