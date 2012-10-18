@@ -1,18 +1,18 @@
 /**
  * This work is copyright 2012 Jordon Mears. All rights reserved.
- * 
+ *
  * This file is part of Cider.
- * 
+ *
  * Cider is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Cider is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Cider.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -129,7 +129,7 @@ cider.editor.Editor.prototype.initShortcuts = function(shortcuts) {
             exec : shortcuts.save
         });
     }
-    
+
     if(typeof shortcuts.find != 'undefined') {
         this.editor.commands.addCommand({
             name : 'find',
@@ -139,7 +139,7 @@ cider.editor.Editor.prototype.initShortcuts = function(shortcuts) {
             },
             exec : shortcuts.find
         });
-        
+
         this.editor.commands.addCommand({
             name : 'findNext',
             bindKey : {
@@ -148,7 +148,7 @@ cider.editor.Editor.prototype.initShortcuts = function(shortcuts) {
             },
             exec : _.bind(function() { this.findNext(); }, this)
         });
-        
+
         this.editor.commands.addCommand({
             name : 'findPrevious',
             bindKey : {
@@ -162,9 +162,9 @@ cider.editor.Editor.prototype.initShortcuts = function(shortcuts) {
 
 cider.editor.Editor.prototype.handleChange = function(e) {
     this.dirty = true;
-    
+
     var diff = this.getDiff(e.data);
-    
+
     if(this.changeCallback) {
         this.changeCallback(e, diff);
     }
@@ -181,7 +181,7 @@ cider.editor.Editor.prototype.getDiff = function(data) {
         p += (i < data.range.start.row) ? line.length : data.range.start.column;
     }
     p += data.range.start.row;
-    
+
     var diff = {
         p : p
     };
@@ -203,7 +203,7 @@ cider.editor.Editor.prototype.getDiff = function(data) {
             diff.t = 'd';
             break;
     }
-    
+
     return diff;
 };
 
@@ -262,7 +262,7 @@ cider.editor.Editor.prototype.trimToSingleNewline = function() {
             {row: lines.length - 1, column: lines[lines.length - 1].length},
             '\n'
         );
-    } else {
+    } else if(!(lines[lines.length - 1] === '' && lines[lines.length - 2].search(/^ *$/i) == -1)) {
         var last = -1;
         for(var i = lines.length - 1; i >= 0; i--) {
             var line = lines[i];
@@ -271,9 +271,12 @@ cider.editor.Editor.prototype.trimToSingleNewline = function() {
                 break;
             }
         }
-        
+
         if(last > -1) {
-            this.editor.getSession().getDocument().removeLines(last + 1, lines.length - 1);
+            this.editor.getSession().getDocument().removeLines(
+                last + 1,
+                lines.length - 1
+            );
             this.editor.getSession().getDocument().insert(
                 {row: last, column: lines[last].length},
                 '\n'
@@ -309,11 +312,11 @@ cider.editor.Editor.prototype.init = function(config) {
     if(typeof config.mode != 'undefined') {
         this.setMode(config.mode);
     }
-    
+
     if(typeof config.shortcuts != 'undefined') {
         this.initShortcuts(config.shortcuts);
     }
-    
+
     if(typeof config.change != 'undefined') {
         this.changeCallback = config.change;
     }
