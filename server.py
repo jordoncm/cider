@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 
-# 
+#
 # This work is copyright 2012 Jordon Mears. All rights reserved.
-# 
+#
 # This file is part of Cider.
-# 
+#
 # Cider is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Cider is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Cider.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 
 import hashlib
 import json
@@ -64,22 +64,22 @@ except NameError:
 
 
 class IndexHandler(tornado.web.RequestHandler):
-    
+
     def get(self):
         terminal_link = util.get_configuration_value('terminalLink')
         if terminal_link is not None:
             host = self.request.host
             host = host[:host.find(':')]
             terminal_link = terminal_link.replace('[host]', host)
-        
+
         enable_dropbox = False
         if util.get_configuration_value('dropboxKey', '') != '' and util.get_configuration_value('dropboxSecret', '') != '':
             enable_dropbox = True
-        
+
         enable_sftp = False
         if sftp is True and util.get_configuration_value('enableSFTP', True):
             enable_sftp = True
-        
+
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.write(loader.load('index.html').generate(
@@ -97,13 +97,13 @@ class IndexHandler(tornado.web.RequestHandler):
 
 
 class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
-    
+
     def open(self):
         self.file = None
         self.name = None
         self.salt = None
         collaborate.FileSessionManager().register_session(self)
-    
+
     def on_message(self, message):
         message_object = json.loads(message)
         if message_object['t'] == 'f':
@@ -126,8 +126,8 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
             collaborate.FileSessionManager().notify(self, message_object)
         elif message_object['t'] == 'i' and self.file is not None:
             collaborate.FileSessionManager().notify(self, message_object)
-        
-        id = hashlib.sha224(self.salt + self.file).hexdigest()
+
+        id = hashlib.sha224(str(self.salt) + str(self.file)).hexdigest()
         if message_object['t'] == 'f':
             if collaborate.FileDiffManager().has_diff(id) is False:
                 collaborate.FileDiffManager().create_diff(id)
@@ -137,7 +137,7 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
                 )
         else:
             collaborate.FileDiffManager().add(id, message_object)
-    
+
     def on_close(self):
         collaborate.FileSessionManager().unregister_session(self)
         sessions = collaborate.FileSessionManager().get_sessions(
@@ -156,7 +156,7 @@ class EditorWebSocketHandler(tornado.websocket.WebSocketHandler):
             }
         )
         if collaborate.FileSessionManager().has_sessions(self.file, self.salt) is False:
-            id = hashlib.sha224(self.salt + self.file).hexdigest()
+            id = hashlib.sha224(str(self.salt) + str(self.file)).hexdigest()
             collaborate.FileDiffManager().remove_diff(id)
 
 settings = {
@@ -225,7 +225,7 @@ if __name__ == '__main__':
             webbrowser.open_new_tab(
                 'http://localhost:' + str(util.get_configuration_value('port', 3333))
             )
-        
+
         if gui is True:
             try:
                 root = Tk()
