@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 
-# 
+#
 # This work is copyright 2012 Jordon Mears. All rights reserved.
-# 
+#
 # This file is part of Cider.
-# 
+#
 # Cider is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Cider is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Cider.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 
 import os
 import sys
@@ -31,7 +31,7 @@ elif sys.platform == 'darwin':
 
 def build_data_files_paths(source, target, paths):
     data_files = []
-    
+
     files_on_level = []
     for path in paths:
         if os.path.isfile(os.path.join(source, path)):
@@ -43,10 +43,10 @@ def build_data_files_paths(source, target, paths):
                 os.path.join(target, path),
                 os.listdir(os.path.join(source, path))
             ))
-    
+
     if len(files_on_level):
         data_files.append((source, files_on_level))
-    
+
     return data_files
 
 APP = ['server.py']
@@ -71,7 +71,7 @@ OPTIONS = {
 if sys.platform == 'darwin':
     setup(
         name='Cider',
-        version='0.7 alpha',
+        version='0.7',
         author='Jordon Mears',
         description=('Web-based IDE'),
         app=APP,
@@ -82,7 +82,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     setup(
         name='Cider',
-        version='0.7 alpha',
+        version='0.7',
         author='Jordon Mears',
         description=('Web-based IDE'),
         console=APP,
