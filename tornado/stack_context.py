@@ -161,6 +161,7 @@ class ExceptionStackContext(object):
                 return self.exception_handler(type, value, traceback)
         finally:
             _state.contexts = self.old_contexts
+            self.old_contexts = None
 
 
 class NullContext(object):
@@ -195,7 +196,9 @@ def wrap(fn):
     # functools.wraps doesn't appear to work on functools.partial objects
     #@functools.wraps(fn)
 
-    def wrapped(callback, contexts, *args, **kwargs):
+    def wrapped(*args, **kwargs):
+        callback, contexts, args = args[0], args[1], args[2:]
+
         if contexts is _state.contexts or not contexts:
             callback(*args, **kwargs)
             return
