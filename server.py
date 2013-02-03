@@ -15,15 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-
-"""
-Cider: collaborative web-based IDE
+"""Cider: collaborative web-based IDE
 
 Provides a web based file manager and collaborative IDE like code editor. See
 the readme for more details.
 """
 
 import os
+import platform
 import sys
 import thread
 import time
@@ -138,7 +137,7 @@ def main():
                 util.get_configuration_value('port', 3333)
             ))
 
-        if GUI is True:
+        if GUI and platform.system() != 'Linux':
             try:
                 root = Tk()
                 root.withdraw()
@@ -148,13 +147,9 @@ def main():
             except KeyboardInterrupt:
                 sys.exit()
             except Exception:
-                log.msg('Graphical main loop failed, using time sleep instead.')
                 while(True):
                     time.sleep(10)
         else:
-            log.msg(
-                'Graphical libraries not present, using time sleep instead.'
-            )
             while(True):
                 time.sleep(10)
     except KeyboardInterrupt:
