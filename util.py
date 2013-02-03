@@ -13,16 +13,112 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-
-"""
-Support functions for Cider.
-"""
+"""Support functions for Cider."""
 
 import getpass
 import json
 import string
 import sys
 
+DEFAULT_MODE = 'text'
+DEFAULT_IS_MARKUP = False
+DEFAULT_TAB_WIDTH = 4
+
+# A mapping of file extensions to suggested editor modes and tab width.
+MODES = [
+    (['abap'], {'display_name': 'ABAP', 'mode': 'abap'}),
+    ([''], {'display_name': 'AsciiDoc', 'mode': 'asciidoc'}),
+    (['c', 'cpp', 'h', 'hpp'], {'display_name': 'C/C++', 'mode': 'c_cpp'}),
+    (['clj'], {'display_name': 'Clojure', 'mode': 'clojure'}),
+    (['coffee'], {'display_name': 'CoffeeScript', 'mode': 'coffee'}),
+    (['cfc', 'cfm'], {'display_name': 'ColdFusion', 'mode': 'coldfusion'}),
+    (['cs'], {'display_name': 'C#', 'mode': 'csharp'}),
+    (['css', 'gss'], {'display_name': 'CSS', 'mode': 'css'}),
+    (['dart'], {'display_name': 'Dart', 'mode': 'dart'}),
+    (['diff'], {'display_name': 'diff', 'mode': 'diff'}),
+    (['dot'], {'display_name': 'Dot', 'mode': 'dot'}),
+    (
+        ['glsl', 'frag', 'glslf', 'glslv', 'shader', 'vert'],
+        {'display_name': 'OpenGL Shading', 'mode': 'glsl'}
+    ),
+    (['go'], {'display_name': 'Go', 'mode': 'golang'}),
+    (['groovy'], {'display_name': 'Groovy', 'mode': 'groovy'}),
+    (['haml'], {'display_name': 'Haml', 'mode': 'haml'}),
+    (['hx'], {'display_name': 'Haxe', 'mode': 'haxe'}),
+    (
+        ['htm', 'html', 'mustache', 'tpl', 'shtml'],
+        {'display_name': 'HTML', 'markup': True, 'mode': 'html', 'tab_width': 2}
+    ),
+    (['jade'], {'display_name': 'Jade', 'mode': 'jade'}),
+    (['java'], {'display_name': 'Java', 'mode': 'java'}),
+    (['js'], {'display_name': 'JavaScript', 'mode': 'javascript'}),
+    (['json'], {'display_name': 'JSON', 'mode': 'json'}),
+    (['jsp'], {'display_name': 'JavaServer Pages', 'mode': 'jsp'}),
+    (['jsx'], {'display_name': 'JSX', 'mode': 'jsx'}),
+    (['tex'], {'display_name': 'LaTeX', 'mode': 'latex'}),
+    (['less'], {'display_name': 'LESS', 'mode': 'less'}),
+    (['liquid'], {'display_name': 'Liquid', 'mode': 'liquid'}),
+    (['lisp', 'lsp'], {'display_name': 'Lisp', 'mode': 'lisp'}),
+    (['lua'], {'display_name': 'Lua', 'mode': 'lua'}),
+    (['lp'], {'display_name': 'Lua Pages', 'mode': 'luapage'}),
+    (
+        [
+            'cfs',
+            'fnm',
+            'fdx',
+            'fdt',
+            'tis',
+            'tii',
+            'frq',
+            'prx',
+            'nrm',
+            'tvx',
+            'tvd',
+            'tvf',
+            'del'
+        ],
+        {'display_name': 'Lucene', 'mode': 'lucene'}
+    ),
+    ([''], {'display_name': 'Makefile', 'mode': 'makefile'}),
+    (
+        ['markdown', 'mdown', 'md', 'mkd', 'mkdn'],
+        {'display_name': 'Markdown', 'mode': 'markdown'}
+    ),
+    (['h', 'm', 'mm'], {'display_name': 'Objective-C', 'mode': 'objectivec'}),
+    (['ocaml', 'ml', 'mli'], {'display_name': 'OCaml', 'mode': 'ocaml'}),
+    (['pl', 'pm', 't'], {'display_name': 'Perl', 'mode': 'perl'}),
+    (['pgsql'], {'display_name': 'pgSQL', 'mode': 'pgsql'}),
+    (['php', 'inc', 'phtml', 'phps'], {'display_name': 'PHP', 'mode': 'php'}),
+    (['ps1'], {'display_name': 'PowerShell', 'mode': 'powershell'}),
+    (['py', 'pyw'], {'display_name': 'Python', 'mode': 'python'}),
+    (['r'], {'display_name': 'R', 'mode': 'r'}),
+    (['rdoc'], {'display_name': 'RDoc', 'mode': 'rdoc'}),
+    (['erb', 'rhtml'], {'display_name': 'eRuby', 'mode': 'rhtml'}),
+    (['rb', 'rbw'], {'display_name': 'Ruby', 'mode': 'ruby'}),
+    (['scad'], {'display_name': 'OpenSCAD', 'mode': 'scad'}),
+    (['scala'], {'display_name': 'Scala', 'mode': 'scala'}),
+    (['scss'], {'display_name': 'Sass', 'mode': 'scss'}),
+    (['sh'], {'display_name': 'Shell/Bash', 'mode': 'sh'}),
+    (['sql'], {'display_name': 'SQL', 'mode': 'sql'}),
+    (['styl'], {'display_name': 'Stylus', 'mode': 'stylus'}),
+    (
+        ['svg'],
+        {'display_name': 'SVG', 'markup': True, 'mode': 'svg', 'tab_width': 2}
+    ),
+    (['tcl'], {'display_name': 'Tcl', 'mode': 'tcl'}),
+    (['textile'], {'display_name': 'Textile', 'mode': 'textile'}),
+    (['ts'], {'display_name': 'TypeScript', 'mode': 'typescript'}),
+    (
+        ['vbs', 'vbe', 'wsf', 'wsc', 'hta', 'asp'],
+        {'display_name': 'VBScript', 'mode': 'vbscript'}
+    ),
+    (
+        ['xml', 'kml'],
+        {'display_name': 'XML', 'markup': True, 'mode': 'xml', 'tab_width': 2}
+    ),
+    (['xq', 'xqy', 'xquery'], {'display_name': 'XQuery', 'mode': 'xquery'}),
+    (['yaml'], {'display_name': 'YAML', 'mode': 'yaml'})
+]
 
 def get_configuration_value(key, default=None):
     """Fetches a configuration value from the configuration file."""
@@ -30,7 +126,6 @@ def get_configuration_value(key, default=None):
         return json.loads(open('configuration.json').read())[key]
     except:
         return default
-
 
 def is_text_file(file):
     """Tests a file by looking at the beginning of the file for irregular
@@ -48,7 +143,6 @@ def is_text_file(file):
     if len(text) / len(sample) > 0.30:
         return False
     return True
-
 
 def get_base_path_adjustment():
     """Generates a base path for reading files.
@@ -68,107 +162,22 @@ def get_base_path_adjustment():
             base_path_adjustment = '/home/' + getpass.getuser()
     return base_path_adjustment
 
+def find_mode_dict(ext):
+    """Looks at the extension and returns recommended mode dictionary."""
+    if ext:
+        for i in MODES:
+            if ext.lower() in i[0]:
+                return i[1]
+    return {}
 
 def get_mode(ext):
     """Returns the suggested highlight mode."""
-    mode, tab_width, markup = get_mode_tab_width_markup(ext)
-    return mode
-
-
-def get_mode_tab_width_markup(ext):
-    """Looks at the extension and returns recommended highlight mode, tab width
-    and markup.
-    """
-    tab_width = 4
-    markup = False
-
-    if ext == 'c' or ext == 'cpp' or ext == 'h' or ext == 'hpp':
-        mode = 'c_cpp'
-    elif ext == 'clj':
-        mode = 'clojure'
-    elif ext == 'coffee':
-        mode = 'coffee'
-    elif ext == 'cfc' or ext == 'cfm':
-        mode = 'coldfusion'
-    elif ext == 'cs':
-        mode = 'csharp'
-    elif ext == 'css':
-        mode = 'css'
-    elif ext == 'go':
-        mode = 'go'
-    elif ext == 'groovy':
-        mode = 'groovy'
-    elif ext == 'hx':
-        mode = 'haxe'
-    elif ext == 'htm' or ext == 'html' or ext == 'mustache' or ext == 'tpl' or ext == 'shtml':
-        mode = 'html'
-        tab_width = 2
-        markup = True
-    elif ext == 'java':
-        mode = 'java'
-    elif ext == 'js':
-        mode = 'javascript'
-    elif ext == 'json':
-        mode = 'json'
-    elif ext == 'tex':
-        mode = 'latex'
-    elif ext == 'less':
-        mode = 'less'
-    elif ext == 'liquid':
-        mode = 'liquid'
-    elif ext == 'lua':
-        mode = 'lua'
-    elif ext == 'markdown' or ext == 'mdown' or ext == 'mdown' or ext == 'md' or ext == 'mkd' or ext == 'mkdn':
-        mode = 'markdown'
-    elif ext == 'ocaml' or ext == 'ml' or ext == 'mli':
-        mode = 'ocaml'
-    elif ext == 'pl' or ext == 'pm' or ext == 't':
-        mode = 'perl'
-    elif ext == 'pgsql':
-        mode = 'pgsql'
-    elif ext == 'php' or ext == 'inc' or ext == 'phtml' or ext == 'phps':
-        mode = 'php'
-    elif ext == 'ps1':
-        mode = 'powershell'
-    elif ext == 'py' or ext == 'pyw':
-        mode = 'python'
-    elif ext == 'rb' or ext == 'rbw':
-        mode = 'ruby'
-    elif ext == 'scad':
-        mode = 'scad'
-    elif ext == 'scala':
-        mode = 'scala'
-    elif ext == 'scss':
-        mode = 'scss'
-    elif ext == 'sh':
-        mode = 'sh'
-    elif ext == 'sql':
-        mode = 'sql'
-    elif ext == 'svg':
-        mode = 'svg'
-        tab_width = 2
-        markup = True
-    elif ext == 'textile':
-        mode = 'textile'
-    elif ext == 'xml' or ext == 'kml':
-        mode = 'xml'
-        tab_width = 2
-        markup = True
-    elif ext == 'xq' or ext == 'xqy' or ext == 'xquery':
-        mode = 'xquery'
-    else:
-        mode = 'text'
-
-    return mode, tab_width, markup
-
+    return find_mode_dict(ext).get('mode', DEFAULT_MODE)
 
 def get_tab_width(ext):
     """Returns recommended tab width."""
-    mode, tab_width, markup = get_mode_tab_width_markup(ext)
-    return tab_width
-
+    return find_mode_dict(ext).get('tab_width', DEFAULT_TAB_WIDTH)
 
 def is_markup(ext):
     """Returns True if the extension is a markup file, False otherwise."""
-    mode, tab_width, markup = get_mode_tab_width_markup(ext)
-    return markup
+    return find_mode_dict(ext).get('markup', DEFAULT_IS_MARKUP)
