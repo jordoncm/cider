@@ -122,20 +122,20 @@ MODES = [
     (['yaml'], {'display_name': 'YAML', 'mode': 'yaml'})
 ]
 
-def get_configuration_value(key, default=None):
+def get_configuration_value(key, default = None):
     """Fetches a configuration value from the configuration file."""
     try:
         return json.loads(
             open(options.get('config', 'configuration.json')).read()
         )[key]
-    except:
+    except:  # pylint: disable=W0702
         return default
 
-def is_text_file(file):
+def is_text_file(filename):
     """Tests a file by looking at the beginning of the file for irregular
     characters.
     """
-    sample = open(file).read(512)
+    sample = open(filename).read(512)
     if not sample:
         return True
     if '\0' in sample:
