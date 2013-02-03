@@ -20,6 +20,8 @@ import json
 import string
 import sys
 
+import options
+
 DEFAULT_MODE = 'text'
 DEFAULT_IS_MARKUP = False
 DEFAULT_TAB_WIDTH = 4
@@ -123,7 +125,9 @@ MODES = [
 def get_configuration_value(key, default=None):
     """Fetches a configuration value from the configuration file."""
     try:
-        return json.loads(open('configuration.json').read())[key]
+        return json.loads(
+            open(options.get('config', 'configuration.json')).read()
+        )[key]
     except:
         return default
 
