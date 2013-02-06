@@ -13,16 +13,14 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-
-"""
-General handlers for the application.
-"""
+"""General handlers for the application."""
 
 import hashlib
 import json
 import tornado.template
 import tornado.web
 import tornado.websocket
+import os
 
 import collaborate
 import util
@@ -151,4 +149,30 @@ class IndexHandler(tornado.web.RequestHandler):
 
 class TemplateHandler(tornado.web.RequestHandler):
     """Template strings for the frontend."""
-    pass
+    def get(self):
+        """Build a set of template strings as Javascript."""
+        templates = {}
+        base = 'templates/js'
+        files = os.listdir(base)
+        for i in files:
+            if os.path.isfile(os.path.join(base, i)):
+                templates[
+                    os.path.splitext(i)[0].replace('-', '_').upper()
+                ] = open(os.path.join(base, i)).read()
+
+        template_type = self.get_argument('type', '')
+        if template_type and os.path.isdir(os.path.join(base, template_type)):
+            files = os.listdir(os.path.join(base, template_type))
+            for i in files:
+                if os.path.isfile(os.path.join(base, template_type, i)):
+                    templates['.'.join([
+                        template_type,
+                        os.path.splitext(i)[0].replace('-', '_').upper()
+                    ])] = open(os.path.join(base, template_type, i)).read()
+
+        self.set_header('Content-Type', 'text/javascript')
+        loader = tornado.template.Loader('templates')
+        self.write(loader.load('templates.js').generate(
+            template_type = template_type,
+            templates = templates
+        ).replace('\n', ''))

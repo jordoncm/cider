@@ -1,20 +1,19 @@
 <!--
-This work is copyright 2011 - 2012 Jordon Mears. All rights reserved.
+This work is copyright 2011 - 2013 Jordon Mears. All rights reserved.
 
 This file is part of Cider.
 
-Cider is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Cider is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
 
-Cider is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Cider is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Cider.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with
+Cider. If not, see <http://www.gnu.org/licenses/>.
 -->
 {% autoescape None %}
 <!DOCTYPE html>
@@ -26,7 +25,15 @@ along with Cider.  If not, see <http://www.gnu.org/licenses/>.
     <title>{{ title }}</title>
   </head>
   <body>
-    <script src="js/index.js" type="text/javascript"></script>
+    <script src="static/json2.js" type="text/javascript"></script>
+    <script src="static/jquery.min.js" type="text/javascript"></script>
+    <script src="static/underscore-min.js" type="text/javascript"></script>
+    <script src="static/backbone-min.js" type="text/javascript"></script>
+    <script src="static/js/cider/__init__.js" type="text/javascript"></script>
+    <script src="templates.js?type=index" type="text/javascript"></script>
+    <script src="static/js/cider/views/__init__.js" type="text/javascript"></script>
+    <script src="static/js/cider/views/index.js" type="text/javascript"></script>
+    <script src="static/js/index.js" type="text/javascript"></script>
     <script src="static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
     <script type="text/javascript">
 var config = {{ config }}

@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-"""Cider: collaborative web-based IDE
+"""Cider: collaborative web-based IDE.
 
 Provides a web based file manager and collaborative IDE like code editor. See
 the readme for more details.
@@ -85,6 +85,7 @@ SETTINGS = {
 URLS = [
     (r'/', handlers.IndexHandler),
     (r'/ws/?', handlers.EditorWebSocketHandler),
+    (r'/templates.js', handlers.TemplateHandler),
     (r'/js/.*\.js', js.ScriptHandler)
 ]
 
