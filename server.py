@@ -85,8 +85,7 @@ SETTINGS = {
 URLS = [
     (r'/', handlers.IndexHandler),
     (r'/ws/?', handlers.EditorWebSocketHandler),
-    (r'/templates.js', handlers.TemplateHandler),
-    (r'/js/.*\.js', js.ScriptHandler)
+    (r'/templates.js', handlers.TemplateHandler)
 ]
 
 if util.get_configuration_value('dropboxKey', '') != '':
