@@ -3,17 +3,17 @@
     <div class="span8">
       <div class="hero-unit">
         <h1>Welcome to cider.</h1>
-        <p>Cider is a collaborative web-based IDE that allows developers to 
-        work within a browser to edit code locally or from across the 
+        <p>Cider is a collaborative web-based IDE that allows developers to
+        work within a browser to edit code locally or from across the
         world.</p>
       </div>
       <div class="row-fluid">
         <div class="span6">
           <h2>Identity</h2>
-          <p>Cider allows users to edit the same file concurrently. Use the 
+          <p>Cider allows users to edit the same file concurrently. Use the
           field below to indentify your browser session to others.</p>
           <form onsubmit="return false;">
-            <input id="sname" type="text" placeholder="Name" />
+            <input id="sname" type="text" placeholder="Name" value="<%- sname %>" />
           </form>
         </div>
         <div class="span6">
@@ -27,8 +27,8 @@
     </div>
     <div class="span4">
       <h2>File Managers</h2>
-      <p>Cider supports connecting to different types of file storage 
-      including a local file system, Dropbox and SFTP/SSH. Choose an option 
+      <p>Cider supports connecting to different types of file storage
+      including a local file system, Dropbox and SFTP/SSH. Choose an option
       below.</p>
       <hr />
       <% if(enable_local_file_system) { %>

@@ -20,10 +20,66 @@
 cider.namespace('cider.views.index');
 
 cider.views.index.Content = Backbone.View.extend({
+    events: {
+        'keyup #sname': 'setSessionName',
+        'submit #sftpf': 'handleSftpSubmit',
+        'click #sftp-launch': 'sftpShow',
+        'click #sftp-connect': 'sftpSubmit',
+        'click #sftp-cancel': 'sftpHide'
+    },
+
     template: _.template(cider.templates.index.CONTENT),
+
+    preferences: null,
+
+    initialize: function() {
+        this.preferences = new cider.Preferences();
+    },
+
     render: function(context) {
+        context = context || {};
+        context = _.defaults(context, {sname = this.preferences.get('sname')});
         this.$el.html(this.template(context));
         return this;
+    },
+
+    setSessionName: function(e) {
+        var value = $(e.target).val();
+        if(value !== '') {
+            this.preferences.set('sname', value);
+        } else {
+            this.preferences.remove('sname');
+        }
+    },
+
+    handleSftpSubmit: function() {
+        try {
+            var valid = true;
+            var text = 'Please correct the following:';
+            if($('#sftp_host').val() === '') {
+                valid = false;
+                text += '\n - Enter a hostname.';
+            }
+
+            if(!valid) {
+                alert(text);
+            }
+            return valid;
+        } catch(e) {
+            return false;
+        }
+    },
+
+    sftpShow: function() {
+        $('#sftp').modal('show');
+    },
+
+    sftpSubmit: function() {
+        $('#sftpf').submit();
+    },
+
+    sftpHide: function() {
+        $('#sftp').modal('hide');
     }
 });
 

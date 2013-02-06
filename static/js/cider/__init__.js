@@ -51,13 +51,13 @@ cider.extend = function(parent) {
 
 cider.Preferences = cider.extend();
 
-cider.Preferences.prototype.get = function(key) {
+cider.Preferences.prototype.get = function(key, default_value) {
     var value = localStorage.getItem(key);
     if(value) {
         try {
             return JSON.parse(value);
         } catch(e) {
-            return value;
+            return (value !== null) ? value : default_value;
         }
     }
     return value;
