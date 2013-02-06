@@ -36,7 +36,6 @@ import handlers
 import handlers.auth.dropbox
 import handlers.dropbox
 import handlers.file
-import js
 import log
 import util
 
