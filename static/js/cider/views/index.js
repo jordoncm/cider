@@ -27,22 +27,17 @@ cider.views.index.Content = Backbone.View.extend({
         'click #sftp-connect': 'sftpSubmit',
         'click #sftp-cancel': 'sftpHide'
     },
-
     template: _.template(cider.templates.index.CONTENT),
-
     preferences: null,
-
     initialize: function() {
         this.preferences = new cider.Preferences();
     },
-
     render: function(context) {
         context = context || {};
-        context = _.defaults(context, {sname = this.preferences.get('sname')});
+        context = _.defaults(context, {sname: this.preferences.get('sname')});
         this.$el.html(this.template(context));
         return this;
     },
-
     setSessionName: function(e) {
         var value = $(e.target).val();
         if(value !== '') {
@@ -51,7 +46,6 @@ cider.views.index.Content = Backbone.View.extend({
             this.preferences.remove('sname');
         }
     },
-
     handleSftpSubmit: function() {
         try {
             var valid = true;
@@ -69,15 +63,12 @@ cider.views.index.Content = Backbone.View.extend({
             return false;
         }
     },
-
     sftpShow: function() {
         $('#sftp').modal('show');
     },
-
     sftpSubmit: function() {
         $('#sftpf').submit();
     },
-
     sftpHide: function() {
         $('#sftp').modal('hide');
     }

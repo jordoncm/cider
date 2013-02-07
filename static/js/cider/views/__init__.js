@@ -30,7 +30,22 @@ cider.views.TopNav = Backbone.View.extend({
 cider.views.BottomNav = Backbone.View.extend({
     template: _.template(cider.templates.BOTTOM_NAV),
     render: function(context) {
+        context = context || {};
+        context = _.defaults(context, {right_content: ''});
+        var view = null;
+        if(typeof context.right_content == 'object') {
+            // A Backbone.View was passed rather than a string, likely because
+            // of the need for DOM events. Will need to render the view and
+            // append to DOM instead of passing a string of the HTML to the
+            // template.
+            view = context.right_content;
+            view.render();
+            context.right_content = '';
+        }
         this.$el.html(this.template(context));
+        if(view) {
+            this.$el.find('div.pull-right').append(view.$el);
+        }
         return this;
     }
 });

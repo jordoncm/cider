@@ -24,16 +24,28 @@ $(function() {
         },
         index: function() {
             $('body').append(new cider.views.TopNav().render({
-                header: '',
+                header: config.prefix + (
+                    (config.path) ? config.path : '&nbsp;'
+                ),
                 sub_header: '',
                 sub_header_link: '',
                 extra: ''
             }).$el);
-            $('body').append(
-                new cider.views.index.Content().render(config).$el
-            );
+            if(config.folder) {
+                $('body').append(
+                    new cider.views.filemanager.NewFolder().render({
+                        folder: config.folder
+                    }).$el
+                );
+            }
+            $('body').append(new cider.views.filemanager.FileList().render({
+                path: config.path,
+                up: config.up,
+                extra: config.extra,
+                files_list: config.files_list
+            }).$el);
             $('body').append(new cider.views.BottomNav().render({
-                right_content: new cider.views.index.BottomNavRight()
+                right_content: new cider.views.filemanager.CreateFileFolder()
             }).$el);
         }
     });
