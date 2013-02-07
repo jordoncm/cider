@@ -22,6 +22,13 @@ cider.namespace('cider.views');
 cider.views.TopNav = Backbone.View.extend({
     template: _.template(cider.templates.TOP_NAV),
     render: function(context) {
+        context = context || {};
+        context = _.defaults(context, {
+            header: '',
+            sub_header: '',
+            sub_header_link: '',
+            extra: ''
+        });
         this.$el.html(this.template(context));
         return this;
     }
@@ -46,6 +53,14 @@ cider.views.BottomNav = Backbone.View.extend({
         if(view) {
             this.$el.find('div.pull-right').append(view.$el);
         }
+        return this;
+    }
+});
+
+cider.views.Error = Backbone.View.extend({
+    template: _.template(cider.templates.ERROR),
+    render: function(context) {
+        this.$el.html(this.template(context));
         return this;
     }
 });
