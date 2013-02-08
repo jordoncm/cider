@@ -1,5 +1,5 @@
 /**
- * This work is copyright 2012 - 2013 Jordon Mears. All rights reserved.
+ * This work is copyright 2011 - 2013 Jordon Mears. All rights reserved.
  *
  * This file is part of Cider.
  *
@@ -21,8 +21,8 @@ cider.namespace('cider.views.filemanager');
 
 cider.views.filemanager.NewFolder =  Backbone.View.extend({
     template: _.template(cider.templates.filemanager.NEW_FOLDER),
-    render: function(context) {
-        this.$el.html(this.template(context));
+    render: function() {
+        this.$el.html(this.template());
         return this;
     }
 });
@@ -34,12 +34,21 @@ cider.views.filemanager.FileList = Backbone.View.extend({
     template: _.template(cider.templates.filemanager.FILE_LIST),
     templateFolder: _.template(cider.templates.filemanager.FOLDER_ROW),
     templateFile: _.template(cider.templates.filemanager.FILE_ROW),
-    filesList: [],
-    render: function(context) {
-        this.filesList = context.files_list;
+    render: function() {
+        var context = _.pick(
+            this.options || {},
+            ['path', 'up', 'extra', 'rows']
+        );
+        context = _.defaults(context, {
+            path: '',
+            up: '',
+            extra: '',
+            rows: ''
+        });
+
         var rows = [];
-        for(var i = 0; i < this.filesList.length; i++) {
-            var file = this.filesList[i];
+        for(var i = 0; i < this.options.files_list.length; i++) {
+            var file = this.options.files_list[i];
             if(file.is_file) {
                 rows.push(this.templateFile({
                     i: i,
@@ -55,15 +64,12 @@ cider.views.filemanager.FileList = Backbone.View.extend({
                 }));
             }
         }
-        context = _.extend(
-            _.omit(context, 'files_list'),
-            {rows: rows.join('')}
-        );
+        context = _.extend(context, {rows: rows.join('')});
         this.$el.html(this.template(context));
         return this;
     },
     confirmOpen: function(e) {
-        var type = this.filesList[
+        var type = this.options.files_list[
             e.target.id.split('-')[e.target.id.split('-').length - 1]
         ].confirm;
         switch(type) {
@@ -88,8 +94,8 @@ cider.views.filemanager.CreateFileFolder =  Backbone.View.extend({
         'submit #new-form': 'createFile'
     },
     template: _.template(cider.templates.filemanager.CREATE_FILE_FOLDER),
-    render: function(context) {
-        this.$el.html(this.template(context));
+    render: function() {
+        this.$el.html(this.template());
         return this;
     },
     getCreateParameter: function() {

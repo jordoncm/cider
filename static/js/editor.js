@@ -23,12 +23,24 @@ $(function() {
             '*splat': 'index'
         },
         index: function() {
-            $('body').append(new cider.views.TopNav().render().$el);
-            $('body').append(
-                new cider.views.index.Content(config).render().$el
-            );
+            $('body').append(new cider.views.TopNav({
+                header: config.file_name,
+                sub_header: config.prefix + config.path,
+                sub_header_link: '../file-manager/?path=' + config.path + config.extra,
+                extra: new cider.views.editor.Menu({
+                    save_text: config.save_text,
+                    save_class: (config.save_text.toLowerCase() == 'saved') ? 'btn-success' : 'btn-warning',
+                    file: config.file
+                })
+            }).render().$el);
+            $('body').append(new cider.views.editor.Editor({
+                text: config.text
+            }).render().$el);
             $('body').append(new cider.views.BottomNav({
-                right_content: new cider.views.index.BottomNavRight()
+                right_content: new cider.views.editor.FindBar()
+            }).render().$el);
+            $('body').append(new cider.views.editor.Settings({
+                mode: config.mode
             }).render().$el);
         }
     });

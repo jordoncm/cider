@@ -1,5 +1,5 @@
 /**
- * This work is copyright 2012 - 2013 Jordon Mears. All rights reserved.
+ * This work is copyright 2011 - 2013 Jordon Mears. All rights reserved.
  *
  * This file is part of Cider.
  *
@@ -21,23 +21,39 @@ cider.namespace('cider.views');
 
 cider.views.TopNav = Backbone.View.extend({
     template: _.template(cider.templates.TOP_NAV),
-    render: function(context) {
-        context = context || {};
+    render: function() {
+        var context = _.pick(
+            this.options || {},
+            ['header', 'sub_header', 'sub_header_link', 'extra']
+        );
         context = _.defaults(context, {
             header: '',
             sub_header: '',
             sub_header_link: '',
             extra: ''
         });
+        var view = null;
+        if(typeof context.extra == 'object') {
+            // A Backbone.View was passed rather than a string, likely because
+            // of the need for DOM events. Will need to render the view and
+            // append to DOM instead of passing a string of the HTML to the
+            // template.
+            view = context.extra;
+            view.render();
+            context.extra = '';
+        }
         this.$el.html(this.template(context));
+        if(view) {
+            this.$el.find('div.container-fluid').append(view.$el);
+        }
         return this;
     }
 });
 
 cider.views.BottomNav = Backbone.View.extend({
     template: _.template(cider.templates.BOTTOM_NAV),
-    render: function(context) {
-        context = context || {};
+    render: function() {
+        var context = _.pick(this.options || {}, ['right_content']);
         context = _.defaults(context, {right_content: ''});
         var view = null;
         if(typeof context.right_content == 'object') {
@@ -59,7 +75,9 @@ cider.views.BottomNav = Backbone.View.extend({
 
 cider.views.Error = Backbone.View.extend({
     template: _.template(cider.templates.ERROR),
-    render: function(context) {
+    render: function() {
+        var context = _.pick(this.options || {}, ['message']);
+        context = _.defaults(context, {message: 'There was an error.'});
         this.$el.html(this.template(context));
         return this;
     }

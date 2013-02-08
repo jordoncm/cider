@@ -1,5 +1,5 @@
 /**
- * This work is copyright 2012 - 2013 Jordon Mears. All rights reserved.
+ * This work is copyright 2011 - 2013 Jordon Mears. All rights reserved.
  *
  * This file is part of Cider.
  *
@@ -32,8 +32,14 @@ cider.views.index.Content = Backbone.View.extend({
     initialize: function() {
         this.preferences = new cider.Preferences();
     },
-    render: function(context) {
-        context = context || {};
+    render: function() {
+        var context = _.pick(this.options || {}, [
+            'enable_dropbox',
+            'enable_local_file_system',
+            'enable_sftp',
+            'sname',
+            'terminal_link'
+        ]);
         context = _.defaults(context, {sname: this.preferences.get('sname')});
         this.$el.html(this.template(context));
         return this;
@@ -76,8 +82,8 @@ cider.views.index.Content = Backbone.View.extend({
 
 cider.views.index.BottomNavRight = Backbone.View.extend({
     template: _.template(cider.templates.index.BOTTOM_RIGHT_NAV),
-    render: function(context) {
-        this.$el.html(this.template(context));
+    render: function() {
+        this.$el.html(this.template());
         return this;
     }
 });

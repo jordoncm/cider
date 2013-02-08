@@ -24,9 +24,9 @@ $(function() {
         },
         index: function() {
             $('body').append(new cider.views.TopNav().render().$el);
-            $('body').append(new cider.views.Error().render({
+            $('body').append(new cider.views.Error({
                 message: config.message
-            }).$el);
+            }).render().$el);
             $('body').append(new cider.views.BottomNav().render().$el);
         }
     });
