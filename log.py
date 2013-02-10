@@ -1,4 +1,4 @@
-# This work is copyright 2012 - 2013 Jordon Mears. All rights reserved.
+# This work is copyright 2011 - 2013 Jordon Mears. All rights reserved.
 #
 # This file is part of Cider.
 #
@@ -13,25 +13,19 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-
-"""
-Simple logging functions.
-"""
+"""Simple logging functions."""
 
 def msg(message):
     """Print a simple message."""
     print str(message)
 
-
 def info(message):
     """INFO level log message."""
     print 'INFO: ' + str(message)
 
-
 def warn(message):
     """WARN level log message."""
     print 'WARNING: ' + str(message)
-
 
 def error(message):
     """ERROR level log message."""
