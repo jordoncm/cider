@@ -17,4 +17,4 @@
 # Cider. If not, see <http://www.gnu.org/licenses/>.
 
 cd /usr/share/cider
-python server.py
+python server.py $@

@@ -23,4 +23,6 @@ OPTIONS = PARSER.parse_args()[0]
 
 def get(key, default = None):
     """Retrieve an options by its key."""
-    return getattr(OPTIONS, key, default)
+    if getattr(OPTIONS, key):
+        return getattr(OPTIONS, key)
+    return default
