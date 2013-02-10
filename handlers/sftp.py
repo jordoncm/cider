@@ -239,9 +239,11 @@ class EditorHandler(BaseHandler):
                     'save_text': save_text,
                     'extra': '&connection=' + id,
                     'prefix': 'sftp://' + details['user'] + '@' + details['host'] + details['path'],
-                    'salt': id
+                    'salt': id,
+                    'modes': util.MODES
                 }),
-                title=title
+                title=title,
+                modes=util.MODES
             ))
         else:
             id = self.setup_connection()

@@ -19,323 +19,25 @@
 
 cider.namespace('cider.editor');
 
-Range = ace.require('ace/range').Range;
-
-cider.editor.Editor = cider.extend();
-
-cider.editor.Editor.prototype.editor = null;
-cider.editor.Editor.prototype.mode = null;
-cider.editor.Editor.prototype.dirty = false;
-cider.editor.Editor.prototype.oldDirty = false;
-cider.editor.Editor.prototype.changeCallback = null;
-
-cider.editor.Editor.prototype.isDirty = function() {
-    return this.dirty;
-};
-
-cider.editor.Editor.prototype.setDirty = function(value) {
-    this.oldDirty = this.dirty;
-    this.dirty = value;
-};
-
-cider.editor.Editor.prototype.revertDirty = function() {
-    this.dirty = this.oldDirty;
-};
-
-cider.editor.Editor.prototype.getTabWidth = function() {
-    return this.editor.getSession().getTabSize();
-};
-
-cider.editor.Editor.prototype.setTabWidth = function(width) {
-    if(width !== '' && !isNaN(width)) {
-        this.editor.getSession().setTabSize(parseInt(width));
-    }
-};
-
-cider.editor.Editor.prototype.getMode = function() {
-    return this.mode;
-};
-
-cider.editor.Editor.prototype.setMode = function(mode) {
-    switch(mode) {
-        case 'c_cpp':
-        case 'clojure':
-        case 'coffee':
-        case 'coldfusion':
-        case 'csharp':
-        case 'css':
-        case 'golang':
-        case 'groovy':
-        case 'haxe':
-        case 'html':
-        case 'java':
-        case 'javascript':
-        case 'json':
-        case 'latex':
-        case 'less':
-        case 'liquid':
-        case 'lua':
-        case 'markdown':
-        case 'ocaml':
-        case 'perl':
-        case 'pgsql':
-        case 'php':
-        case 'powershell':
-        case 'python':
-        case 'ruby':
-        case 'scad':
-        case 'scala':
-        case 'scss':
-        case 'sh':
-        case 'sql':
-        case 'svg':
-        case 'text':
-        case 'textile':
-        case 'xml':
-        case 'xquery':
-            this.mode = mode;
-            var Mode = ace.require('ace/mode/' + mode).Mode;
-            this.editor.getSession().setMode(new Mode());
-            break;
-    }
-};
-
-cider.editor.Editor.prototype.findNext = function() {
-    this.editor.findNext();
-};
-
-cider.editor.Editor.prototype.findPrevious = function() {
-    this.editor.findPrevious();
-};
-
-cider.editor.Editor.prototype.find = function(needle) {
-    if(needle && needle !== '') {
-        this.editor.find(needle);
-    }
-};
-
-cider.editor.Editor.prototype.setReadOnly = function(value) {
-    this.editor.setReadOnly(value);
-};
-
-cider.editor.Editor.prototype.initShortcuts = function(shortcuts) {
-    if(typeof shortcuts.save != 'undefined') {
-        this.editor.commands.addCommand({
-            name : 'save',
-            bindKey : {
-                win : 'Ctrl-S',
-                mac : 'Command-S'
-            },
-            exec : shortcuts.save
-        });
-    }
-
-    if(typeof shortcuts.find != 'undefined') {
-        this.editor.commands.addCommand({
-            name : 'find',
-            bindKey : {
-                win : 'Ctrl-F',
-                mac : 'Command-F'
-            },
-            exec : shortcuts.find
-        });
-
-        this.editor.commands.addCommand({
-            name : 'findNext',
-            bindKey : {
-                win : 'Ctrl-G',
-                mac : 'Command-G'
-            },
-            exec : _.bind(function() { this.findNext(); }, this)
-        });
-
-        this.editor.commands.addCommand({
-            name : 'findPrevious',
-            bindKey : {
-                win : 'Ctrl-Shift-G',
-                mac : 'Command-Shift-G'
-            },
-            exec : _.bind(function() { this.findPrevious(); }, this)
-        });
-    }
-};
-
-cider.editor.Editor.prototype.handleChange = function(e) {
-    this.dirty = true;
-
-    var diff = this.getDiff(e.data);
-
-    if(this.changeCallback) {
-        this.changeCallback(e, diff);
-    }
-};
-
-cider.editor.Editor.prototype.getDiff = function(data) {
-    var p = 0;
-    var lines = this.editor.getSession().getDocument().getLines(
-        0,
-        data.range.start.row
-    );
-    for(var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        p += (i < data.range.start.row) ? line.length : data.range.start.column;
-    }
-    p += data.range.start.row;
-
-    var diff = {
-        p : p
-    };
-    switch(data.action) {
-        case 'insertText':
-            diff.i = data.text;
-            diff.t = 'i';
-            break;
-        case 'insertLines':
-            diff.i = data.lines.join('\n') + '\n';
-            diff.t = 'i';
-            break;
-        case 'removeText':
-            diff.d = data.text;
-            diff.t = 'd';
-            break;
-        case 'removeLines':
-            diff.d = data.lines.join('\n') + '\n';
-            diff.t = 'd';
-            break;
-    }
-
-    return diff;
-};
-
-cider.editor.Editor.prototype.executeDiff = function(diff) {
-    var lines = this.editor.getSession().getDocument().getAllLines();
-    switch(diff.t) {
-        case 'd':
-            var range = Range.fromPoints(
-                this.getOffset(diff.p, lines),
-                this.getOffset((diff.p + diff.d.length), lines)
-            );
-            this.editor.getSession().getDocument().remove(range);
-            break;
-        case 'i':
-            this.editor.getSession().getDocument().insert(
-                this.getOffset(diff.p, lines),
-                diff.i
-            );
-            break;
-    }
-};
-
-cider.editor.Editor.prototype.getOffset = function(offset, lines) {
-    for(var row = 0; row < lines.length; row++) {
-        var line = lines[row];
-        if(offset <= line.length) {
-            break;
-        }
-        offset -= lines[row].length + 1;
-    }
-    return {
-        row : row,
-        column : offset
-    };
-};
-
-cider.editor.Editor.prototype.trimLines = function() {
-    var lines = this.editor.getSession().getDocument().getAllLines();
-    var pos = -1;
-    for(var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if((pos = line.search(/ +$/i)) != -1) {
-            var range = Range.fromPoints(
-                {row: i, column: pos},
-                {row: i, column: line.length}
-            );
-            this.editor.getSession().getDocument().remove(range);
-        }
-    }
-};
-
-cider.editor.Editor.prototype.trimToSingleNewline = function() {
-    var lines = this.editor.getSession().getDocument().getAllLines();
-    if(lines[lines.length - 1].search(/^ *$/i) == -1) {
-        this.editor.getSession().getDocument().insert(
-            {row: lines.length - 1, column: lines[lines.length - 1].length},
-            '\n'
-        );
-    } else if(!(lines[lines.length - 1] === '' && lines[lines.length - 2].search(/^ *$/i) == -1)) {
-        var last = -1;
-        for(var i = lines.length - 1; i >= 0; i--) {
-            var line = lines[i];
-            if(line.search(/^ *$/i) == -1) {
-                last = i;
-                break;
-            }
-        }
-
-        if(last > -1) {
-            this.editor.getSession().getDocument().removeLines(
-                last + 1,
-                lines.length - 1
-            );
-            this.editor.getSession().getDocument().insert(
-                {row: last, column: lines[last].length},
-                '\n'
-            );
-        }
-    }
-};
-
-cider.editor.Editor.prototype.getText = function() {
-    return this.editor.getSession().getValue();
-};
-
-cider.editor.Editor.prototype.focus = function() {
-    this.editor.focus();
-};
-
-cider.editor.Editor.prototype.init = function(config) {
-    this.editor = ace.edit(config.editorId);
-    this.setReadOnly(true);
-    this.editor.setTheme('ace/theme/eclipse');
-    this.editor.getSession().getDocument().setNewLineMode('unix');
-    this.setTabWidth(config.tabWidth);
-    this.editor.getSession().setUseSoftTabs(true);
-    this.editor.getSession().setValue(
-        this.editor.getSession().getValue().replace(
-            /[~]lb/g,
-            decodeURIComponent('%7B')
-        ).replace(
-            /[~]rb/g,
-            decodeURIComponent('%7D')
-        )
-    );
-    if(typeof config.mode != 'undefined') {
-        this.setMode(config.mode);
-    }
-
-    if(typeof config.shortcuts != 'undefined') {
-        this.initShortcuts(config.shortcuts);
-    }
-
-    if(typeof config.change != 'undefined') {
-        this.changeCallback = config.change;
-    }
-    this.editor.getSession().on('change', _.bind(function(e) {
-        this.handleChange(e);
-    }, this));
-};
-
 cider.editor.File = cider.extend();
 
 cider.editor.File.prototype.file = null;
-cider.editor.File.prototype.externalSaveCallback = null;
+cider.editor.File.prototype.salt = null;
+cider.editor.File.prototype.extra = null;
 cider.editor.File.prototype.saving = false;
 
-cider.editor.File.prototype.save = function(text, parameters) {
-    if(!parameters) {
-        parameters = {};
+cider.editor.File.prototype.save = function(text) {
+    var parameters = {};
+    var tmp = this.extra.split('&');
+    for(var i = 0; i < tmp.length; i++) {
+        if(tmp[i] !== '') {
+            try {
+                tmp[i] = tmp[i].split('=');
+                parameters[tmp[i][0]] = tmp[i][1];
+            } catch(e) {}
+        }
     }
-
+    parameters.salt = this.salt;
     parameters.file = this.file;
     parameters.text = text;
 
@@ -345,15 +47,13 @@ cider.editor.File.prototype.save = function(text, parameters) {
         type : 'POST',
         dataType : 'json',
         data : parameters,
-        success : _.bind(function(response) {
-            this.saveCallback(response);
-        }, this)
+        success : _.bind(this.saveCallback, this)
     });
 };
 
 cider.editor.File.prototype.saveCallback = function(response) {
-    this.externalSaveCallback(response);
     this.saving = false;
+    cider.events.trigger('//file/saved', response);
 };
 
 cider.editor.File.prototype.hash = function(salt) {
@@ -376,19 +76,29 @@ cider.editor.File.prototype.isSaving = function() {
     return this.saving;
 };
 
-cider.editor.File.prototype.init = function(config) {
+cider.editor.File.prototype.initialize = function(config) {
     this.file = config.file;
-    if(typeof config.saveCallback != 'undefined') {
-        this.externalSaveCallback = config.saveCallback;
-    }
+    this.salt = config.salt;
+    this.extra = config.extra;
+    cider.events.on('//file/save', _.bind(this.save, this));
 };
 
 cider.editor.Socket = cider.extend();
 
 cider.editor.Socket.prototype.socket = null;
 cider.editor.Socket.prototype.suppress = false;
-cider.editor.Socket.prototype.openCallback = null;
-cider.editor.Socket.prototype.messageCallback = null;
+cider.editor.Socket.prototype.name = null;
+cider.editor.Socket.prototype.salt = null;
+cider.editor.Socket.prototype.file = null;
+
+cider.editor.Socket.prototype.generateId = function(prefix) {
+    var text = prefix || '';
+    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for(var i = 0; i < 5; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+};
 
 cider.editor.Socket.prototype.send = function(m) {
     if(!this.suppress) {
@@ -397,33 +107,33 @@ cider.editor.Socket.prototype.send = function(m) {
 };
 
 cider.editor.Socket.prototype.handleOpen = function() {
-    if(this.openCallback) {
-        this.openCallback();
-    }
+    this.send({t: 'f', f: this.file, v: -1, n: this.name, s: this.salt});
+    cider.events.trigger('//socket/open');
+    cider.events.on('//socket/send', _.bind(this.send, this));
 };
 
 cider.editor.Socket.prototype.handleMessage = function(m) {
-    if(this.messageCallback) {
-        this.messageCallback(m);
+    console.log(m.data);
+    var dataList = JSON.parse(m.data);
+    for(var i = 0; i < dataList.length; i++) {
+        var data = dataList[i];
+        cider.events.trigger('//socket/message/' + data.t, data);
     }
 };
 
-cider.editor.Socket.prototype.init = function(config) {
-    if(typeof config.openCallback != 'undefined') {
-        this.openCallback = config.openCallback;
+cider.editor.Socket.prototype.initialize = function(config) {
+    if(typeof config.name != 'undefined' && config.name) {
+        this.name = config.name;
+    } else {
+        this.name = this.generateId('cider-');
     }
 
-    if(typeof config.messageCallback != 'undefined') {
-        this.messageCallback = config.messageCallback;
-    }
+    this.file = config.file;
+    this.salt = config.salt;
 
     this.socket = new WebSocket('ws://' + location.host + '/ws/');
-    this.socket.onopen = _.bind(function() {
-        this.handleOpen();
-    }, this);
-    this.socket.onmessage = _.bind(function(m) {
-        this.handleMessage(m);
-    }, this);
+    this.socket.onopen = _.bind(this.handleOpen, this);
+    this.socket.onmessage = _.bind(this.handleMessage, this);
     this.socket.onerror = function(e) {
         console.log('socket error');
         console.log(e);

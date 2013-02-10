@@ -1,4 +1,4 @@
-# This work is copyright 2012 - 2013 Jordon Mears. All rights reserved.
+# This work is copyright 2011 - 2013 Jordon Mears. All rights reserved.
 #
 # This file is part of Cider.
 #

@@ -23,6 +23,23 @@ $(function() {
             '*splat': 'index'
         },
         index: function() {
+            var file = new cider.editor.File({
+                file: config.file,
+                salt: config.salt,
+                extra: config.extra
+            });
+
+            // Change config values based on user preferences.
+            var preferences = new cider.Preferences();
+            config.mode = preferences.get(
+                'fm-' + file.hash(config.salt),
+                config.mode
+            );
+            config.tab_width = (config.markup) ? preferences.get(
+                'stwm',
+                config.tab_width
+            ) : preferences.get('stw', config.tab_width);
+
             $('body').append(new cider.views.TopNav({
                 header: config.file_name,
                 sub_header: config.prefix + config.path,
@@ -33,15 +50,73 @@ $(function() {
                     file: config.file
                 })
             }).render().$el);
-            $('body').append(new cider.views.editor.Editor({
-                text: config.text
-            }).render().$el);
+            var editor = new cider.views.editor.Editor({
+                text: config.text,
+                tab_width: config.tab_width,
+                markup: config.markup,
+                mode: (config.mode !== undefined) ? config.mode : null,
+                modes: config.modes,
+                highlight_mode_key: 'fm-' + file.hash(config.salt)
+            });
+            $('body').append(editor.render().$el);
+            editor.renderEditor();
             $('body').append(new cider.views.BottomNav({
                 right_content: new cider.views.editor.FindBar()
             }).render().$el);
             $('body').append(new cider.views.editor.Settings({
-                mode: config.mode
+                markup: config.markup,
+                mode: config.mode,
+                modes: config.modes,
+                highlight_mode_key: 'fm-' + file.hash(config.salt)
             }).render().$el);
+
+            var socket = null;
+            try {
+                socket = new cider.editor.Socket({
+                    name: preferences.get('sname'),
+                    file: config.file,
+                    salt: config.salt
+                });
+            } catch(e) {
+                editor.setReadOnly(false);
+                console.log(e);
+            }
+
+            window.onbeforeunload = function() {
+                /* $(window).unload does not appear to be consistent. */
+                if(editor.isDirty()) {
+                    return 'Document has unsaved changes; changes will be lost.';
+                }
+
+                if(file.isSaving()) {
+                    return 'Save operation in progress; changes could be lost.';
+                }
+            };
+
+            $(window).keydown(function(e) {
+                if(e.ctrlKey || e.metaKey) {
+                    switch(e.keyCode) {
+                        case 'F'.charCodeAt(0):
+                            e.preventDefault();
+                            cider.events.trigger('//search');
+                            break;
+                        case 'G'.charCodeAt(0):
+                            e.preventDefault();
+                            if(e.shiftKey) {
+                                cider.events.trigger('//editor/find/previous');
+                            } else {
+                                cider.events.trigger('//editor/find/next');
+                            }
+                            break;
+                        case 'S'.charCodeAt(0):
+                            e.preventDefault();
+                            cider.events.trigger('//editor/save');
+                            break;
+                    }
+                }
+            });
+
+            editor.focus();
         }
     });
     router = new Router();

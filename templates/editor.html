@@ -28,6 +28,9 @@ Cider. If not, see <http://www.gnu.org/licenses/>.
   <body>
     <script src="../../static/ace/ace.js" type="text/javascript"></script>
     <script src="../../static/ace/theme-eclipse.js" type="text/javascript"></script>
+    {% for mode in modes %}
+    <script src="../../static/ace/mode-{{ mode[1]['mode'] }}.js" type="text/javascript"></script>
+    {% end %}
     <script src="../../static/json2.js" type="text/javascript"></script>
     <script src="../../static/jquery.min.js" type="text/javascript"></script>
     <script src="../../static/underscore-min.js" type="text/javascript"></script>

@@ -21,6 +21,11 @@ if(typeof cider != 'object') {
     var cider = {};
 }
 
+/**
+ * Ensures given namespace is declared.
+ *
+ * @param {String} ns String of the namespace to declare.
+ */
 cider.namespace = function(ns) {
     if(ns && ns !== '') {
         var parent = cider;
@@ -36,10 +41,19 @@ cider.namespace = function(ns) {
     }
 };
 
+/**
+ * Default constructor for creating class definitions.
+ *
+ * Handles delcaring inheritance and looks for method called initialize to
+ * execute on object creation.
+ *
+ * @param {function} The constructor this class should extend.
+ * @return {function} The constructor for the class.
+ */
 cider.extend = function(parent) {
     var cls = function(config) {
-        if(this.init) {
-            this.init(config);
+        if(this.initialize) {
+            this.initialize(config);
         }
     };
     if(parent) {
@@ -49,28 +63,69 @@ cider.extend = function(parent) {
     return cls;
 };
 
+/**
+ * A global events object instance to provide basic pub/sub capability in the
+ * UI.
+ */
+cider.events = _.extend({}, Backbone.Events);
+
+/**
+ * Class that manages a key/value store for keeping user preferences.
+ *
+ * @constructor
+ */
 cider.Preferences = cider.extend();
 
+/**
+ * Fetch a value by its key.
+ *
+ * This method will automatically deserialize JSON strings into objects.
+ *
+ * @param {String} key The key lookup.
+ * @param [default_value] Optional default value to return if the key is not
+ * found.
+ * @return The value in the local store, the given default value or null.
+ */
 cider.Preferences.prototype.get = function(key, default_value) {
     var value = localStorage.getItem(key);
     if(value) {
         try {
             return JSON.parse(value);
-        } catch(e) {
-            return (value !== null) ? value : default_value;
-        }
+        } catch(e) {}
     }
-    return value;
+    return (value !== null) ? value : default_value;
 };
 
+/**
+ * Set a value into the local store.
+ *
+ * This will override existing values in the store. Will also automatically
+ * serialize objects into JSON strings for storing. Triggers an event named
+ * after the key if the value has changed from the previously stored value.
+ *
+ * @param {String} key The key to store the value under.
+ * @param {String} value The value to store.
+ */
 cider.Preferences.prototype.set = function(key, value) {
+    var oldValue = localStorage.getItem(key);
     if(typeof value == 'object') {
         localStorage.setItem(key, JSON.stringify(value));
     } else {
         localStorage.setItem(key, value);
     }
+    if(value !== oldValue) {
+        cider.events.trigger('//preferences/' + key, value);
+    }
 };
 
+/**
+ * Remove an item from the store.
+ *
+ * Will trigger an event named after the key providing the value null.
+ *
+ * @param {String} key Key of the value to remove.
+ */
 cider.Preferences.prototype.remove = function(key) {
     localStorage.removeItem(key);
+    cider.events.trigger('//preferences/' + key, null);
 };
