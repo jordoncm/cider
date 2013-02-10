@@ -49,7 +49,6 @@ def build_data_files_paths(source, target, paths):
 
 APP = ['server.py']
 DATA_FILES = build_data_files_paths('', '', [
-    'js',
     'static',
     'templates',
     'configuration.json',
@@ -69,7 +68,7 @@ OPTIONS = {
 if sys.platform == 'darwin':
     setup(
         name='Cider',
-        version='0.7',
+        version='0.8 beta',
         author='Jordon Mears',
         description=('Web-based IDE'),
         app=APP,
@@ -80,7 +79,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     setup(
         name='Cider',
-        version='0.7',
+        version='0.8 beta',
         author='Jordon Mears',
         description=('Web-based IDE'),
         console=APP,
