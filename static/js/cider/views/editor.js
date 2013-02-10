@@ -332,6 +332,7 @@ cider.views.editor.Editor = Backbone.View.extend({
         this.editor.focus();
     },
     trimLines: function() {
+        Range = ace.require('ace/range').Range;
         var lines = this.editor.getSession().getDocument().getAllLines();
         var pos = -1;
         for(var i = 0; i < lines.length; i++) {
