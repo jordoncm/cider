@@ -33,9 +33,9 @@ $(function() {
             }).render().$el);
             if(config.folder) {
                 $('body').append(
-                    new cider.views.filemanager.NewFolder().render({
+                    new cider.views.filemanager.NewFolder({
                         folder: config.folder
-                    }).$el
+                    }).render().$el
                 );
             }
             $('body').append(new cider.views.filemanager.FileList({

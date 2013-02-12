@@ -19,10 +19,14 @@
 
 cider.namespace('cider.views.filemanager');
 
-cider.views.filemanager.NewFolder =  Backbone.View.extend({
+cider.views.filemanager.NewFolder = Backbone.View.extend({
     template: _.template(cider.templates.filemanager.NEW_FOLDER),
     render: function() {
-        this.$el.html(this.template());
+        var context = _.pick(this.options || {}, ['folder']);
+        context = _.defaults(context, {
+            folder: ''
+        });
+        this.$el.html(this.template(context));
         return this;
     }
 });
