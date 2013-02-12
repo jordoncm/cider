@@ -47,7 +47,8 @@ $(function() {
                 extra: new cider.views.editor.Menu({
                     save_text: config.save_text,
                     save_class: (config.save_text.toLowerCase() == 'saved') ? 'btn-success' : 'btn-warning',
-                    file: config.file
+                    file: config.file,
+                    extra: config.extra
                 })
             }).render().$el);
             var editor = new cider.views.editor.Editor({

@@ -38,12 +38,13 @@ cider.views.editor.Menu = Backbone.View.extend({
     render: function() {
         var context = _.pick(
             this.options || {},
-            ['save_text', 'save_class', 'file']
+            ['save_text', 'save_class', 'file', 'extra']
         );
         context = _.defaults(context, {
             save_text: 'Save',
             save_class: 'btn-warning',
-            file: ''
+            file: '',
+            extra: ''
         });
         this.$el.html(this.template(context));
         return this;
