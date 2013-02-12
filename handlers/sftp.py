@@ -13,11 +13,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-
-from operator import itemgetter
+"""Handlers to manage SFTP requests."""
 
 import hashlib
 import json
+from operator import itemgetter
 import os
 import pysftp
 import random
@@ -31,14 +31,17 @@ import collaborate
 import log
 import util
 
-
 class BaseHandler(tornado.web.RequestHandler):
-
+    """Base handler of methods to manage SFTP connection."""
     def setup_connection(self):
+        """Sets up the connection details as a secure cookie with the client.
+
+        Connection details are kept as a secure cookie so the client is in
+        control of the data and no access details are kept with the server.
+        """
         user = self.get_argument('sftp_user', 'root')
         if user == '':
             user = 'root'
-
         path = self.get_argument('sftp_path', '/')
         if path == '':
             path = '/'
@@ -49,231 +52,214 @@ class BaseHandler(tornado.web.RequestHandler):
             'password': self.get_argument('sftp_password', ''),
             'path': path
         }
+        connection_id = ''.join(
+            random.choice(string.ascii_uppercase + string.digits)
+            for x in range(8)
+        )
 
-        id = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(8))
-        self.set_secure_cookie('sftp-' + id, json.dumps(details), expires_days=None)
-        return id
+        self.set_secure_cookie(
+            'sftp-' + connection_id,
+            json.dumps(details),
+            expires_days = None
+        )
+        return connection_id
 
+    def get_connection_id(self):
+        """Returns the connection id based on the request parameter."""
+        return str(self.get_argument('connection', '')).upper()
+
+    def get_connection_details(self):
+        """Fetches connection details from the cookie."""
+        connection_id = self.get_connection_id()
+        return json.loads(self.get_secure_cookie('sftp-' + connection_id))
+
+    def get_connection(self):
+        """Open the SSH connection."""
+        connection_id = self.get_connection_id()
+        if connection_id:
+            details = self.get_connection_details()
+            try:
+                server = pysftp.Connection(
+                    host = details['host'],
+                    username = details['user'],
+                    password = details['password']
+                )
+                return server
+            except:  # pylint: disable=W0702
+                log.error('Connection to server over SSH failed.')
+                self.send_error(200)
+                return None
+        else:
+            connection_id = self.setup_connection()
+            # TODO: This should properly parse the URL in order to maintain
+            # existing parameters.
+            self.redirect('?connection=' + connection_id)
+            self.finish()
+            return None
+
+    def write_error(self, status_code, **kwargs):
+        """A default error response."""
+        loader = tornado.template.Loader('templates')
+        self.write(loader.load('error.html').generate(
+            title = 'Error - Cider',
+            config = json.dumps({
+                'message': ' '.join([
+                    'Authentication to the server failed.',
+                    'Please go back and try the connection again.'
+                ])
+            })
+        ))
 
 class CreateFolderHandler(BaseHandler):
     """Handles the request to create a new folder."""
-
     def get(self):
+        """GET request; takes an argument path as the full path to the folder
+        to be created.
         """
-        GET request; takes an argument path as the full path to the folder to
-        be created.
-        """
-        if self.get_argument('connection', None) is not None:
-            id = self.get_argument('connection')
-            id = id.upper()
-            details = json.loads(self.get_secure_cookie('sftp-' + id))
+        server = self.get_connection()
+        if server:
+            details = self.get_connection_details()
+            path = self.get_argument('path', '')
+            path = path.replace('..', '').strip('/')  # pylint: disable=E1103
+            base = details['path']
             try:
-                server = pysftp.Connection(
-                    host=details['host'],
-                    username=details['user'],
-                    password=details['password']
-                )
-            except:
-                log.error('Connection to server over SSH failed.')
-                self.write(json.dumps({
-                    'success': False
-                }))
-
-            self.set_header('Content-Type', 'application/json')
-            try:
-                path = self.get_argument('path', '').replace('..', '').strip('/')
-                base = details['path']
-
                 server.execute(
                     'mkdir ' + os.path.join(base, path).replace(' ', '\ ')
                 )
-
-                self.write(json.dumps({
-                    'success': True
-                }))
-            except:
-                self.write(json.dumps({
-                    'success': False
-                }))
+                self.set_header('Content-Type', 'application/json')
+                self.write(json.dumps({'success': True}))
+            except:  # pylint: disable=W0702
+                self.send_error(200)
             server.close()
-        else:
-            id = self.setup_connection()
-            self.redirect('?connection=' + id)
 
+    def write_error(self, status_code, **kwargs):
+        """Outputs failure JSON."""
+        self.set_header('Content-Type', 'application/json')
+        self.write(json.dumps({'success': False}))
 
 class DownloadHandler(BaseHandler):
     """Handles file download requests."""
-
     def get(self):
-        """
-        GET request; takes an argument file as the full path of the file to
+        """GET request; takes an argument file as the full path of the file to
         download.
         """
-        if self.get_argument('connection', None) is not None:
-            id = self.get_argument('connection')
-            id = id.upper()
-            details = json.loads(self.get_secure_cookie('sftp-' + id))
-            try:
-                server = pysftp.Connection(
-                    host=details['host'],
-                    username=details['user'],
-                    password=details['password']
-                )
-            except:
-                log.error('Connection to server over SSH failed.')
-                data = None
-                length = 0
-
-            file = self.get_argument('file', '').replace('..', '').strip('/')
+        server = self.get_connection()
+        if server:
+            details = self.get_connection_details()
+            the_file = self.get_argument('file', '')
+            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
             base = details['path']
-
-            if file.find('/') != -1:
-                file_name = file[(file.rfind('/') + 1):]
-                path = file[:file.rfind('/')]
-            else:
-                file_name = file
-                path = ''
+            file_name = self.calculate_file_name()
 
             try:
                 tmp_path = tempfile.mkstemp()
                 tmp_path = tmp_path[1]
-                server.get(os.path.join(base, file), tmp_path)
-                f = open(tmp_path, 'rb')
-                data = f.read()
-                f.close()
+                server.get(os.path.join(base, the_file), tmp_path)
+                file_handler = open(tmp_path, 'rb')
+                data = file_handler.read()
+                file_handler.close()
                 length = os.path.getsize(tmp_path)
                 os.remove(tmp_path)
-            except Exception as e:
-                log.error(e)
-                data = None
-                length = 0
-
-            self.set_header('Content-Type', 'application/force-download')
-            self.set_header(
-                'Content-Disposition', 'attachment; filename="' + file_name + '"'
-            )
-            self.set_header('Content-Length', length)
-            self.write(data)
+                self.output_file(file_name, length, data)
+            except Exception as error:  # pylint: disable=W0703
+                log.error(error)
+                self.send_error(200)
             server.close()
-        else:
-            id = self.setup_connection()
-            self.redirect('?connection=' + id)
 
+    def write_error(self, status_code, **kwargs):
+        """Write out error."""
+        self.output_file(self.calculate_file_name(), 0, None)
+
+    def calculate_file_name(self):
+        """Figures out file name based on URL parameter."""
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
+        file_name = the_file
+        if the_file.find('/') != -1:
+            file_name = the_file[(the_file.rfind('/') + 1):]
+        return file_name
+
+    def output_file(self, file_name, length, data):
+        """Sets up the headers and outputs the file."""
+        self.set_header('Content-Type', 'application/force-download')
+        self.set_header(
+            'Content-Disposition',
+            'attachment; filename="' + file_name + '"'
+        )
+        self.set_header('Content-Length', length)
+        self.write(data)
 
 class EditorHandler(BaseHandler):
     """Handles editor requests."""
-
     def get(self):
-        """
-        GET request; takes an argument file as the full path of the file to
+        """GET request; takes an argument file as the full path of the file to
         load into the editor.
         """
-        if self.get_argument('connection', None) is not None:
-            id = self.get_argument('connection')
-            id = id.upper()
-            details = json.loads(self.get_secure_cookie('sftp-' + id))
-            try:
-                server = pysftp.Connection(
-                    host=details['host'],
-                    username=details['user'],
-                    password=details['password']
-                )
-            except:
-                log.error('Connection to server over SSH failed.')
-                loader = tornado.template.Loader('templates')
-                self.write(loader.load('error.html').generate(
-                    title='Error - Cider',
-                    config=json.dumps({
-                        'message': 'Authentication to the server failed. Please go back and try the connection again.'
-                    })
-                ))
-                return
-
-            file = self.get_argument('file', '').replace('..', '').strip('/')
+        server = self.get_connection()
+        if server:
+            details = self.get_connection_details()
+            the_file = self.get_argument('file', '')
+            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
             base = details['path']
-
-            if file.find('/') != -1:
-                file_name = file[(file.rfind('/') + 1):]
-                path = file[:file.rfind('/')]
+            file_name = the_file
+            path = ''
+            title = '[' + file_name + '] - Cider'
+            if the_file.find('/') != -1:
+                file_name = the_file[(the_file.rfind('/') + 1):]
+                path = the_file[:the_file.rfind('/')]
                 title = '[' + file_name + '] ' + path + ' - Cider'
-            else:
-                file_name = file
-                path = ''
-                title = '[' + file_name + '] - Cider'
-
-            try:
-                tmp_path = tempfile.mkstemp()
-                tmp_path = tmp_path[1]
-                server.get(os.path.join(base, file), tmp_path)
-                f = open(tmp_path, 'r')
-                text = f.read().replace('{', '~' + 'lb').replace('}', '~' + 'rb')
-                f.close()
-                os.remove(tmp_path)
-
-                save_text = 'Saved'
-            except Exception as e:
-                log.warn(e)
-                text = ''
-                save_text = 'Save'
-
-            ext = file[(file.rfind('.') + 1):]
+            ext = the_file[(the_file.rfind('.') + 1):]
             mode = util.get_mode(ext)
             tab_width = util.get_tab_width(ext)
             markup = util.is_markup(ext)
 
+            try:
+                tmp_path = tempfile.mkstemp()
+                tmp_path = tmp_path[1]
+                server.get(os.path.join(base, the_file), tmp_path)
+                file_handler = open(tmp_path, 'r')
+                text = file_handler.read()
+                text = text.replace('{', '~' + 'lb').replace('}', '~' + 'rb')
+                file_handler.close()
+                os.remove(tmp_path)
+                save_text = 'Saved'
+            except Exception as error:  # pylint: disable=W0703
+                log.warn(error)
+                text = ''
+                save_text = 'Save'
+
             self.set_header('Content-Type', 'text/html')
             loader = tornado.template.Loader('templates')
             self.write(loader.load('editor.html').generate(
-                config=json.dumps({
+                config = json.dumps({
                     'file_name': file_name,
                     'path': path,
                     'title': title,
-                    'file': file,
+                    'file': the_file,
                     'text': text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
                     'mode': mode,
                     'tab_width': tab_width,
                     'markup': markup,
                     'save_text': save_text,
-                    'extra': '&connection=' + id,
+                    'extra': '&connection=' + self.get_connection_id(),
                     'prefix': 'sftp://' + details['user'] + '@' + details['host'] + details['path'],
-                    'salt': id,
+                    'salt': self.get_connection_id(),
                     'modes': util.MODES
                 }),
-                title=title,
-                modes=util.MODES
+                title = title,
+                modes = util.MODES
             ))
-        else:
-            id = self.setup_connection()
-            self.redirect('?connection=' + id)
-
+            server.close()
 
 class FileManagerHandler(BaseHandler):
     """Handles the file manager requests."""
-
     def get(self):
         """GET request; takes path as an argument."""
-        if self.get_argument('connection', None) is not None:
-            id = self.get_argument('connection')
-            id = id.upper()
-            details = json.loads(self.get_secure_cookie('sftp-' + id))
-            try:
-                server = pysftp.Connection(
-                    host=details['host'],
-                    username=details['user'],
-                    password=details['password']
-                )
-            except:
-                log.error('Connection to server over SSH failed.')
-                loader = tornado.template.Loader('templates')
-                self.write(loader.load('error.html').generate(
-                    title='Error - Cider',
-                    config=json.dumps({
-                        'message': 'Authentication to the server failed. Please go back and try the connection again.'
-                    })
-                ))
-                return
-
-            path = self.get_argument('path', '').replace('..', '').strip('/')
+        server = self.get_connection()
+        if server:
+            details = self.get_connection_details()
+            path = self.get_argument('path', '')
+            path = path.replace('..', '').strip('/')  # pylint: disable=E1103
             title = path + ' - Cider'
             base = details['path']
 
@@ -284,9 +270,9 @@ class FileManagerHandler(BaseHandler):
 
                 for i in range(len(file_list)):
                     try:
-                        file = os.path.join(base, path, file_list[i])
+                        the_file = os.path.join(base, path, file_list[i])
                         is_file = True
-                        command = 'if test -d ' + file.replace(' ', '\ ') + '; then echo -n 1; fi'
+                        command = 'if test -d ' + the_file.replace(' ', '\ ') + '; then echo -n 1; fi'
                         if len(server.execute(command)):
                             is_file = False
                         confirm = ''
@@ -295,104 +281,91 @@ class FileManagerHandler(BaseHandler):
                             'is_file': is_file,
                             'confirm': confirm
                         })
-                    except IOError as e:
-                        log.warn(e)
+                    except IOError as error:
+                        log.warn(error)
 
                 files = sorted(files, key=itemgetter('is_file'))
-            except Exception as e:
-                log.warn(e)
+            except Exception as error:  # pylint: disable=W0703
+                log.warn(error)
 
+            up = ''
             if path != '' and path.rfind('/') > -1:
                 up = path[:path.rfind('/')]
-            else:
-                up = ''
 
             self.set_header('Content-Type', 'text/html')
             loader = tornado.template.Loader('templates')
             self.write(loader.load('file-manager.html').generate(
-                title=title,
-                config=json.dumps({
+                title = title,
+                config = json.dumps({
                     'base': base,
                     'path': path,
                     'files_list': files,
                     'up': up,
                     'folder': self.get_argument('folder', ''),
-                    'extra': '&connection=' + id,
+                    'extra': '&connection=' + self.get_connection_id(),
                     'prefix': 'sftp://' + details['user'] + '@' + details['host'] + details['path']
                 })
             ))
-
             server.close()
-        else:
-            id = self.setup_connection()
-            self.redirect('?connection=' + id)
-
-    def post(self):
-        self.get()
-
-
-class SaveFileHandler(BaseHandler):
-    """Handles file saving requests."""
-
-    def get(self):
-        """
-        GET request; takes arguments file and text for the path of the file to
-        save and the content to put in it.
-        """
-        if self.get_argument('connection', None) is not None:
-            id = self.get_argument('connection')
-            id = id.upper()
-            details = json.loads(self.get_secure_cookie('sftp-' + id))
-            try:
-                server = pysftp.Connection(
-                    host=details['host'],
-                    username=details['user'],
-                    password=details['password']
-                )
-            except:
-                log.error('Connection to server over SSH failed.')
-                success = False
-                notification = 'save failed'
-
-            self.set_header('Content-Type', 'application/json')
-            try:
-                file = self.get_argument('file', '').replace('..', '').strip('/')
-                base = details['path']
-
-                tmp_path = tempfile.mkstemp()
-                tmp_path = tmp_path[1]
-                f = open(tmp_path, 'w')
-                f.write(
-                    self.get_argument('text', strip=False).encode('ascii', 'replace')
-                )
-                f.close()
-                server.put(tmp_path, os.path.join(base, file))
-                os.remove(tmp_path)
-
-                try:
-                    salt = self.get_argument('salt', '')
-                    id = hashlib.sha224(salt + file).hexdigest()
-                    collaborate.FileDiffManager().remove_diff(id)
-                    collaborate.FileDiffManager().create_diff(id)
-                    collaborate.FileSessionManager().broadcast(file, salt, {'t': 's'})
-                except:
-                    pass
-
-                success = True
-                notification = 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
-            except Exception as e:
-                log.error(e)
-                success = False
-                notification = 'save failed'
-
-            self.write(json.dumps({
-                'success': success,
-                'notification': notification
-            }))
-        else:
-            id = self.setup_connection()
-            self.redirect('?connection=' + id)
 
     def post(self):
         """Post request; same logic as the GET request."""
         self.get()
+
+class SaveFileHandler(BaseHandler):
+    """Handles file saving requests."""
+    def get(self):
+        """GET request; takes arguments file and text for the path of the file
+        to save and the content to put in it.
+        """
+        server = self.get_connection()
+        if server:
+            details = self.get_connection_details()
+            the_file = self.get_argument('file', '')
+            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
+            base = details['path']
+
+            try:
+                tmp_path = tempfile.mkstemp()
+                tmp_path = tmp_path[1]
+                file_handler = open(tmp_path, 'w')
+                text = self.get_argument('text', strip = False)
+                text = text.encode('ascii', 'replace')  # pylint: disable=E1103
+                file_handler.write(text)
+                file_handler.close()
+                server.put(tmp_path, os.path.join(base, the_file))
+                os.remove(tmp_path)
+
+                try:
+                    salt = self.get_argument('salt', '')
+                    diff_id = hashlib.sha224(salt + the_file).hexdigest()
+                    collaborate.FileDiffManager().remove_diff(diff_id)
+                    collaborate.FileDiffManager().create_diff(diff_id)
+                    collaborate.FileSessionManager().broadcast(
+                        the_file,
+                        salt,
+                        {'t': 's'}
+                    )
+                except:  # pylint: disable=W0702
+                    pass
+
+                self.set_header('Content-Type', 'application/json')
+                self.write(json.dumps({
+                    'success': True,
+                    'notification': 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
+                }))
+            except Exception as error:  # pylint: disable=W0703
+                log.error(error)
+                self.send_error(200)
+
+    def post(self):
+        """Post request; same logic as the GET request."""
+        self.get()
+
+    def write_error(self, status_code, **kwargs):
+        """Outputs failure JSON."""
+        self.set_header('Content-Type', 'application/json')
+        self.write(json.dumps({
+            'success': False,
+            'notification': 'save failed'
+        }))
