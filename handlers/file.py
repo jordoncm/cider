@@ -13,11 +13,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-
-from operator import itemgetter
+"""Handlers to manage local filesystem requests."""
 
 import hashlib
 import json
+from operator import itemgetter
 import os
 import time
 import tornado.template
@@ -27,68 +27,60 @@ import collaborate
 import log
 import util
 
-
 class CreateFolderHandler(tornado.web.RequestHandler):
     """Handles the request to create a new folder."""
-
     def get(self):
-        """
-        GET request; takes an argument path as the full path to the folder to
-        be created.
+        """GET request; takes an argument path as the full path to the folder
+        to be created.
         """
         self.set_header('Content-Type', 'application/json')
         try:
-            path = self.get_argument('path', '').replace('..', '').strip('/')
-
+            path = self.get_argument('path', '')
+            path = path.replace('..', '').strip('/')  # pylint: disable=E1103
             os.mkdir(os.path.join(
                 os.path.dirname(__file__),
                 util.get_base_path_adjustment(),
                 path
             ))
-
             self.write(json.dumps({
                 'success': True
             }))
-        except:
+        except:  # pylint: disable=W0702
             self.write(json.dumps({
                 'success': False
             }))
 
-
 class DownloadHandler(tornado.web.RequestHandler):
     """Handles file download requests."""
-
     def get(self):
-        """
-        GET request; takes an argument file as the full path of the file to
+        """GET request; takes an argument file as the full path of the file to
         download.
         """
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
 
-        if file.find('/') != -1:
-            file_name = file[(file.rfind('/') + 1):]
-            path = file[:file.rfind('/')]
+        if the_file.find('/') != -1:
+            file_name = the_file[(the_file.rfind('/') + 1):]
         else:
-            file_name = file
-            path = ''
+            file_name = the_file
 
         try:
-            f = open(
+            file_handler = open(
                 os.path.join(
                     os.path.dirname(__file__),
                     util.get_base_path_adjustment(),
-                    file
+                    the_file
                 ),
                 'rb'
             )
-            data = f.read()
+            data = file_handler.read()
             length = os.path.getsize(os.path.join(
                 os.path.dirname(__file__),
                 util.get_base_path_adjustment(),
-                file
+                the_file
             ))
-        except Exception as e:
-            log.error(e)
+        except Exception as error:  # pylint: disable=W0703
+            log.error(error)
             data = None
             length = 0
 
@@ -99,20 +91,18 @@ class DownloadHandler(tornado.web.RequestHandler):
         self.set_header('Content-Length', length)
         self.write(data)
 
-
 class EditorHandler(tornado.web.RequestHandler):
     """Handles editor requests."""
-
     def get(self):
-        """
-        GET request; takes an argument file as the full path of the file to
+        """GET request; takes an argument file as the full path of the file to
         load into the editor.
         """
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
 
-        if file.find('/') != -1:
-            file_name = file[(file.rfind('/') + 1):]
-            path = file[:file.rfind('/')]
+        if the_file.find('/') != -1:
+            file_name = the_file[(the_file.rfind('/') + 1):]
+            path = the_file[:the_file.rfind('/')]
             title = '[' + file_name + '] ' + path + ' - Cider'
         else:
             file_name = file
@@ -120,26 +110,28 @@ class EditorHandler(tornado.web.RequestHandler):
             title = '[' + file_name + '] - Cider'
 
         try:
-            f = open(
+            file_handler = open(
                 os.path.join(
                     os.path.dirname(__file__),
                     util.get_base_path_adjustment(),
-                    file
+                    the_file
                 ),
                 'r'
             )
-            text = f.read().replace('{', '~' + 'lb').replace('}', '~' + 'rb')
+            text = file_handler.read()
+            text = text.replace('{', '~' + 'lb').replace('}', '~' + 'rb')
 
             save_text = 'Saved'
-        except Exception as e:
-            log.warn(e)
+        except Exception as error:  # pylint: disable=W0703
+            log.warn(error)
             text = ''
             save_text = 'Save'
 
-        ext = file[(file.rfind('.') + 1):]
+        ext = the_file[(the_file.rfind('.') + 1):]
         mode = util.get_mode(ext)
         tab_width = util.get_tab_width(ext)
         markup = util.is_markup(ext)
+        text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
@@ -148,8 +140,8 @@ class EditorHandler(tornado.web.RequestHandler):
                 'file_name': file_name,
                 'path': path,
                 'title': title,
-                'file': file,
-                'text': text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
+                'file': the_file,
+                'text': text,
                 'mode': mode,
                 'tab_width': tab_width,
                 'markup': markup,
@@ -163,13 +155,12 @@ class EditorHandler(tornado.web.RequestHandler):
             modes=util.MODES
         ))
 
-
 class FileManagerHandler(tornado.web.RequestHandler):
     """Handles the file manager requests."""
-
     def get(self):
         """GET request; takes path as an argument."""
-        path = self.get_argument('path', '').replace('..', '').strip('/')
+        path = self.get_argument('path', '')
+        path = path.replace('..', '').strip('/')  # pylint: disable=E1103
         title = path + ' - Cider'
         base = util.get_base_path_adjustment()
 
@@ -180,29 +171,28 @@ class FileManagerHandler(tornado.web.RequestHandler):
 
             for i in range(len(file_list)):
                 try:
-                    file = os.path.join(base, path, file_list[i])
-                    is_file = os.path.isfile(file)
+                    the_file = os.path.join(base, path, file_list[i])
+                    is_file = os.path.isfile(the_file)
                     confirm = ''
-                    if is_file and os.path.getsize(file) > 10485760:
+                    if is_file and os.path.getsize(the_file) > 10485760:
                         confirm = 'large'
-                    if is_file and not util.is_text_file(file):
+                    if is_file and not util.is_text_file(the_file):
                         confirm = 'binary'
                     files.append({
                         'name': file_list[i],
                         'is_file': is_file,
                         'confirm': confirm
                     })
-                except IOError as e:
-                    log.warn(e)
+                except IOError as error:
+                    log.warn(error)
 
             files = sorted(files, key=itemgetter('is_file'))
-        except Exception as e:
-            log.warn(e)
+        except Exception as error:  # pylint: disable=W0703
+            log.warn(error)
 
+        up = ''
         if path != '' and path.rfind('/') > -1:
             up = path[:path.rfind('/')]
-        else:
-            up = ''
 
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
@@ -219,44 +209,46 @@ class FileManagerHandler(tornado.web.RequestHandler):
             })
         ))
 
-
 class SaveFileHandler(tornado.web.RequestHandler):
     """Handles file saving requests."""
-
     def get(self):
-        """
-        GET request; takes arguments file and text for the path of the file to
-        save and the content to put in it.
+        """GET request; takes arguments file and text for the path of the file
+        to save and the content to put in it.
         """
         self.set_header('Content-Type', 'application/json')
         try:
-            file = self.get_argument('file', '').replace('..', '').strip('/')
-            f = open(
+            the_file = self.get_argument('file', '')
+            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
+            text = self.get_argument('text', strip=False)
+            text = text.encode('ascii', 'replace')  # pylint: disable=E1103
+            file_handler = open(
                 os.path.join(
                     os.path.dirname(__file__),
                     util.get_base_path_adjustment(),
-                    file
+                    the_file
                 ),
                 'w'
             )
-            f.write(
-                self.get_argument('text', strip=False).encode('ascii', 'replace')
-            )
-            f.close()
+            file_handler.write(text)
+            file_handler.close()
 
             try:
                 salt = self.get_argument('salt', '')
-                id = hashlib.sha224(salt + file).hexdigest()
-                collaborate.FileDiffManager().remove_diff(id)
-                collaborate.FileDiffManager().create_diff(id)
-                collaborate.FileSessionManager().broadcast(file, salt, {'t': 's'})
-            except:
+                diff_id = hashlib.sha224(salt + file).hexdigest()
+                collaborate.FileDiffManager().remove_diff(diff_id)
+                collaborate.FileDiffManager().create_diff(diff_id)
+                collaborate.FileSessionManager().broadcast(
+                    the_file,
+                    salt,
+                    {'t': 's'}
+                )
+            except:  # pylint: disable=W0702
                 pass
 
             success = True
             notification = 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
-        except Exception as e:
-            log.error(e)
+        except Exception as error:  # pylint: disable=W0703
+            log.error(error)
             success = False
             notification = 'save failed'
 
