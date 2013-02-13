@@ -163,7 +163,7 @@ class BaseAuthHandler(tornado.web.RequestHandler):
 
 class DropboxHandler(BaseAuthHandler, Mixin):
     """Handler that redirects through the OAuth process."""
-    #@tornado.web.asynchronous
+    @tornado.web.asynchronous
     def get(self):
         """Processes the OAuth token or redirects to kickoff the process."""
         if self.get_argument('oauth_token', None):
