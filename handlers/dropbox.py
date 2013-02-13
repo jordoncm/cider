@@ -13,11 +13,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Cider. If not, see <http://www.gnu.org/licenses/>.
-
-from operator import itemgetter
+"""Handlers for talking to Dropbox."""
 
 import hashlib
 import json
+from operator import itemgetter
 import os
 import time
 import tornado.template
@@ -25,31 +25,30 @@ import tornado.web
 
 import collaborate
 import handlers.auth.dropbox
-import log
 import util
 
-
-class CreateFolderHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox.Mixin):
+class CreateFolderHandler(
+    handlers.auth.dropbox.BaseAuthHandler,
+    handlers.auth.dropbox.Mixin
+):
     """Handles the request to create a new folder."""
-
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self):
+        """GET request; takes an argument path as the full path to the folder
+        to be created.
         """
-        GET request; takes an argument path as the full path to the folder to
-        be created.
-        """
-        path = self.get_argument('path', '').replace('..', '').strip('/')
+        path = self.get_argument('path', '')
+        path = path.replace('..', '').strip('/')  # pylint: disable=E1103
         self.dropbox_request(
             '/fileops/create_folder',
-            access_token=self.current_user['access_token'],
-            callback=self.async_callback(self.get_callback),
-            post_args={'root': 'dropbox', 'path': path}
+            access_token = self.current_user['access_token'],
+            callback = self.async_callback(self.get_callback),
+            post_args = {'root': 'dropbox', 'path': path}
         )
 
     def get_callback(self, response):
-        """
-        Handles the callback from Dropbox. If auth does not fail to Dropbox,
+        """Handles the callback from Dropbox. If auth does not fail to Dropbox,
         this request currently assumes folder creation success.
         """
         if not response:
@@ -60,63 +59,63 @@ class CreateFolderHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.d
             'success': True
         }))
 
-
-class DownloadHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox.Mixin):
+class DownloadHandler(
+    handlers.auth.dropbox.BaseAuthHandler,
+    handlers.auth.dropbox.Mixin
+):
     """Handles file download requests."""
-
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self):
-        """
-        GET request; takes an argument file as the full path of the file to
+        """GET request; takes an argument file as the full path of the file to
         download.
         """
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
         self.dropbox_request(
-            '/files/dropbox/' + file,
-            access_token=self.current_user['access_token'],
-            callback=self.async_callback(self.get_callback)
+            '/files/dropbox/' + the_file,
+            access_token = self.current_user['access_token'],
+            callback = self.async_callback(self.get_callback)
         )
 
     def get_callback(self, response):
-        """
-        Handles the callback response from Dropbox. Outputs the content of the
-        download.
+        """Handles the callback response from Dropbox. Outputs the content of
+        the download.
         """
         if not response:
             self.authorize_redirect('/auth/dropbox/')
             return
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
 
-        if file.find('/') != -1:
-            file_name = file[(file.rfind('/') + 1):]
-            path = file[:file.rfind('/')]
-        else:
-            file_name = file
-            path = ''
+        file_name = the_file
+        if the_file.find('/') != -1:
+            file_name = the_file[(the_file.rfind('/') + 1):]
 
         self.set_header('Content-Type', 'application/force-download')
         self.set_header(
-            'Content-Disposition', 'attachment; filename="' + file_name + '"'
+            'Content-Disposition',
+            'attachment; filename="' + file_name + '"'
         )
         self.finish(response)
 
-
-class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox.Mixin):
+class EditorHandler(
+    handlers.auth.dropbox.BaseAuthHandler,
+    handlers.auth.dropbox.Mixin
+):
     """Handles editor requests."""
-
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self):
-        """
-        GET request; takes an argument file as the full path of the file to
+        """GET request; takes an argument file as the full path of the file to
         load into the editor.
         """
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
         self.dropbox_request(
-            '/files/dropbox/' + file,
-            access_token=self.current_user['access_token'],
-            callback=self.async_callback(self.get_callback)
+            '/files/dropbox/' + the_file,
+            access_token = self.current_user['access_token'],
+            callback = self.async_callback(self.get_callback)
         )
 
     def get_callback(self, response):
@@ -127,16 +126,16 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
             self.authorize_redirect('/auth/dropbox/')
             return
         '''
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
 
-        if file.find('/') != -1:
-            file_name = file[(file.rfind('/') + 1):]
-            path = file[:file.rfind('/')]
+        file_name = file
+        path = ''
+        title = '[' + file_name + '] - Cider'
+        if the_file.find('/') != -1:
+            file_name = the_file[(the_file.rfind('/') + 1):]
+            path = the_file[:the_file.rfind('/')]
             title = '[' + file_name + '] ' + path + ' - Cider'
-        else:
-            file_name = file
-            path = ''
-            title = '[' + file_name + '] - Cider'
 
         if not response:
             text = ''
@@ -145,7 +144,7 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
             text = response
             save_text = 'Saved'
 
-        ext = file[(file.rfind('.') + 1):]
+        ext = the_file[(the_file.rfind('.') + 1):]
         mode = util.get_mode(ext)
         tab_width = util.get_tab_width(ext)
         markup = util.is_markup(ext)
@@ -153,11 +152,11 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.finish(loader.load('editor.html').generate(
-            config=json.dumps({
+            config = json.dumps({
                 'file_name': file_name,
                 'path': path,
                 'title': title,
-                'file': file,
+                'file': the_file,
                 'text': text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
                 'mode': mode,
                 'tab_width': tab_width,
@@ -168,23 +167,25 @@ class EditorHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox
                 'salt': self.current_user['uid'],
                 'modes': util.MODES
             }),
-            title=title,
-            modes=util.MODES
+            title = title,
+            modes = util.MODES
         ))
 
-
-class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox.Mixin):
+class FileManagerHandler(
+    handlers.auth.dropbox.BaseAuthHandler,
+    handlers.auth.dropbox.Mixin
+):
     """Handles the file manager requests."""
-
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self):
         """GET request; takes path as an argument."""
-        path = self.get_argument('path', '').replace('..', '').strip('/')
+        path = self.get_argument('path', '')
+        path = path.replace('..', '').strip('/')  # pylint: disable=E1103
         self.dropbox_request(
             '/metadata/dropbox/' + path,
-            access_token=self.current_user['access_token'],
-            callback=self.async_callback(self.get_callback)
+            access_token = self.current_user['access_token'],
+            callback = self.async_callback(self.get_callback)
         )
 
     def get_callback(self, response):
@@ -192,30 +193,30 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
         if not response:
             self.authorize_redirect('/auth/dropbox/')
             return
-        path = self.get_argument('path', '').replace('..', '').strip('/')
+        path = self.get_argument('path', '')
+        path = path.replace('..', '').strip('/')  # pylint: disable=E1103
         title = path + ' - Cider'
         base = ''
 
         files = []
-        for file in response['contents']:
+        for the_file in response['contents']:
             files.append({
-                'name': os.path.basename(file['path']),
+                'name': os.path.basename(the_file['path']),
                 'is_file': not file['is_dir'],
                 'confirm': ''
             })
         files = sorted(files, key=lambda x: x['name'].encode().lower())
         files = sorted(files, key=itemgetter('is_file'))
 
+        up = ''
         if path != '' and path.rfind('/') > -1:
             up = path[:path.rfind('/')]
-        else:
-            up = ''
 
         self.set_header('Content-Type', 'text/html')
         loader = tornado.template.Loader('templates')
         self.finish(loader.load('file-manager.html').generate(
-            title=title,
-            config=json.dumps({
+            title = title,
+            config = json.dumps({
                 'base': base,
                 'path': path,
                 'files_list': files,
@@ -226,23 +227,24 @@ class FileManagerHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dr
             })
         ))
 
-
-class SaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropbox.Mixin):
+class SaveFileHandler(
+    handlers.auth.dropbox.BaseAuthHandler,
+    handlers.auth.dropbox.Mixin
+):
     """Handles file saving requests."""
-
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self):
+        """GET request; takes arguments file and text for the path of the file
+        to save and the content to put in it.
         """
-        GET request; takes arguments file and text for the path of the file to
-        save and the content to put in it.
-        """
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
         self.dropbox_put(
-            '/files_put/dropbox/' + file,
-            access_token=self.current_user['access_token'],
-            callback=self.async_callback(self.get_callback),
-            put_args=self.get_argument('text', strip=False).encode('ascii', 'replace')
+            '/files_put/dropbox/' + the_file,
+            access_token = self.current_user['access_token'],
+            callback = self.async_callback(self.get_callback),
+            put_args = self.get_argument('text', strip = False).encode('ascii', 'replace')  # pylint: disable=E1103
         )
 
     def get_callback(self, response):
@@ -250,19 +252,24 @@ class SaveFileHandler(handlers.auth.dropbox.BaseAuthHandler, handlers.auth.dropb
         if not response:
             self.authorize_redirect('/auth/dropbox/')
             return
-        file = self.get_argument('file', '').replace('..', '').strip('/')
+        the_file = self.get_argument('file', '')
+        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
         try:
             salt = self.get_argument('salt', '')
-            id = hashlib.sha224(salt + file).hexdigest()
-            collaborate.FileDiffManager().remove_diff(id)
-            collaborate.FileDiffManager().create_diff(id)
-            collaborate.FileSessionManager().broadcast(file, salt, {'t': 's'})
-        except:
+            diff_id = hashlib.sha224(salt + the_file).hexdigest()
+            collaborate.FileDiffManager().remove_diff(diff_id)
+            collaborate.FileDiffManager().create_diff(diff_id)
+            collaborate.FileSessionManager().broadcast(
+                the_file,
+                salt,
+                {'t': 's'}
+            )
+        except:  # pylint: disable=W0702
             pass
-        self.finish(self.write(json.dumps({
+        self.finish(json.dumps({
             'success': True,
             'notification': 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
-        })))
+        }))
 
     def post(self):
         """Post request; same logic as the GET request."""
