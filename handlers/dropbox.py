@@ -129,7 +129,7 @@ class EditorHandler(
         the_file = self.get_argument('file', '')
         the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
 
-        file_name = file
+        file_name = the_file
         path = ''
         title = '[' + file_name + '] - Cider'
         if the_file.find('/') != -1:
@@ -202,7 +202,7 @@ class FileManagerHandler(
         for the_file in response['contents']:
             files.append({
                 'name': os.path.basename(the_file['path']),
-                'is_file': not file['is_dir'],
+                'is_file': not the_file['is_dir'],
                 'confirm': ''
             })
         files = sorted(files, key=lambda x: x['name'].encode().lower())
