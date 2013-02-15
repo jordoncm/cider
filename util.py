@@ -48,7 +48,7 @@ MODES = [
     (['haml'], {'display_name': 'Haml', 'mode': 'haml'}),
     (['hx'], {'display_name': 'Haxe', 'mode': 'haxe'}),
     (
-        ['htm', 'html', 'mustache', 'tpl', 'shtml'],
+        ['htm', 'html', 'mustache', 'tpl', 'shtml', 'soy'],
         {'display_name': 'HTML', 'markup': True, 'mode': 'html', 'tab_width': 2}
     ),
     (['jade'], {'display_name': 'Jade', 'mode': 'jade'}),
@@ -119,7 +119,7 @@ MODES = [
         {'display_name': 'XML', 'markup': True, 'mode': 'xml', 'tab_width': 2}
     ),
     (['xq', 'xqy', 'xquery'], {'display_name': 'XQuery', 'mode': 'xquery'}),
-    (['yaml'], {'display_name': 'YAML', 'mode': 'yaml'})
+    (['yaml', 'jstd'], {'display_name': 'YAML', 'mode': 'yaml'})
 ]
 
 def get_configuration_value(key, default = None):
