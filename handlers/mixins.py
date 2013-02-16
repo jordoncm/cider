@@ -92,12 +92,6 @@ class Editor(BaseMixin):
             # The saved argument indicates the file is saved.
             save_text = 'Saved'
 
-        # TODO: Test if any of these escaping methods are still needed.
-        # From Dropbox, file and SFTP:
-        # text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        # From file and SFTP:
-        # text = text.replace('{', '~' + 'lb').replace('}', '~' + 'rb')
-
         ext = util.find_extension(filename)
         mode = util.get_mode(ext)
         tab_width = util.get_tab_width(ext)

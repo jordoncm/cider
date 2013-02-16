@@ -136,15 +136,6 @@ cider.views.editor.Editor = Backbone.View.extend({
         this.editor.getSession().getDocument().setNewLineMode('unix');
         this.setTabWidth(this.options.tab_width);
         this.editor.getSession().setUseSoftTabs(true);
-        this.editor.getSession().setValue(
-            this.editor.getSession().getValue().replace(
-                /[~]lb/g,
-                decodeURIComponent('%7B')
-            ).replace(
-                /[~]rb/g,
-                decodeURIComponent('%7D')
-            )
-        );
         if(this.options.mode) {
             this.setMode(this.options.mode);
         }
