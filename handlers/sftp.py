@@ -15,19 +15,16 @@
 # Cider. If not, see <http://www.gnu.org/licenses/>.
 """Handlers to manage SFTP requests."""
 
-import hashlib
 import json
-from operator import itemgetter
 import os
 import pysftp
 import random
 import string
 import tempfile
-import time
 import tornado.template
 import tornado.web
 
-import collaborate
+import handlers.mixins
 import log
 import util
 
@@ -110,7 +107,17 @@ class BaseHandler(tornado.web.RequestHandler):
             })
         ))
 
-class CreateFolderHandler(BaseHandler):
+    def generate_prefix(self, details):
+        """Returns the prefix based on given connection details."""
+        return ''.join([
+            'sftp://',
+            details['user'],
+            '@',
+            details['host'],
+            details['path']
+        ])
+
+class CreateFolderHandler(BaseHandler, handlers.mixins.CreateFolder):
     """Handles the request to create a new folder."""
     def get(self):
         """GET request; takes an argument path as the full path to the folder
@@ -119,25 +126,22 @@ class CreateFolderHandler(BaseHandler):
         server = self.get_connection()
         if server:
             details = self.get_connection_details()
-            path = self.get_argument('path', '')
-            path = path.replace('..', '').strip('/')  # pylint: disable=E1103
+            path = self.get_path()
             base = details['path']
             try:
                 server.execute(
                     'mkdir ' + os.path.join(base, path).replace(' ', '\ ')
                 )
-                self.set_header('Content-Type', 'application/json')
-                self.write(json.dumps({'success': True}))
+                self.do_success()
             except:  # pylint: disable=W0702
                 self.send_error(200)
             server.close()
 
     def write_error(self, status_code, **kwargs):
         """Outputs failure JSON."""
-        self.set_header('Content-Type', 'application/json')
-        self.write(json.dumps({'success': False}))
+        self.do_failure()
 
-class DownloadHandler(BaseHandler):
+class DownloadHandler(BaseHandler, handlers.mixins.Download):
     """Handles file download requests."""
     def get(self):
         """GET request; takes an argument file as the full path of the file to
@@ -146,21 +150,19 @@ class DownloadHandler(BaseHandler):
         server = self.get_connection()
         if server:
             details = self.get_connection_details()
-            the_file = self.get_argument('file', '')
-            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
-            base = details['path']
-            file_name = self.calculate_file_name()
+            filename = self.get_file()
+            basename = util.find_base(filename)
 
             try:
                 tmp_path = tempfile.mkstemp()
                 tmp_path = tmp_path[1]
-                server.get(os.path.join(base, the_file), tmp_path)
+                server.get(os.path.join(details['path'], filename), tmp_path)
                 file_handler = open(tmp_path, 'rb')
                 data = file_handler.read()
                 file_handler.close()
                 length = os.path.getsize(tmp_path)
                 os.remove(tmp_path)
-                self.output_file(file_name, length, data)
+                self.output_file(basename, length, data)
             except Exception as error:  # pylint: disable=W0703
                 log.error(error)
                 self.send_error(200)
@@ -168,28 +170,15 @@ class DownloadHandler(BaseHandler):
 
     def write_error(self, status_code, **kwargs):
         """Write out error."""
-        self.output_file(self.calculate_file_name(), 0, None)
+        basename = util.find_base(self.get_file())
+        self.output_file(basename, 0, None)
 
-    def calculate_file_name(self):
-        """Figures out file name based on URL parameter."""
-        the_file = self.get_argument('file', '')
-        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
-        file_name = the_file
-        if the_file.find('/') != -1:
-            file_name = the_file[(the_file.rfind('/') + 1):]
-        return file_name
-
-    def output_file(self, file_name, length, data):
+    def output_file(self, basename, length, data):
         """Sets up the headers and outputs the file."""
-        self.set_header('Content-Type', 'application/force-download')
-        self.set_header(
-            'Content-Disposition',
-            'attachment; filename="' + file_name + '"'
-        )
-        self.set_header('Content-Length', length)
-        self.write(data)
+        self.do_headers(basename, length)
+        self.finish(data)
 
-class EditorHandler(BaseHandler):
+class EditorHandler(BaseHandler, handlers.mixins.Editor):
     """Handles editor requests."""
     def get(self):
         """GET request; takes an argument file as the full path of the file to
@@ -198,121 +187,79 @@ class EditorHandler(BaseHandler):
         server = self.get_connection()
         if server:
             details = self.get_connection_details()
-            the_file = self.get_argument('file', '')
-            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
-            base = details['path']
-            file_name = the_file
-            path = ''
-            title = '[' + file_name + '] - Cider'
-            if the_file.find('/') != -1:
-                file_name = the_file[(the_file.rfind('/') + 1):]
-                path = the_file[:the_file.rfind('/')]
-                title = '[' + file_name + '] ' + path + ' - Cider'
-            ext = the_file[(the_file.rfind('.') + 1):]
-            mode = util.get_mode(ext)
-            tab_width = util.get_tab_width(ext)
-            markup = util.is_markup(ext)
+            filename = self.get_file()
+            text = ''
+            saved = False
 
             try:
                 tmp_path = tempfile.mkstemp()
                 tmp_path = tmp_path[1]
-                server.get(os.path.join(base, the_file), tmp_path)
+                server.get(os.path.join(details['path'], filename), tmp_path)
                 file_handler = open(tmp_path, 'r')
                 text = file_handler.read()
-                text = text.replace('{', '~' + 'lb').replace('}', '~' + 'rb')
                 file_handler.close()
                 os.remove(tmp_path)
-                save_text = 'Saved'
+                saved = True
             except Exception as error:  # pylint: disable=W0703
                 log.warn(error)
-                text = ''
-                save_text = 'Save'
 
-            self.set_header('Content-Type', 'text/html')
-            loader = tornado.template.Loader('templates')
-            self.write(loader.load('editor.html').generate(
-                config = json.dumps({
-                    'file_name': file_name,
-                    'path': path,
-                    'title': title,
-                    'file': the_file,
-                    'text': text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
-                    'mode': mode,
-                    'tab_width': tab_width,
-                    'markup': markup,
-                    'save_text': save_text,
-                    'extra': '&connection=' + self.get_connection_id(),
-                    'prefix': 'sftp://' + details['user'] + '@' + details['host'] + details['path'],
-                    'salt': self.get_connection_id(),
-                    'modes': util.MODES
-                }),
-                title = title,
-                modes = util.MODES
-            ))
+            self.do_output(
+                text,
+                self.generate_prefix(details),
+                self.get_connection_id(),
+                '&connection=' + self.get_connection_id(),
+                saved
+            )
             server.close()
 
-class FileManagerHandler(BaseHandler):
+class FileManagerHandler(BaseHandler, handlers.mixins.FileManager):
     """Handles the file manager requests."""
     def get(self):
         """GET request; takes path as an argument."""
         server = self.get_connection()
         if server:
             details = self.get_connection_details()
-            path = self.get_argument('path', '')
-            path = path.replace('..', '').strip('/')  # pylint: disable=E1103
-            title = path + ' - Cider'
+            path = self.get_path()
             base = details['path']
 
             files = []
             try:
                 file_list = server.listdir(os.path.join(base, path))
-                file_list.sort(key=lambda x: x.encode().lower())
-
-                for i in range(len(file_list)):
+                for i in file_list:
                     try:
-                        the_file = os.path.join(base, path, file_list[i])
+                        filename = os.path.join(base, path, i)
                         is_file = True
-                        command = 'if test -d ' + the_file.replace(' ', '\ ') + '; then echo -n 1; fi'
+                        command = ''.join([
+                            'if test -d ',
+                            filename.replace(' ', '\ '),
+                            '; then echo -n 1; fi'
+                        ])
                         if len(server.execute(command)):
                             is_file = False
                         confirm = ''
                         files.append({
-                            'name': file_list[i],
+                            'name': i,
                             'is_file': is_file,
                             'confirm': confirm
                         })
-                    except IOError as error:
+                    except Exception as error:  # pylint: disable=W0703
                         log.warn(error)
-
-                files = sorted(files, key=itemgetter('is_file'))
             except Exception as error:  # pylint: disable=W0703
                 log.warn(error)
 
-            up = ''
-            if path != '' and path.rfind('/') > -1:
-                up = path[:path.rfind('/')]
-
-            self.set_header('Content-Type', 'text/html')
-            loader = tornado.template.Loader('templates')
-            self.write(loader.load('file-manager.html').generate(
-                title = title,
-                config = json.dumps({
-                    'base': base,
-                    'path': path,
-                    'files_list': files,
-                    'up': up,
-                    'folder': self.get_argument('folder', ''),
-                    'extra': '&connection=' + self.get_connection_id(),
-                    'prefix': 'sftp://' + details['user'] + '@' + details['host'] + details['path']
-                })
-            ))
+            self.do_output(
+                files,
+                base,
+                self.generate_prefix(details),
+                '&connection=' + self.get_connection_id()
+            )
             server.close()
 
     def post(self):
         """Post request; same logic as the GET request."""
         self.get()
 
-class SaveFileHandler(BaseHandler):
+class SaveFileHandler(BaseHandler, handlers.mixins.SaveFile):
     """Handles file saving requests."""
     def get(self):
         """GET request; takes arguments file and text for the path of the file
@@ -321,39 +268,19 @@ class SaveFileHandler(BaseHandler):
         server = self.get_connection()
         if server:
             details = self.get_connection_details()
-            the_file = self.get_argument('file', '')
-            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
-            base = details['path']
+            filename = self.get_file()
 
             try:
                 tmp_path = tempfile.mkstemp()
                 tmp_path = tmp_path[1]
                 file_handler = open(tmp_path, 'w')
-                text = self.get_argument('text', strip = False)
-                text = text.encode('ascii', 'replace')  # pylint: disable=E1103
-                file_handler.write(text)
+                file_handler.write(self.get_text())
                 file_handler.close()
-                server.put(tmp_path, os.path.join(base, the_file))
+                server.put(tmp_path, os.path.join(details['path'], filename))
                 os.remove(tmp_path)
 
-                try:
-                    salt = self.get_argument('salt', '')
-                    diff_id = hashlib.sha224(salt + the_file).hexdigest()
-                    collaborate.FileDiffManager().remove_diff(diff_id)
-                    collaborate.FileDiffManager().create_diff(diff_id)
-                    collaborate.FileSessionManager().broadcast(
-                        the_file,
-                        salt,
-                        {'t': 's'}
-                    )
-                except:  # pylint: disable=W0702
-                    pass
-
-                self.set_header('Content-Type', 'application/json')
-                self.write(json.dumps({
-                    'success': True,
-                    'notification': 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
-                }))
+                self.broadcast_save(filename, self.get_connection_id())
+                self.do_success()
             except Exception as error:  # pylint: disable=W0703
                 log.error(error)
                 self.send_error(200)
@@ -364,8 +291,4 @@ class SaveFileHandler(BaseHandler):
 
     def write_error(self, status_code, **kwargs):
         """Outputs failure JSON."""
-        self.set_header('Content-Type', 'application/json')
-        self.write(json.dumps({
-            'success': False,
-            'notification': 'save failed'
-        }))
+        self.do_failure()

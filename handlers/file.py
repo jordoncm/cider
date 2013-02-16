@@ -15,247 +15,146 @@
 # Cider. If not, see <http://www.gnu.org/licenses/>.
 """Handlers to manage local filesystem requests."""
 
-import hashlib
-import json
-from operator import itemgetter
 import os
-import time
-import tornado.template
 import tornado.web
 
-import collaborate
+import handlers.mixins
 import log
 import util
 
-class CreateFolderHandler(tornado.web.RequestHandler):
+class CreateFolderHandler(
+    tornado.web.RequestHandler,
+    handlers.mixins.CreateFolder
+):
     """Handles the request to create a new folder."""
     def get(self):
         """GET request; takes an argument path as the full path to the folder
         to be created.
         """
-        self.set_header('Content-Type', 'application/json')
         try:
-            path = self.get_argument('path', '')
-            path = path.replace('..', '').strip('/')  # pylint: disable=E1103
+            path = self.get_path()
             os.mkdir(os.path.join(
                 os.path.dirname(__file__),
                 util.get_base_path_adjustment(),
                 path
             ))
-            self.write(json.dumps({
-                'success': True
-            }))
+            self.do_success()
         except:  # pylint: disable=W0702
-            self.write(json.dumps({
-                'success': False
-            }))
+            self.do_failure()
 
-class DownloadHandler(tornado.web.RequestHandler):
+class DownloadHandler(tornado.web.RequestHandler, handlers.mixins.Download):
     """Handles file download requests."""
     def get(self):
         """GET request; takes an argument file as the full path of the file to
         download.
         """
-        the_file = self.get_argument('file', '')
-        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
-
-        if the_file.find('/') != -1:
-            file_name = the_file[(the_file.rfind('/') + 1):]
-        else:
-            file_name = the_file
+        filename = self.get_file()
+        basename = util.find_base(filename)
 
         try:
-            file_handler = open(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    util.get_base_path_adjustment(),
-                    the_file
-                ),
-                'rb'
-            )
-            data = file_handler.read()
-            length = os.path.getsize(os.path.join(
+            full_path = os.path.join(
                 os.path.dirname(__file__),
                 util.get_base_path_adjustment(),
-                the_file
-            ))
+                filename
+            )
+            file_handler = open(full_path, 'rb')
+            data = file_handler.read()
+            file_handler.close()
+            length = os.path.getsize(full_path)
         except Exception as error:  # pylint: disable=W0703
             log.error(error)
             data = None
             length = 0
 
-        self.set_header('Content-Type', 'application/force-download')
-        self.set_header(
-            'Content-Disposition', 'attachment; filename="' + file_name + '"'
-        )
-        self.set_header('Content-Length', length)
-        self.write(data)
+        self.do_headers(basename, length)
+        self.finish(data)
 
-class EditorHandler(tornado.web.RequestHandler):
+class EditorHandler(tornado.web.RequestHandler, handlers.mixins.Editor):
     """Handles editor requests."""
     def get(self):
         """GET request; takes an argument file as the full path of the file to
         load into the editor.
         """
-        the_file = self.get_argument('file', '')
-        the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
-
-        if the_file.find('/') != -1:
-            file_name = the_file[(the_file.rfind('/') + 1):]
-            path = the_file[:the_file.rfind('/')]
-            title = '[' + file_name + '] ' + path + ' - Cider'
-        else:
-            file_name = file
-            path = ''
-            title = '[' + file_name + '] - Cider'
+        filename = self.get_file()
+        text = ''
+        saved = False
 
         try:
             file_handler = open(
                 os.path.join(
                     os.path.dirname(__file__),
                     util.get_base_path_adjustment(),
-                    the_file
+                    filename
                 ),
                 'r'
             )
             text = file_handler.read()
-            text = text.replace('{', '~' + 'lb').replace('}', '~' + 'rb')
-
-            save_text = 'Saved'
+            file_handler.close()
+            saved = True
         except Exception as error:  # pylint: disable=W0703
             log.warn(error)
-            text = ''
-            save_text = 'Save'
 
-        ext = the_file[(the_file.rfind('.') + 1):]
-        mode = util.get_mode(ext)
-        tab_width = util.get_tab_width(ext)
-        markup = util.is_markup(ext)
-        text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        self.do_output(text, saved = saved)
 
-        self.set_header('Content-Type', 'text/html')
-        loader = tornado.template.Loader('templates')
-        self.write(loader.load('editor.html').generate(
-            config=json.dumps({
-                'file_name': file_name,
-                'path': path,
-                'title': title,
-                'file': the_file,
-                'text': text,
-                'mode': mode,
-                'tab_width': tab_width,
-                'markup': markup,
-                'save_text': save_text,
-                'extra': '',
-                'prefix': '',
-                'salt': '',
-                'modes': util.MODES
-            }),
-            title=title,
-            modes=util.MODES
-        ))
-
-class FileManagerHandler(tornado.web.RequestHandler):
+class FileManagerHandler(
+    tornado.web.RequestHandler,
+    handlers.mixins.FileManager
+):
     """Handles the file manager requests."""
     def get(self):
         """GET request; takes path as an argument."""
-        path = self.get_argument('path', '')
-        path = path.replace('..', '').strip('/')  # pylint: disable=E1103
-        title = path + ' - Cider'
+        path = self.get_path()
         base = util.get_base_path_adjustment()
 
         files = []
         try:
             file_list = os.listdir(os.path.join(base, path))
-            file_list.sort(key=lambda x: x.encode().lower())
-
-            for i in range(len(file_list)):
+            for i in file_list:
                 try:
-                    the_file = os.path.join(base, path, file_list[i])
-                    is_file = os.path.isfile(the_file)
+                    filename = os.path.join(base, path, i)
+                    is_file = os.path.isfile(filename)
                     confirm = ''
-                    if is_file and os.path.getsize(the_file) > 10485760:
+                    if is_file and os.path.getsize(filename) > 10485760:
                         confirm = 'large'
-                    if is_file and not util.is_text_file(the_file):
+                    if is_file and not util.is_text_file(filename):
                         confirm = 'binary'
                     files.append({
-                        'name': file_list[i],
+                        'name': i,
                         'is_file': is_file,
                         'confirm': confirm
                     })
                 except IOError as error:
                     log.warn(error)
-
-            files = sorted(files, key=itemgetter('is_file'))
         except Exception as error:  # pylint: disable=W0703
             log.warn(error)
 
-        up = ''
-        if path != '' and path.rfind('/') > -1:
-            up = path[:path.rfind('/')]
+        self.do_output(files, base)
 
-        self.set_header('Content-Type', 'text/html')
-        loader = tornado.template.Loader('templates')
-        self.write(loader.load('file-manager.html').generate(
-            title=title,
-            config=json.dumps({
-                'base': base,
-                'path': path,
-                'files_list': files,
-                'up': up,
-                'folder': self.get_argument('folder', ''),
-                'extra': '',
-                'prefix': ''
-            })
-        ))
-
-class SaveFileHandler(tornado.web.RequestHandler):
+class SaveFileHandler(tornado.web.RequestHandler, handlers.mixins.SaveFile):
     """Handles file saving requests."""
     def get(self):
         """GET request; takes arguments file and text for the path of the file
         to save and the content to put in it.
         """
-        self.set_header('Content-Type', 'application/json')
         try:
-            the_file = self.get_argument('file', '')
-            the_file = the_file.replace('..', '').strip('/')  # pylint: disable=E1103
-            text = self.get_argument('text', strip=False)
-            text = text.encode('ascii', 'replace')  # pylint: disable=E1103
+            filename = self.get_file()
+            text = self.get_text()
             file_handler = open(
                 os.path.join(
                     os.path.dirname(__file__),
                     util.get_base_path_adjustment(),
-                    the_file
+                    filename
                 ),
                 'w'
             )
             file_handler.write(text)
             file_handler.close()
 
-            try:
-                salt = self.get_argument('salt', '')
-                diff_id = hashlib.sha224(salt + file).hexdigest()
-                collaborate.FileDiffManager().remove_diff(diff_id)
-                collaborate.FileDiffManager().create_diff(diff_id)
-                collaborate.FileSessionManager().broadcast(
-                    the_file,
-                    salt,
-                    {'t': 's'}
-                )
-            except:  # pylint: disable=W0702
-                pass
-
-            success = True
-            notification = 'last saved: ' + time.strftime('%Y-%m-%d %H:%M:%S')
+            self.broadcast_save(filename)
+            self.do_success()
         except Exception as error:  # pylint: disable=W0703
             log.error(error)
-            success = False
-            notification = 'save failed'
-
-        self.write(json.dumps({
-            'success': success,
-            'notification': notification
-        }))
+            self.do_failure()
 
     def post(self):
         """Post request; same logic as the GET request."""

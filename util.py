@@ -17,6 +17,7 @@
 
 import getpass
 import json
+import os
 import string
 import sys
 
@@ -185,3 +186,15 @@ def get_tab_width(ext):
 def is_markup(ext):
     """Returns True if the extension is a markup file, False otherwise."""
     return find_mode_dict(ext).get('markup', DEFAULT_IS_MARKUP)
+
+def find_base(value):
+    """Finds and returns the file name based on the given string."""
+    return os.path.basename(value)
+
+def find_extension(value):
+    """Finds and returns the extension based on the given string."""
+    return os.path.splitext(value)[1]
+
+def find_path(value):
+    """Finds and returns the path based on the given string."""
+    return os.path.dirname(value)
