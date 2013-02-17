@@ -20,5 +20,5 @@ cd `dirname $0`/..
 grep --color=always \
     --exclude=json2 --exclude=min --exclude=pysftp \
     --exclude-dir=ace --exclude-dir=tornado \
-    --exclude-dir=build --exclude-dir=dist \
+    --exclude-dir=build --exclude-dir=dist --exclude-dir=.git \
     -rni $1 .
