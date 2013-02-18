@@ -193,7 +193,7 @@ def find_base(value):
 
 def find_extension(value):
     """Finds and returns the extension based on the given string."""
-    return os.path.splitext(value)[1]
+    return os.path.splitext(value)[1][1:]
 
 def find_path(value):
     """Finds and returns the path based on the given string."""
