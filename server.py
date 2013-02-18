@@ -37,6 +37,7 @@ import handlers.auth.dropbox
 import handlers.dropbox
 import handlers.file
 import log
+import options
 import util
 
 GUI = False
@@ -122,7 +123,7 @@ def start():
     # pylint: disable=W0142
     application = tornado.web.Application(URLS, **SETTINGS)
     # pylint: enable=W0142
-    port = util.get_configuration_value('port', 3333)
+    port = options.get('port', util.get_configuration_value('port', 3333))
     log.msg('Listening on port ' + str(port) + '.')
     application.listen(port)
     tornado.ioloop.IOLoop.instance().start()
@@ -131,9 +132,13 @@ def main():
     """The main application execution."""
     try:
         thread.start_new_thread(start, ())
-        if util.get_configuration_value('suppressBrowser', False) is False:
+        suppress = options.get(
+            'suppress',
+            util.get_configuration_value('suppressBrowser', False)
+        )
+        if suppress is False:
             webbrowser.open_new_tab('http://localhost:' + str(
-                util.get_configuration_value('port', 3333)
+                options.get('port', util.get_configuration_value('port', 3333))
             ))
 
         if GUI and platform.system() != 'Linux':

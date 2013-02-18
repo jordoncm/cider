@@ -17,8 +17,15 @@
 
 import optparse
 
-PARSER = optparse.OptionParser()
-PARSER.add_option('-c', '--config', help='Path to configuration file.')
+PARSER = optparse.OptionParser(prog = 'cider')
+PARSER.add_option('-c', '--config', help ='Path to configuration file.')
+PARSER.add_option('-p', '--port', help ='The port to listen on.')
+PARSER.add_option(
+    '-s',
+    '--suppress',
+    action = 'store_true',
+    help = 'If set, will suppress the attempt to open a browser on launch.'
+)
 OPTIONS = PARSER.parse_args()[0]
 
 def get(key, default = None):
