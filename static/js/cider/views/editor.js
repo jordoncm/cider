@@ -21,6 +21,7 @@ cider.namespace('cider.views.editor');
 
 cider.views.editor.Menu = Backbone.View.extend({
     events: {
+        'click #permalink-btn': 'showPermalink',
         'click #settings-btn': 'showSettings',
         'click #save': 'save'
     },
@@ -75,6 +76,9 @@ cider.views.editor.Menu = Backbone.View.extend({
         $('#save').html('Saving...');
         cider.events.trigger('//editor/save');
     },
+    showPermalink: function() {
+        cider.events.trigger('//permalink/show');
+    },
     showSettings: function() {
         cider.events.trigger('//settings/show');
     }
@@ -115,6 +119,11 @@ cider.views.editor.Editor = Backbone.View.extend({
             _.bind(this.findPrevious, this)
         );
         cider.events.on('//editor/find/next', _.bind(this.findNext, this));
+        this.listenTo(
+            cider.events,
+            '//editor/current/line',
+            _.bind(this.emitCurrentLine, this)
+        );
     },
     render: function() {
         var context = _.pick(this.options || {}, ['text']);
@@ -252,6 +261,15 @@ cider.views.editor.Editor = Backbone.View.extend({
         } else {
             cider.events.trigger('//editor/dirty');
         }
+    },
+    getCurrentLine: function() {
+        return this.editor.getSelectionRange().start.row + 1;
+    },
+    emitCurrentLine: function() {
+        cider.events.trigger(
+            '//editor/current/line/response',
+            this.getCurrentLine()
+        );
     },
     getText: function() {
         return this.editor.getSession().getValue();
@@ -416,6 +434,37 @@ cider.views.editor.FindBar = Backbone.View.extend({
     },
     findNext: function() {
         cider.events.trigger('//editor/find/next');
+    }
+});
+
+cider.views.editor.Permalink = Backbone.View.extend({
+    template: _.template(cider.templates.editor.PERMALINK),
+    initialize: function() {
+        this.listenTo(
+            cider.events,
+            '//permalink/show',
+            _.bind(this.askForCurrentLine, this)
+        );
+        this.listenTo(
+            cider.events,
+            '//editor/current/line/response',
+            _.bind(this.showPermalink, this)
+        );
+    },
+    render: function() {
+        var context = _.pick(this.options || {}, ['url']);
+        context = _.defaults(context, {url: ''});
+        this.$el.html(this.template(context));
+        return this;
+    },
+    askForCurrentLine: function() {
+        cider.events.trigger('//editor/current/line');
+    },
+    showPermalink: function(line) {
+        var url = window.location.href.replace(/\?l=[0-9]*/, '?').replace(/\&l=[0-9]*/, '') + '&l=' + line;
+        $('#permalink-link').html(url);
+        $('#permalink-link').attr('href', url);
+        $('#permalink').modal('show');
     }
 });
 

@@ -1,8 +1,12 @@
 <div class="buttons">
   <div class="btn-group pull-right">
     <a class="btn <%= save_class %>" href="javascript:void(0);" id="save"><%= save_text %></a>
-    <a class="btn" href="../download/?file=<%= file %><%- extra %>" target="_blank">Download</a>
-    <a class="btn" href="javascript:void(0);" id="settings-btn">Settings</a>
+    <a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);" id="menu-btn"><i class="icon-align-justify"></i></a>
+    <ul class="dropdown-menu">
+      <li><a href="../download/?file=<%= file %><%- extra %>" target="_blank">Download</a></li>
+      <li><a href="javascript:void(0);" id="permalink-btn">Permalink...</a></li>
+      <li><a href="javascript:void(0);" id="settings-btn">Settings...</a></li>
+    </ul>
   </div>
   <div class="navbar-text pull-right">|&nbsp;&nbsp;&nbsp;</div>
   <ul class="nav pull-right">

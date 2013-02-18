@@ -70,6 +70,7 @@ $(function() {
                 modes: config.modes,
                 highlight_mode_key: 'fm-' + file.hash(config.salt)
             }).render().$el);
+            $('body').append(new cider.views.editor.Permalink().render().$el);
 
             var socket = null;
             try {
