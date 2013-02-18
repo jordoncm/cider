@@ -67,7 +67,14 @@ cider.extend = function(parent) {
  * A global events object instance to provide basic pub/sub capability in the
  * UI.
  */
-cider.events = _.extend({}, Backbone.Events);
+cider.events = _.extend({
+    publish: function(event) {
+        this.trigger.apply(this, arguments);
+    },
+    subscribe: function(event, callback) {
+        this.on(event, callback);
+    }
+}, Backbone.Events);
 
 /**
  * Fetches a given key from the query string.
@@ -133,7 +140,7 @@ cider.Preferences.set = function(key, value) {
         localStorage.setItem(key, value);
     }
     if(value !== oldValue) {
-        cider.events.trigger('//preferences/' + key, value);
+        cider.events.publish('//preferences/' + key, value);
     }
 };
 
@@ -146,5 +153,5 @@ cider.Preferences.set = function(key, value) {
  */
 cider.Preferences.remove = function(key) {
     localStorage.removeItem(key);
-    cider.events.trigger('//preferences/' + key, null);
+    cider.events.publish('//preferences/' + key, null);
 };

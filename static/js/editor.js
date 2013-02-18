@@ -99,19 +99,19 @@ $(function() {
                     switch(e.keyCode) {
                         case 'F'.charCodeAt(0):
                             e.preventDefault();
-                            cider.events.trigger('//search');
+                            cider.events.publish('//search');
                             break;
                         case 'G'.charCodeAt(0):
                             e.preventDefault();
                             if(e.shiftKey) {
-                                cider.events.trigger('//editor/find/previous');
+                                cider.events.publish('//editor/find/previous');
                             } else {
-                                cider.events.trigger('//editor/find/next');
+                                cider.events.publish('//editor/find/next');
                             }
                             break;
                         case 'S'.charCodeAt(0):
                             e.preventDefault();
-                            cider.events.trigger('//editor/save');
+                            cider.events.publish('//editor/save');
                             break;
                     }
                 }

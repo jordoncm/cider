@@ -36,6 +36,12 @@ cider.views.View = Backbone.View.extend({
         }
         return this;
     },
+    subscribe: function(event, callback) {
+        this.listenTo(cider.events, event, callback);
+    },
+    publish: function(event) {
+        cider.events.trigger.apply(cider.events, arguments);
+    }
 });
 
 cider.views.TopNav = cider.views.View.extend({

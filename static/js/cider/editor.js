@@ -53,7 +53,7 @@ cider.editor.File.prototype.save = function(text) {
 
 cider.editor.File.prototype.saveCallback = function(response) {
     this.saving = false;
-    cider.events.trigger('//file/saved', response);
+    cider.events.publish('//file/saved', response);
 };
 
 cider.editor.File.prototype.hash = function(salt) {
@@ -80,7 +80,7 @@ cider.editor.File.prototype.initialize = function(config) {
     this.file = config.file;
     this.salt = config.salt;
     this.extra = config.extra;
-    cider.events.on('//file/save', _.bind(this.save, this));
+    cider.events.subscribe('//file/save', _.bind(this.save, this));
 };
 
 cider.editor.Socket = cider.extend();
@@ -108,8 +108,8 @@ cider.editor.Socket.prototype.send = function(m) {
 
 cider.editor.Socket.prototype.handleOpen = function() {
     this.send({t: 'f', f: this.file, v: -1, n: this.name, s: this.salt});
-    cider.events.trigger('//socket/open');
-    cider.events.on('//socket/send', _.bind(this.send, this));
+    cider.events.publish('//socket/open');
+    cider.events.subscribe('//socket/send', _.bind(this.send, this));
 };
 
 cider.editor.Socket.prototype.handleMessage = function(m) {
@@ -117,7 +117,7 @@ cider.editor.Socket.prototype.handleMessage = function(m) {
     var dataList = JSON.parse(m.data);
     for(var i = 0; i < dataList.length; i++) {
         var data = dataList[i];
-        cider.events.trigger('//socket/message/' + data.t, data);
+        cider.events.publish('//socket/message/' + data.t, data);
     }
 };
 

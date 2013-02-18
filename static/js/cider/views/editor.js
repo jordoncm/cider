@@ -34,14 +34,11 @@ cider.views.editor.Menu = cider.views.View.extend({
         extra: ''
     },
     initialize: function() {
-        cider.events.on(
-            '//editor/change',
-            _.bind(this.handleEditorChange, this)
-        );
-        cider.events.on('//editor/clean', _.bind(this.editorClean, this));
-        cider.events.on('//editor/dirty', _.bind(this.editorDirty, this));
-        cider.events.on('//socket/message/n', _.bind(this.updateEditors, this));
-        cider.events.on('//socket/message/s', _.bind(this.editorClean, this));
+        this.subscribe('//editor/change', _.bind(this.editorDirty, this));
+        this.subscribe('//editor/clean', _.bind(this.editorClean, this));
+        this.subscribe('//editor/dirty', _.bind(this.editorDirty, this));
+        this.subscribe('//socket/message/n', _.bind(this.updateEditors, this));
+        this.subscribe('//socket/message/s', _.bind(this.editorClean, this));
     },
     editorClean: function() {
         $('#save').removeClass('btn-warning');
@@ -52,9 +49,6 @@ cider.views.editor.Menu = cider.views.View.extend({
         $('#save').removeClass('btn-success');
         $('#save').addClass('btn-warning');
         $('#save').html('Save');
-    },
-    handleEditorChange: function() {
-        this.editorDirty();
     },
     updateEditors: function(data) {
         $('#editors-title').html(data.n.length + ' editors');
@@ -67,13 +61,13 @@ cider.views.editor.Menu = cider.views.View.extend({
     },
     save: function() {
         $('#save').html('Saving...');
-        cider.events.trigger('//editor/save');
+        this.publish('//editor/save');
     },
     showPermalink: function() {
-        cider.events.trigger('//permalink/show');
+        this.publish('//permalink/show');
     },
     showSettings: function() {
-        cider.events.trigger('//settings/show');
+        this.publish('//settings/show');
     }
 });
 
@@ -87,33 +81,32 @@ cider.views.editor.Editor = cider.views.View.extend({
     editor: null,
     mode: null,
     initialize: function() {
-        cider.events.on('//preferences/stw', _.bind(this.updateTabWidth, this));
-        cider.events.on(
+        this.subscribe('//preferences/stw', _.bind(this.updateTabWidth, this));
+        this.subscribe(
             '//preferences/stwm',
             _.bind(this.updateTabWidthMarkup, this)
         );
-        cider.events.on(
+        this.subscribe(
             '//preferences/' + this.options.highlight_mode_key,
             _.bind(this.setMode, this)
         );
-        cider.events.on('//editor/save', _.bind(this.prepareSave, this));
-        cider.events.on('//file/saved', _.bind(this.handleSaved, this));
-        cider.events.on('//socket/open', _.bind(function() {
+        this.subscribe('//editor/save', _.bind(this.prepareSave, this));
+        this.subscribe('//file/saved', _.bind(this.handleSaved, this));
+        this.subscribe('//socket/open', _.bind(function() {
             this.setReadOnly(false);
         }, this));
-        cider.events.on('//socket/message/d', _.bind(this.executeDiff, this));
-        cider.events.on('//socket/message/i', _.bind(this.executeDiff, this));
-        cider.events.on('//socket/message/s', _.bind(function() {
+        this.subscribe('//socket/message/d', _.bind(this.executeDiff, this));
+        this.subscribe('//socket/message/i', _.bind(this.executeDiff, this));
+        this.subscribe('//socket/message/s', _.bind(function() {
             this.setDirty(false);
         }, this));
-        cider.events.on('//editor/find', _.bind(this.find, this));
-        cider.events.on(
+        this.subscribe('//editor/find', _.bind(this.find, this));
+        this.subscribe(
             '//editor/find/previous',
             _.bind(this.findPrevious, this)
         );
-        cider.events.on('//editor/find/next', _.bind(this.findNext, this));
-        this.listenTo(
-            cider.events,
+        this.subscribe('//editor/find/next', _.bind(this.findNext, this));
+        this.subscribe(
             '//editor/current/line',
             _.bind(this.emitCurrentLine, this)
         );
@@ -146,7 +139,7 @@ cider.views.editor.Editor = cider.views.View.extend({
             name: 'save',
             bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
             exec: function() {
-                cider.events.trigger('//editor/save');
+                cider.events.publish('//editor/save');
             }
         });
 
@@ -154,7 +147,7 @@ cider.views.editor.Editor = cider.views.View.extend({
             name: 'find',
             bindKey: {win: 'Ctrl-F', mac: 'Command-F'},
             exec: function() {
-                cider.events.trigger('//search');
+                cider.events.publish('//search');
             }
         });
 
@@ -162,7 +155,7 @@ cider.views.editor.Editor = cider.views.View.extend({
             name: 'findNext',
             bindKey: {win: 'Ctrl-G', mac: 'Command-G'},
             exec: function() {
-                cider.events.trigger('//editor/find/next');
+                cider.events.publish('//editor/find/next');
             }
         });
 
@@ -170,7 +163,7 @@ cider.views.editor.Editor = cider.views.View.extend({
             name: 'findPrevious',
             bindKey: {win: 'Ctrl-Shift-G', mac: 'Command-Shift-G'},
             exec: function() {
-                cider.events.trigger('//editor/find/previous');
+                cider.events.publish('//editor/find/previous');
             }
         });
 
@@ -222,9 +215,9 @@ cider.views.editor.Editor = cider.views.View.extend({
     handleChange: function(e) {
         this.dirty = true;
         var diff = this.getDiff(e.data);
-        cider.events.trigger('//editor/change', diff);
+        this.publish('//editor/change', diff);
         if(!this.socketSuppress) {
-            cider.events.trigger('//socket/send', diff);
+            this.publish('//socket/send', diff);
         }
     },
     prepareSave: function() {
@@ -235,7 +228,7 @@ cider.views.editor.Editor = cider.views.View.extend({
             this.trimToSingleNewline();
         }
         this.setDirty(false);
-        cider.events.trigger('//file/save', this.getText());
+        this.publish('//file/save', this.getText());
     },
     handleSaved: function(response) {
         if(!response.success) {
@@ -244,19 +237,16 @@ cider.views.editor.Editor = cider.views.View.extend({
             }
         }
         if(!this.isDirty()) {
-            cider.events.trigger('//editor/clean');
+            this.publish('//editor/clean');
         } else {
-            cider.events.trigger('//editor/dirty');
+            this.publish('//editor/dirty');
         }
     },
     getCurrentLine: function() {
         return this.editor.getSelectionRange().start.row + 1;
     },
     emitCurrentLine: function() {
-        cider.events.trigger(
-            '//editor/current/line/response',
-            this.getCurrentLine()
-        );
+        this.publish('//editor/current/line/response', this.getCurrentLine());
     },
     getText: function() {
         return this.editor.getSession().getValue();
@@ -399,7 +389,7 @@ cider.views.editor.FindBar = cider.views.View.extend({
     },
     template: _.template(cider.templates.editor.FIND_BAR),
     initialize: function() {
-        cider.events.on('//search', _.bind(this.search, this));
+        this.subscribe('//search', _.bind(this.search, this));
     },
     search: function() {
         var element = $('#find');
@@ -409,14 +399,14 @@ cider.views.editor.FindBar = cider.views.View.extend({
     find: function() {
         var element = $('#find');
         if(element.val() !== '') {
-            cider.events.trigger('//editor/find', element.val());
+            this.publish('//editor/find', element.val());
         }
     },
     findPrevious: function() {
-        cider.events.trigger('//editor/find/previous');
+        this.publish('//editor/find/previous');
     },
     findNext: function() {
-        cider.events.trigger('//editor/find/next');
+        this.publish('//editor/find/next');
     }
 });
 
@@ -425,19 +415,17 @@ cider.views.editor.Permalink = cider.views.View.extend({
     contextSchema: ['url'],
     contextDefaults: {url: ''},
     initialize: function() {
-        this.listenTo(
-            cider.events,
+        this.subscribe(
             '//permalink/show',
             _.bind(this.askForCurrentLine, this)
         );
-        this.listenTo(
-            cider.events,
+        this.subscribe(
             '//editor/current/line/response',
             _.bind(this.showPermalink, this)
         );
     },
     askForCurrentLine: function() {
-        cider.events.trigger('//editor/current/line');
+        this.publish('//editor/current/line');
     },
     showPermalink: function(line) {
         var url = window.location.href.replace(/\?l=[0-9]*/, '?').replace(/\&l=[0-9]*/, '') + '&l=' + line;
@@ -459,7 +447,7 @@ cider.views.editor.Settings = cider.views.View.extend({
     contextSchema: ['mode', 'modes'],
     contextDefaults: {mode: 'text'},
     initialize: function() {
-        cider.events.on('//settings/show', _.bind(this.showSettings, this))
+        this.subscribe('//settings/show', _.bind(this.showSettings, this));
     },
     render: function() {
         var context = this.getContext();
