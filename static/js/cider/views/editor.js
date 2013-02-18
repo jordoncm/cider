@@ -139,6 +139,12 @@ cider.views.editor.Editor = Backbone.View.extend({
         if(this.options.mode) {
             this.setMode(this.options.mode);
         }
+        // NOTE: Editor does not seem to be "ready" right away and will set the
+        // cursor position, but not scroll. Added hack of a timeout to work
+        // around this.
+        window.setTimeout(_.bind(function() {
+            this.editor.gotoLine(parseInt(cider.argument('l', 0)));
+        }, this), 250);
 
         this.editor.commands.addCommand({
             name: 'save',

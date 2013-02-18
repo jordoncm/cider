@@ -70,6 +70,26 @@ cider.extend = function(parent) {
 cider.events = _.extend({}, Backbone.Events);
 
 /**
+ * Fetches a given key from the query string.
+ *
+ * @param {String} key The key to look for.
+ * @param [defaultValue] Optional default value to return if the key is not
+ * found.
+ * @return The value from the query string or the default.
+ */
+cider.argument = function(key, defaultValue) {
+    var args = {};
+    var list = window.location.search.replace(/^\?/, '').split('&');
+    for(var i = 0; i < list.length; i++) {
+        var item = list[i].split('=');
+        if(item.length > 1) {
+            args[item[0]] = item[1];
+        }
+    }
+    return (args[key] !== undefined) ? args[key] : defaultValue;
+};
+
+/**
  * Class that manages a key/value store for keeping user preferences.
  *
  * @constructor
@@ -82,18 +102,18 @@ cider.Preferences = cider.extend();
  * This method will automatically deserialize JSON strings into objects.
  *
  * @param {String} key The key lookup.
- * @param [default_value] Optional default value to return if the key is not
+ * @param [defaultValue] Optional default value to return if the key is not
  * found.
  * @return The value in the local store, the given default value or null.
  */
-cider.Preferences.prototype.get = function(key, default_value) {
+cider.Preferences.prototype.get = function(key, defaultValue) {
     var value = localStorage.getItem(key);
     if(value) {
         try {
             return JSON.parse(value);
         } catch(e) {}
     }
-    return (value !== null) ? value : default_value;
+    return (value !== null) ? value : defaultValue;
 };
 
 /**
