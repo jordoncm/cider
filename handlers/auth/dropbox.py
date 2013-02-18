@@ -152,7 +152,7 @@ class BaseAuthHandler(tornado.web.RequestHandler):
     """Base handler for Dropbox endpoints."""
     def get_current_user(self):
         """Returns the current Dropbox user."""
-        json = self.get_secure_cookie('user')
+        json = self.get_secure_cookie('dropbox_user')
         if not json:
             return None
         return tornado.escape.json_decode(json)
@@ -181,5 +181,5 @@ class DropboxHandler(BaseAuthHandler, Mixin):
         """
         if not user:
             raise tornado.web.HTTPError(500, 'Dropbox auth failed.')
-        self.set_secure_cookie('user', tornado.escape.json_encode(user))
+        self.set_secure_cookie('dropbox_user', tornado.escape.json_encode(user))
         self.redirect(self.get_argument('next', '/'))
