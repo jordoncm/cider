@@ -26,7 +26,8 @@ $(function() {
             var file = new cider.editor.File({
                 file: config.file,
                 salt: config.salt,
-                extra: config.extra
+                extra: config.extra,
+                read_only: config.read_only
             });
 
             // Change config values based on user preferences.
@@ -41,13 +42,14 @@ $(function() {
 
             $('body').append(new cider.views.TopNav({
                 header: config.file_name,
-                sub_header: config.prefix + config.path,
+                sub_header: config.prefix + config.path + ((config.read_only) ? ' (read only)' : ''),
                 sub_header_link: '../file-manager/?path=' + config.path + config.extra,
                 extra: new cider.views.editor.Menu({
                     save_text: config.save_text,
                     save_class: (config.save_text.toLowerCase() == 'saved') ? 'btn-success' : 'btn-warning',
                     file: config.file,
-                    extra: config.extra
+                    extra: config.extra,
+                    read_only: config.read_only
                 })
             }).render().$el);
             var editor = new cider.views.editor.Editor({
@@ -56,7 +58,8 @@ $(function() {
                 markup: config.markup,
                 mode: (config.mode !== undefined) ? config.mode : null,
                 modes: config.modes,
-                highlight_mode_key: 'fm-' + file.hash(config.salt)
+                highlight_mode_key: 'fm-' + file.hash(config.salt),
+                read_only: config.read_only
             });
             $('body').append(editor.render().$el);
             editor.renderEditor();
@@ -79,18 +82,22 @@ $(function() {
                     salt: config.salt
                 });
             } catch(e) {
-                editor.setReadOnly(false);
+                if(!config.read_only) {
+                    editor.setReadOnly(false);
+                }
                 console.log(e);
             }
 
             window.onbeforeunload = function() {
                 /* $(window).unload does not appear to be consistent. */
-                if(editor.isDirty()) {
-                    return 'Document has unsaved changes; changes will be lost.';
-                }
+                if(!config.read_only) {  // TODO: Remove scope hack.
+                    if(editor.isDirty()) {
+                        return 'Document has unsaved changes; changes will be lost.';
+                    }
 
-                if(file.isSaving()) {
-                    return 'Save operation in progress; changes could be lost.';
+                    if(file.isSaving()) {
+                        return 'Save operation in progress; changes could be lost.';
+                    }
                 }
             };
 

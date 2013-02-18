@@ -6,6 +6,7 @@
     "enableLocalFileSystem": true,
     "enableSFTP": true,
     "port": 3333,
+    "readOnly": false,
     "suppressBrowser": false,
     "terminalLink": ""
 }

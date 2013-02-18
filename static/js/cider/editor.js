@@ -25,30 +25,35 @@ cider.editor.File.prototype.file = null;
 cider.editor.File.prototype.salt = null;
 cider.editor.File.prototype.extra = null;
 cider.editor.File.prototype.saving = false;
+cider.editor.File.prototype.readOnly = false;
 
 cider.editor.File.prototype.save = function(text) {
-    var parameters = {};
-    var tmp = this.extra.split('&');
-    for(var i = 0; i < tmp.length; i++) {
-        if(tmp[i] !== '') {
-            try {
-                tmp[i] = tmp[i].split('=');
-                parameters[tmp[i][0]] = tmp[i][1];
-            } catch(e) {}
+    if(!this.readOnly) {
+        var parameters = {};
+        var tmp = this.extra.split('&');
+        for(var i = 0; i < tmp.length; i++) {
+            if(tmp[i] !== '') {
+                try {
+                    tmp[i] = tmp[i].split('=');
+                    parameters[tmp[i][0]] = tmp[i][1];
+                } catch(e) {}
+            }
         }
-    }
-    parameters.salt = this.salt;
-    parameters.file = this.file;
-    parameters.text = text;
+        parameters.salt = this.salt;
+        parameters.file = this.file;
+        parameters.text = text;
 
-    this.saving = true;
-    $.ajax({
-        url : '../save-file/',
-        type : 'POST',
-        dataType : 'json',
-        data : parameters,
-        success : _.bind(this.saveCallback, this)
-    });
+        this.saving = true;
+        $.ajax({
+            url : '../save-file/',
+            type : 'POST',
+            dataType : 'json',
+            data : parameters,
+            success : _.bind(this.saveCallback, this)
+        });
+    } else {
+        console.warn('File is read only and cannot be saved.');
+    }
 };
 
 cider.editor.File.prototype.saveCallback = function(response) {
@@ -80,6 +85,7 @@ cider.editor.File.prototype.initialize = function(config) {
     this.file = config.file;
     this.salt = config.salt;
     this.extra = config.extra;
+    this.readOnly = config.read_only;
     cider.events.subscribe('//file/save', _.bind(this.save, this));
 };
 

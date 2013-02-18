@@ -76,25 +76,26 @@ class EditorHandler(tornado.web.RequestHandler, handlers.mixins.Editor):
         load into the editor.
         """
         filename = self.get_file()
+        full_filename = os.path.join(
+            os.path.dirname(__file__),
+            util.get_base_path_adjustment(),
+            filename
+        )
         text = ''
         saved = False
+        read_only = util.get_configuration_value('readOnly', False)
+        if not read_only:
+            read_only = not os.access(full_filename, os.W_OK)
 
         try:
-            file_handler = open(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    util.get_base_path_adjustment(),
-                    filename
-                ),
-                'r'
-            )
+            file_handler = open(full_filename, 'r')
             text = file_handler.read()
             file_handler.close()
             saved = True
         except Exception as error:  # pylint: disable=W0703
             log.warn(error)
 
-        self.do_output(text, saved = saved)
+        self.do_output(text, saved = saved, read_only = read_only)
 
 class FileManagerHandler(
     tornado.web.RequestHandler,
@@ -138,20 +139,22 @@ class SaveFileHandler(tornado.web.RequestHandler, handlers.mixins.SaveFile):
         """
         try:
             filename = self.get_file()
-            text = self.get_text()
-            file_handler = open(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    util.get_base_path_adjustment(),
-                    filename
-                ),
-                'w'
+            full_filename = os.path.join(
+                os.path.dirname(__file__),
+                util.get_base_path_adjustment(),
+                filename
             )
-            file_handler.write(text)
-            file_handler.close()
+            read_only = util.get_configuration_value('readOnly', False)
+            if not read_only and os.access(full_filename, os.W_OK):
+                text = self.get_text()
+                file_handler = open(full_filename, 'w')
+                file_handler.write(text)
+                file_handler.close()
 
-            self.broadcast_save(filename)
-            self.do_success()
+                self.broadcast_save(filename)
+                self.do_success()
+            else:
+                self.do_failure()
         except Exception as error:  # pylint: disable=W0703
             log.error(error)
             self.do_failure()

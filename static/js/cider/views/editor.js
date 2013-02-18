@@ -26,15 +26,17 @@ cider.views.editor.Menu = cider.views.View.extend({
         'click #save': 'save'
     },
     template: _.template(cider.templates.editor.MENU),
-    contextSchema: ['save_text', 'save_class', 'file', 'extra'],
+    contextSchema: ['save_text', 'save_class', 'file', 'extra', 'read_only'],
     contextDefaults: {
         save_text: 'Save',
         save_class: 'btn-warning',
         file: '',
-        extra: ''
+        extra: '',
+        read_only: false
     },
     initialize: function() {
         this.subscribe('//editor/change', _.bind(this.editorDirty, this));
+        this.subscribe('//editor/saving', _.bind(this.saving, this));
         this.subscribe('//editor/clean', _.bind(this.editorClean, this));
         this.subscribe('//editor/dirty', _.bind(this.editorDirty, this));
         this.subscribe('//socket/message/n', _.bind(this.updateEditors, this));
@@ -60,8 +62,12 @@ cider.views.editor.Menu = cider.views.View.extend({
         }
     },
     save: function() {
+        if(!this.options.read_only) {
+            this.publish('//editor/save');
+        }
+    },
+    saving: function() {
         $('#save').html('Saving...');
-        this.publish('//editor/save');
     },
     showPermalink: function() {
         this.publish('//permalink/show');
@@ -93,7 +99,9 @@ cider.views.editor.Editor = cider.views.View.extend({
         this.subscribe('//editor/save', _.bind(this.prepareSave, this));
         this.subscribe('//file/saved', _.bind(this.handleSaved, this));
         this.subscribe('//socket/open', _.bind(function() {
-            this.setReadOnly(false);
+            if(!this.options.read_only) {
+                this.setReadOnly(false);
+            }
         }, this));
         this.subscribe('//socket/message/d', _.bind(this.executeDiff, this));
         this.subscribe('//socket/message/i', _.bind(this.executeDiff, this));
@@ -221,14 +229,17 @@ cider.views.editor.Editor = cider.views.View.extend({
         }
     },
     prepareSave: function() {
-        if(cider.Preferences.get('sttws')) {
-            this.trimLines();
+        if(!this.options.read_only) {
+            if(cider.Preferences.get('sttws')) {
+                this.trimLines();
+            }
+            if(cider.Preferences.get('ssn')) {
+                this.trimToSingleNewline();
+            }
+            this.setDirty(false);
+            this.publish('//editor/saving');
+            this.publish('//file/save', this.getText());
         }
-        if(cider.Preferences.get('ssn')) {
-            this.trimToSingleNewline();
-        }
-        this.setDirty(false);
-        this.publish('//file/save', this.getText());
     },
     handleSaved: function(response) {
         if(!response.success) {

@@ -1,6 +1,6 @@
 <div class="buttons">
   <div class="btn-group pull-right">
-    <a class="btn <%= save_class %>" href="javascript:void(0);" id="save"><%= save_text %></a>
+    <a class="btn <%= save_class %><% if(read_only) { %> disabled<% } %>" href="javascript:void(0);" id="save"><%= save_text %></a>
     <a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);" id="menu-btn"><i class="icon-align-justify"></i></a>
     <ul class="dropdown-menu">
       <li><a href="../download/?file=<%= file %><%- extra %>" target="_blank">Download</a></li>

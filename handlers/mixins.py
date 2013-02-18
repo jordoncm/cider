@@ -73,7 +73,7 @@ class Editor(BaseMixin):
             title = '[' + basename + '] ' + path + ' - Cider'
         return title
 
-    def do_output(self, text = '', prefix = '', salt = '', extra = '', saved = None):
+    def do_output(self, text = '', prefix = '', salt = '', extra = '', saved = None, read_only = False):
         """Builds response, outputs headers, renders the template and outputs
         the response.
         """
@@ -113,7 +113,8 @@ class Editor(BaseMixin):
                 'extra': extra,
                 'prefix': prefix,
                 'salt': salt,
-                'modes': util.MODES
+                'modes': util.MODES,
+                'read_only': read_only
             }),
             title = title,
             modes = util.MODES
