@@ -19,13 +19,20 @@
 
 cider.namespace('cider.views.editor');
 
-cider.views.editor.Menu = Backbone.View.extend({
+cider.views.editor.Menu = cider.views.View.extend({
     events: {
         'click #permalink-btn': 'showPermalink',
         'click #settings-btn': 'showSettings',
         'click #save': 'save'
     },
     template: _.template(cider.templates.editor.MENU),
+    contextSchema: ['save_text', 'save_class', 'file', 'extra'],
+    contextDefaults: {
+        save_text: 'Save',
+        save_class: 'btn-warning',
+        file: '',
+        extra: ''
+    },
     initialize: function() {
         cider.events.on(
             '//editor/change',
@@ -35,20 +42,6 @@ cider.views.editor.Menu = Backbone.View.extend({
         cider.events.on('//editor/dirty', _.bind(this.editorDirty, this));
         cider.events.on('//socket/message/n', _.bind(this.updateEditors, this));
         cider.events.on('//socket/message/s', _.bind(this.editorClean, this));
-    },
-    render: function() {
-        var context = _.pick(
-            this.options || {},
-            ['save_text', 'save_class', 'file', 'extra']
-        );
-        context = _.defaults(context, {
-            save_text: 'Save',
-            save_class: 'btn-warning',
-            file: '',
-            extra: ''
-        });
-        this.$el.html(this.template(context));
-        return this;
     },
     editorClean: function() {
         $('#save').removeClass('btn-warning');
@@ -84,16 +77,16 @@ cider.views.editor.Menu = Backbone.View.extend({
     }
 });
 
-cider.views.editor.Editor = Backbone.View.extend({
+cider.views.editor.Editor = cider.views.View.extend({
     template: _.template(cider.templates.editor.EDITOR),
+    contextSchema: ['text'],
+    contextDefaults: {text: ''},
     socketSuppress: false,
     dirty: false,
     oldDirty: false,
     editor: null,
     mode: null,
-    preferences: null,
     initialize: function() {
-        this.preferences = new cider.Preferences();
         cider.events.on('//preferences/stw', _.bind(this.updateTabWidth, this));
         cider.events.on(
             '//preferences/stwm',
@@ -124,12 +117,6 @@ cider.views.editor.Editor = Backbone.View.extend({
             '//editor/current/line',
             _.bind(this.emitCurrentLine, this)
         );
-    },
-    render: function() {
-        var context = _.pick(this.options || {}, ['text']);
-        context = _.defaults(context, {text: ''});
-        this.$el.html(this.template(context));
-        return this;
     },
     /**
      * Renders the editor.
@@ -221,9 +208,9 @@ cider.views.editor.Editor = Backbone.View.extend({
                 var Mode = ace.require('ace/mode/' + mode).Mode;
                 this.editor.getSession().setMode(new Mode());
                 if(this.mode.markup !== undefined && this.mode.markup) {
-                    this.setTabWidth(this.preferences.get('stwm', 2));
+                    this.setTabWidth(cider.Preferences.get('stwm', 2));
                 } else {
-                    this.setTabWidth(this.preferences.get('stw', 4));
+                    this.setTabWidth(cider.Preferences.get('stw', 4));
                 }
                 break;
             }
@@ -241,10 +228,10 @@ cider.views.editor.Editor = Backbone.View.extend({
         }
     },
     prepareSave: function() {
-        if(this.preferences.get('sttws')) {
+        if(cider.Preferences.get('sttws')) {
             this.trimLines();
         }
-        if(this.preferences.get('ssn')) {
+        if(cider.Preferences.get('ssn')) {
             this.trimToSingleNewline();
         }
         this.setDirty(false);
@@ -404,7 +391,7 @@ cider.views.editor.Editor = Backbone.View.extend({
     }
 });
 
-cider.views.editor.FindBar = Backbone.View.extend({
+cider.views.editor.FindBar = cider.views.View.extend({
     events: {
         'click #find-previous-btn': 'findPrevious',
         'click #find-next-btn': 'findNext',
@@ -413,10 +400,6 @@ cider.views.editor.FindBar = Backbone.View.extend({
     template: _.template(cider.templates.editor.FIND_BAR),
     initialize: function() {
         cider.events.on('//search', _.bind(this.search, this));
-    },
-    render: function() {
-        this.$el.html(this.template());
-        return this;
     },
     search: function() {
         var element = $('#find');
@@ -437,8 +420,10 @@ cider.views.editor.FindBar = Backbone.View.extend({
     }
 });
 
-cider.views.editor.Permalink = Backbone.View.extend({
+cider.views.editor.Permalink = cider.views.View.extend({
     template: _.template(cider.templates.editor.PERMALINK),
+    contextSchema: ['url'],
+    contextDefaults: {url: ''},
     initialize: function() {
         this.listenTo(
             cider.events,
@@ -451,12 +436,6 @@ cider.views.editor.Permalink = Backbone.View.extend({
             _.bind(this.showPermalink, this)
         );
     },
-    render: function() {
-        var context = _.pick(this.options || {}, ['url']);
-        context = _.defaults(context, {url: ''});
-        this.$el.html(this.template(context));
-        return this;
-    },
     askForCurrentLine: function() {
         cider.events.trigger('//editor/current/line');
     },
@@ -468,7 +447,7 @@ cider.views.editor.Permalink = Backbone.View.extend({
     }
 });
 
-cider.views.editor.Settings = Backbone.View.extend({
+cider.views.editor.Settings = cider.views.View.extend({
     events: {
         'change #stw': 'handleIntSetting',
         'change #stwm': 'handleIntSetting',
@@ -477,35 +456,34 @@ cider.views.editor.Settings = Backbone.View.extend({
         'change #ssn': 'handleBooleanSetting'
     },
     template: _.template(cider.templates.editor.SETTINGS),
-    preferences: null,
+    contextSchema: ['mode', 'modes'],
+    contextDefaults: {mode: 'text'},
     initialize: function() {
-        this.preferences = new cider.Preferences();
         cider.events.on('//settings/show', _.bind(this.showSettings, this))
     },
     render: function() {
-        var context = _.pick(this.options || {}, ['mode', 'modes']);
-        context = _.defaults(context, {mode: 'text'});
-        context.stw = this.preferences.get('stw', 4);
-        context.stwm = this.preferences.get('stwm', 2);
-        context.sttws = this.preferences.get('sttws', false);
-        context.ssn = this.preferences.get('ssn', false);
+        var context = this.getContext();
+        context.stw = cider.Preferences.get('stw', 4);
+        context.stwm = cider.Preferences.get('stwm', 2);
+        context.sttws = cider.Preferences.get('sttws', false);
+        context.ssn = cider.Preferences.get('ssn', false);
         this.$el.html(this.template(context));
         return this;
     },
     handleBooleanSetting: function(e) {
-        this.preferences.set(
+        cider.Preferences.set(
             $(e.target).attr('id'),
             $(e.target).is(':checked')
         );
     },
     handleIntSetting: function(e) {
-        this.preferences.set(
+        cider.Preferences.set(
             $(e.target).attr('id'),
             parseInt($(e.target).val())
         );
     },
     handleModeSetting: function(e) {
-        this.preferences.set(
+        cider.Preferences.set(
             this.options.highlight_mode_key,
             $(e.target).val()
         );

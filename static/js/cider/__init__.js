@@ -90,11 +90,10 @@ cider.argument = function(key, defaultValue) {
 };
 
 /**
- * Class that manages a key/value store for keeping user preferences.
- *
- * @constructor
+ * Class of static methods that manages a key/value store for keeping user
+ * preferences.
  */
-cider.Preferences = cider.extend();
+cider.Preferences = {};
 
 /**
  * Fetch a value by its key.
@@ -106,7 +105,7 @@ cider.Preferences = cider.extend();
  * found.
  * @return The value in the local store, the given default value or null.
  */
-cider.Preferences.prototype.get = function(key, defaultValue) {
+cider.Preferences.get = function(key, defaultValue) {
     var value = localStorage.getItem(key);
     if(value) {
         try {
@@ -126,7 +125,7 @@ cider.Preferences.prototype.get = function(key, defaultValue) {
  * @param {String} key The key to store the value under.
  * @param {String} value The value to store.
  */
-cider.Preferences.prototype.set = function(key, value) {
+cider.Preferences.set = function(key, value) {
     var oldValue = localStorage.getItem(key);
     if(typeof value == 'object') {
         localStorage.setItem(key, JSON.stringify(value));
@@ -145,7 +144,7 @@ cider.Preferences.prototype.set = function(key, value) {
  *
  * @param {String} key Key of the value to remove.
  */
-cider.Preferences.prototype.remove = function(key) {
+cider.Preferences.remove = function(key) {
     localStorage.removeItem(key);
     cider.events.trigger('//preferences/' + key, null);
 };

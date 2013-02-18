@@ -19,19 +19,36 @@
 
 cider.namespace('cider.views');
 
-cider.views.TopNav = Backbone.View.extend({
-    template: _.template(cider.templates.TOP_NAV),
+cider.views.View = Backbone.View.extend({
+    template: null,
+    contextSchema: [],
+    contextDefaults: {},
+    getContext: function() {
+        var context = _.pick(this.options || {}, this.contextSchema);
+        return _.defaults(context, this.contextDefaults);
+    },
     render: function() {
-        var context = _.pick(
-            this.options || {},
-            ['header', 'sub_header', 'sub_header_link', 'extra']
-        );
-        context = _.defaults(context, {
-            header: '',
-            sub_header: '',
-            sub_header_link: '',
-            extra: ''
-        });
+        if(this.template) {
+            var context = this.getContext();
+            this.$el.html(this.template(context));
+        } else {
+            console.error('No template defined.');
+        }
+        return this;
+    },
+});
+
+cider.views.TopNav = cider.views.View.extend({
+    template: _.template(cider.templates.TOP_NAV),
+    contextSchema: ['header', 'sub_header', 'sub_header_link', 'extra'],
+    contextDefaults: {
+        header: '',
+        sub_header: '',
+        sub_header_link: '',
+        extra: ''
+    },
+    render: function() {
+        var context = this.getContext();
         var view = null;
         if(typeof context.extra == 'object') {
             // A Backbone.View was passed rather than a string, likely because
@@ -50,11 +67,12 @@ cider.views.TopNav = Backbone.View.extend({
     }
 });
 
-cider.views.BottomNav = Backbone.View.extend({
+cider.views.BottomNav = cider.views.View.extend({
     template: _.template(cider.templates.BOTTOM_NAV),
+    contextSchema: ['right_content'],
+    contextDefaults: {right_content: ''},
     render: function() {
-        var context = _.pick(this.options || {}, ['right_content']);
-        context = _.defaults(context, {right_content: ''});
+        var context = this.getContext();
         var view = null;
         if(typeof context.right_content == 'object') {
             // A Backbone.View was passed rather than a string, likely because
@@ -73,12 +91,8 @@ cider.views.BottomNav = Backbone.View.extend({
     }
 });
 
-cider.views.Error = Backbone.View.extend({
+cider.views.Error = cider.views.View.extend({
     template: _.template(cider.templates.ERROR),
-    render: function() {
-        var context = _.pick(this.options || {}, ['message']);
-        context = _.defaults(context, {message: 'There was an error.'});
-        this.$el.html(this.template(context));
-        return this;
-    }
+    contextSchema: ['message'],
+    contextDefaults: {message: 'There was an error.'}
 });

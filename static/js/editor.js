@@ -30,15 +30,14 @@ $(function() {
             });
 
             // Change config values based on user preferences.
-            var preferences = new cider.Preferences();
-            config.mode = preferences.get(
+            config.mode = cider.Preferences.get(
                 'fm-' + file.hash(config.salt),
                 config.mode
             );
-            config.tab_width = (config.markup) ? preferences.get(
+            config.tab_width = (config.markup) ? cider.Preferences.get(
                 'stwm',
                 config.tab_width
-            ) : preferences.get('stw', config.tab_width);
+            ) : cider.Preferences.get('stw', config.tab_width);
 
             $('body').append(new cider.views.TopNav({
                 header: config.file_name,
@@ -75,7 +74,7 @@ $(function() {
             var socket = null;
             try {
                 socket = new cider.editor.Socket({
-                    name: preferences.get('sname'),
+                    name: cider.Preferences.get('sname'),
                     file: config.file,
                     salt: config.salt
                 });

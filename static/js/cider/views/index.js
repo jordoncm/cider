@@ -19,7 +19,7 @@
 
 cider.namespace('cider.views.index');
 
-cider.views.index.Content = Backbone.View.extend({
+cider.views.index.Content = cider.views.View.extend({
     events: {
         'keyup #sname': 'setSessionName',
         'submit #sftpf': 'handleSftpSubmit',
@@ -28,28 +28,20 @@ cider.views.index.Content = Backbone.View.extend({
         'click #sftp-cancel': 'sftpHide'
     },
     template: _.template(cider.templates.index.CONTENT),
-    preferences: null,
-    initialize: function() {
-        this.preferences = new cider.Preferences();
-    },
-    render: function() {
-        var context = _.pick(this.options || {}, [
-            'enable_dropbox',
-            'enable_local_file_system',
-            'enable_sftp',
-            'sname',
-            'terminal_link'
-        ]);
-        context = _.defaults(context, {sname: this.preferences.get('sname')});
-        this.$el.html(this.template(context));
-        return this;
-    },
+    contextSchema: [
+        'enable_dropbox',
+        'enable_local_file_system',
+        'enable_sftp',
+        'sname',
+        'terminal_link'
+    ],
+    contextDefaults: {sname: cider.Preferences.get('sname')},
     setSessionName: function(e) {
         var value = $(e.target).val();
         if(value !== '') {
-            this.preferences.set('sname', value);
+            cider.Preferences.set('sname', value);
         } else {
-            this.preferences.remove('sname');
+            cider.Preferences.remove('sname');
         }
     },
     handleSftpSubmit: function() {
@@ -80,10 +72,6 @@ cider.views.index.Content = Backbone.View.extend({
     }
 });
 
-cider.views.index.BottomNavRight = Backbone.View.extend({
-    template: _.template(cider.templates.index.BOTTOM_RIGHT_NAV),
-    render: function() {
-        this.$el.html(this.template());
-        return this;
-    }
+cider.views.index.BottomNavRight = cider.views.View.extend({
+    template: _.template(cider.templates.index.BOTTOM_RIGHT_NAV)
 });

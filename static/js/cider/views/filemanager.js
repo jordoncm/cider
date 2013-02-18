@@ -19,37 +19,23 @@
 
 cider.namespace('cider.views.filemanager');
 
-cider.views.filemanager.NewFolder = Backbone.View.extend({
+cider.views.filemanager.NewFolder = cider.views.View.extend({
     template: _.template(cider.templates.filemanager.NEW_FOLDER),
-    render: function() {
-        var context = _.pick(this.options || {}, ['folder']);
-        context = _.defaults(context, {
-            folder: ''
-        });
-        this.$el.html(this.template(context));
-        return this;
-    }
+    contextSchema: ['folder'],
+    contextDefaults: {folder: ''}
 });
 
-cider.views.filemanager.FileList = Backbone.View.extend({
+cider.views.filemanager.FileList = cider.views.View.extend({
     events: {
         'click [id^=file-icon], [id^=file-name], [id^=file-button]': 'confirmOpen'
     },
     template: _.template(cider.templates.filemanager.FILE_LIST),
+    contextSchema: ['path', 'up', 'extra', 'rows'],
+    contextDefaults: {path: '', up: '', extra: '', rows: ''},
     templateFolder: _.template(cider.templates.filemanager.FOLDER_ROW),
     templateFile: _.template(cider.templates.filemanager.FILE_ROW),
     render: function() {
-        var context = _.pick(
-            this.options || {},
-            ['path', 'up', 'extra', 'rows']
-        );
-        context = _.defaults(context, {
-            path: '',
-            up: '',
-            extra: '',
-            rows: ''
-        });
-
+        var context = this.getContext();
         var rows = [];
         for(var i = 0; i < this.options.files_list.length; i++) {
             var file = this.options.files_list[i];
@@ -78,30 +64,29 @@ cider.views.filemanager.FileList = Backbone.View.extend({
         ].confirm;
         switch(type) {
             case 'binary':
-                return confirm(
-                    'This appears to be a binary file. Are you sure you want to open it?'
-                );
+                return confirm([
+                    'This appears to be a binary file.',
+                    'Are you sure you want to open it?'
+                ].join(' '));
             case 'large':
-                return confirm(
-                    'This file is larger than 10MB. It may not perform well in the browser. Are you sure you want to open it?'
-                );
+                return confirm([
+                    'This file is larger than 10MB.',
+                    'It may not perform well in the browser.',
+                    'Are you sure you want to open it?'
+                ].join(' '));
             default:
                 return true;
         }
     }
 });
 
-cider.views.filemanager.CreateFileFolder =  Backbone.View.extend({
+cider.views.filemanager.CreateFileFolder = cider.views.View.extend({
     events: {
         'click #new-file': 'createFile',
         'click #new-folder': 'createFolder',
         'submit #new-form': 'createFile'
     },
     template: _.template(cider.templates.filemanager.CREATE_FILE_FOLDER),
-    render: function() {
-        this.$el.html(this.template());
-        return this;
-    },
     getCreateParameter: function() {
         var name = $('#name').val();
 
