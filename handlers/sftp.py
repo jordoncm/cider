@@ -42,8 +42,16 @@ class BaseHandler(tornado.web.RequestHandler):
         path = self.get_argument('sftp_path', '/')
         if path == '':
             path = '/'
+        if path[0] == '~' and (len(path) == 1 or path[1] == '/'):
+            path = path[1:]
+            if user == 'root':
+                path = '/root' + path
+            else:
+                path = '/home/' + user + path
         if path[0] != '/':
             path = '/' + path
+        if path[-1:] != '/':
+            path = path + '/'
 
         details = {
             'host': self.get_argument('sftp_host', ''),
