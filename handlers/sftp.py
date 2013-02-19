@@ -42,6 +42,8 @@ class BaseHandler(tornado.web.RequestHandler):
         path = self.get_argument('sftp_path', '/')
         if path == '':
             path = '/'
+        if path[0] != '/':
+            path = '/' + path
 
         details = {
             'host': self.get_argument('sftp_host', ''),
@@ -91,7 +93,6 @@ class BaseHandler(tornado.web.RequestHandler):
             # TODO: This should properly parse the URL in order to maintain
             # existing parameters.
             self.redirect('?connection=' + connection_id)
-            self.finish()
             return None
 
     def write_error(self, status_code, **kwargs):
