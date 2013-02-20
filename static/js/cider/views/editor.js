@@ -133,6 +133,18 @@ cider.views.editor.Editor = cider.views.View.extend({
         this.editor.getSession().getDocument().setNewLineMode('unix');
         this.setTabWidth(this.options.tab_width);
         this.editor.getSession().setUseSoftTabs(true);
+        this.editor.getSession().setValue(
+            this.editor.getSession().getValue().replace(
+                /[&]lt;/g,
+                '<'
+            ).replace(
+                /[&]gt;/g,
+                '>'
+            ).replace(
+                /[&]amp;/g,
+                '&'
+            )
+        );
         if(this.options.mode) {
             this.setMode(this.options.mode);
         }

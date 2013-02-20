@@ -92,6 +92,7 @@ class Editor(BaseMixin):
             # The saved argument indicates the file is saved.
             save_text = 'Saved'
 
+        text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
         ext = util.find_extension(filename)
         mode = util.get_mode(ext)
         tab_width = util.get_tab_width(ext)
