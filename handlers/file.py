@@ -84,7 +84,7 @@ class EditorHandler(tornado.web.RequestHandler, handlers.mixins.Editor):
         text = ''
         saved = False
         read_only = util.get_configuration_value('readOnly', False)
-        if not read_only:
+        if not read_only and os.path.exists(full_filename):
             read_only = not os.access(full_filename, os.W_OK)
 
         try:
