@@ -145,7 +145,7 @@ class SaveFileHandler(tornado.web.RequestHandler, handlers.mixins.SaveFile):
                 filename
             )
             read_only = util.get_configuration_value('readOnly', False)
-            if not read_only and os.access(full_filename, os.W_OK):
+            if not read_only and (not os.path.exists(full_filename) or os.access(full_filename, os.W_OK)):
                 text = self.get_text()
                 file_handler = open(full_filename, 'w')
                 file_handler.write(text)
