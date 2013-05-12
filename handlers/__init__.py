@@ -17,7 +17,6 @@
 
 import hashlib
 import json
-import tornado.template
 import tornado.web
 import tornado.websocket
 import os
@@ -133,10 +132,10 @@ class IndexHandler(tornado.web.RequestHandler):
             enable_sftp = True
 
         self.set_header('Content-Type', 'text/html')
-        loader = tornado.template.Loader('templates')
-        self.write(loader.load('index.html').generate(
-            title='Dashboard - Cider',
-            config=json.dumps({
+        self.render(
+            'index.html',
+            title = 'Dashboard - Cider',
+            config = json.dumps({
                 'terminal_link': terminal_link,
                 'enable_local_file_system': util.get_configuration_value(
                     'enableLocalFileSystem',
@@ -145,7 +144,7 @@ class IndexHandler(tornado.web.RequestHandler):
                 'enable_dropbox': enable_dropbox,
                 'enable_sftp': enable_sftp
             })
-        ))
+        )
 
 class TemplateHandler(tornado.web.RequestHandler):
     """Template strings for the frontend."""
@@ -171,8 +170,8 @@ class TemplateHandler(tornado.web.RequestHandler):
                     ])] = open(os.path.join(base, template_type, i)).read()
 
         self.set_header('Content-Type', 'text/javascript')
-        loader = tornado.template.Loader('templates')
-        self.write(loader.load('templates.js').generate(
+        self.write(self.render_string(
+            'templates.js',
             template_type = template_type,
             templates = templates
         ).replace('\n', ''))

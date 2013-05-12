@@ -21,7 +21,6 @@ import pysftp
 import random
 import string
 import tempfile
-import tornado.template
 import tornado.web
 
 import handlers.mixins
@@ -105,8 +104,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def write_error(self, status_code, **kwargs):
         """A default error response."""
-        loader = tornado.template.Loader('templates')
-        self.write(loader.load('error.html').generate(
+        self.render(
+            'error.html',
             title = 'Error - Cider',
             config = json.dumps({
                 'message': ' '.join([
@@ -114,7 +113,7 @@ class BaseHandler(tornado.web.RequestHandler):
                     'Please go back and try the connection again.'
                 ])
             })
-        ))
+        )
 
     def generate_prefix(self, details):
         """Returns the prefix based on given connection details."""

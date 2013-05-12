@@ -19,7 +19,6 @@ import hashlib
 import json
 from operator import itemgetter
 import time
-import tornado.template
 
 import collaborate
 import log
@@ -99,8 +98,8 @@ class Editor(BaseMixin):
         markup = util.is_markup(ext)
 
         self.set_header('Content-Type', 'text/html')
-        loader = tornado.template.Loader('templates')
-        self.finish(loader.load('editor.html').generate(
+        self.finish(self.render_string(
+            'editor.html',
             config = json.dumps({
                 'file_name': basename,
                 'path': path,
@@ -141,8 +140,8 @@ class FileManager(BaseMixin):
             up = path[:path.rfind('/')]  # pylint: disable=C0103
 
         self.set_header('Content-Type', 'text/html')
-        loader = tornado.template.Loader('templates')
-        self.finish(loader.load('file-manager.html').generate(
+        self.finish(self.render_string(
+            'file-manager.html',
             title=title,
             config=json.dumps({
                 'base': base,
