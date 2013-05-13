@@ -151,7 +151,7 @@ class TemplateHandler(tornado.web.RequestHandler):
     def get(self):
         """Build a set of template strings as Javascript."""
         templates = {}
-        base = 'templates/js'
+        base = os.path.join(os.path.dirname(__file__), '../templates/js')
         files = os.listdir(base)
         for i in files:
             if os.path.isfile(os.path.join(base, i)):
