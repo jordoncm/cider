@@ -1,0 +1,42 @@
+#!/bin/bash
+# This is a simple script and will be executed on your CI system if 
+# available.  Otherwise it will execute while your application is stopped
+# before the build step.  This script gets executed directly, so it
+# could be python, php, ruby, etc.
+
+function get_python_mirror() {
+    if `echo $OPENSHIFT_GEAR_DNS | egrep -qe "\.rhcloud\.com"`; then 
+        echo "http://mirror1.ops.rhcloud.com/mirror/python/web/simple"
+    fi
+
+}  #  End of function  get_python_mirror.
+
+
+function setup_virtualenv() {
+    mkdir -p "$OPENSHIFT_DATA_DIR/virtenv"
+    cd "$OPENSHIFT_DATA_DIR/virtenv"
+
+    echo  "  - Setting up virtualenv ..."
+    virtualenv --system-site-packages "$OPENSHIFT_DATA_DIR/virtenv"
+    .  "$OPENSHIFT_DATA_DIR/virtenv/bin/activate"
+
+    #  The pip alternative to setup.py is just to do:
+    #     pip install tornado
+    #  Aah, well to keep compatibility w/ python apps in 1 place for now.
+    if [ -f "$OPENSHIFT_REPO_DIR/setup.py" ]; then
+        OS_PY_MIRROR=$(get_python_mirror)
+        setup_args=""
+        [ -n "$OS_PY_MIRROR" ]  &&  setup_args="-i $OS_PY_MIRROR"
+
+        echo  "  - Processing setup.py ..."
+        python "$OPENSHIFT_REPO_DIR/setup.py" develop $setup_args
+    fi
+
+    echo  "  - Making virtualenv relocatable ... "
+    virtualenv --relocatable "$OPENSHIFT_DATA_DIR/virtenv"
+
+}  #  End of function  setup_virtualenv.
+
+
+[ -d "$HOME/diy-0.1" ]  &&  setup_virtualenv
+

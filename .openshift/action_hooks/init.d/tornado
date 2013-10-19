@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+
+# Tornado run and log dir,  pid and log files.
+rundir="$OPENSHIFT_DATA_DIR/.run"
+logdir=${OPENSHIFT_PYTHON_LOG_DIR:-"$OPENSHIFT_DIY_LOG_DIR"}
+pidfile="$rundir/tornado.pid"
+logfile="$logdir/tornado.log"
+
+
+#  Activate the virtualenv.
+function virtenv_activate() {
+    if [ -f "$HOME/python-2.6/virtenv/bin/activate" ]; then
+        source "$HOME/python-2.6/virtenv/bin/activate"
+    else
+        source "$OPENSHIFT_DATA_DIR/virtenv/bin/activate"
+    fi
+
+}  #  End of function  virtenv_activate.  
+
+
+#  Start tornado server.
+function start_tornado() {
+    echo -n $"Starting tornado: "
+
+    #  Activate the virtenv.
+    virtenv_activate
+
+    #  Start up tornado in the background.
+    cd $OPENSHIFT_REPO_DIR
+    nohup python ./server.py &> "$logfile" &
+    retval=$?
+    zpid=$!
+
+    [ $retval -eq 0 ]  &&  echo "$zpid" > "$pidfile"  &&  echo_success
+    return $retval
+
+}  #  End of function  start_tornado.
+
+
+#  Stop tornado server.
+function stop_tornado() {
+    if ! status -p $pidfile $prog; then
+        echo  $"tornado not running/stopped"
+        return 0
+    fi
+    echo -n $"Stopping tornado: "
+    killproc -p "$pidfile" "tornado"
+    retval=$?
+    echo
+    return $retval
+
+}  #  End of function  stop_tornado.
+
+
+
+#
+#  main():
+#
+
+#  Make the run directory if it doesn't exist.
+mkdir -p "$rundir"
+
+#  Process and run command.
+case "$1" in 
+    start)
+        start_tornado
+        ;;
+    stop)
+        stop_tornado
+        ;;
+    restart|reload)
+        stop_tornado
+        start_tornado
+        ;;
+    status)
+        status -p $pidfile $prog
+        ;;
+    *)
+       echo $"Usage: $0 {start|stop|restart|reload|status}"
+       exit 1
+       ;;
+esac
+
+

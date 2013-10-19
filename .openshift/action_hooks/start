@@ -1,5 +1,6 @@
 #!/bin/bash
 # The logic to start up your application should be put in this
 # script. The application will work only if it binds to
-# $OPENSHIFT_DIY_IP:8080
-nohup ${OPENSHIFT_REPO_DIR}/openshift.py > ${OPENSHIFT_DIY_LOG_DIR}/openshift.log 2>&1 &
+# $OPENSHIFT_INTERNAL_IP:8080
+
+$(dirname "$0")/init.d/tornado start
