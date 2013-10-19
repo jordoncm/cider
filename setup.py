@@ -25,9 +25,6 @@ if sys.platform == 'win32':
     import py2exe
 elif sys.platform == 'darwin':
     from setuptools import setup
-else:
-    # OpenShift.
-    from setuptools import setup
 
 def build_data_files_paths(source, target, paths):
     """Builds a file list based on a list of paths."""
@@ -88,13 +85,4 @@ elif sys.platform == 'win32':
         console=APP,
         data_files=DATA_FILES,
         options=OPTIONS
-    )
-else:
-    setup(
-        name='Cider',
-        version='0.8 beta',
-        description='Web-based IDE',
-        author='Jordon Mears',
-        author_email='jordoncm@gmail.com',
-        url='https://github.com/jordoncm/cider'
     )
