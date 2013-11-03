@@ -34,7 +34,6 @@ class CreateFolderHandler(
         try:
             path = self.get_path()
             os.mkdir(os.path.join(
-                os.path.dirname(__file__),
                 util.get_base_path_adjustment(),
                 path
             ))
@@ -53,7 +52,6 @@ class DownloadHandler(tornado.web.RequestHandler, handlers.mixins.Download):
 
         try:
             full_path = os.path.join(
-                os.path.dirname(__file__),
                 util.get_base_path_adjustment(),
                 filename
             )
@@ -77,7 +75,6 @@ class EditorHandler(tornado.web.RequestHandler, handlers.mixins.Editor):
         """
         filename = self.get_file()
         full_filename = os.path.join(
-            os.path.dirname(__file__),
             util.get_base_path_adjustment(),
             filename
         )
@@ -140,7 +137,6 @@ class SaveFileHandler(tornado.web.RequestHandler, handlers.mixins.SaveFile):
         try:
             filename = self.get_file()
             full_filename = os.path.join(
-                os.path.dirname(__file__),
                 util.get_base_path_adjustment(),
                 filename
             )

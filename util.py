@@ -16,7 +16,9 @@
 """Support functions for Cider."""
 
 import getpass
+import inspect
 import json
+import logging
 import os
 import string
 import sys
@@ -123,6 +125,27 @@ MODES = [
     (['yaml', 'jstd'], {'display_name': 'YAML', 'mode': 'yaml'})
 ]
 
+def get_base_path():
+    """Find the path to the base of the executing service.
+
+    This should be used for all path manipulation to ensure file paths from
+    within the source tree of the application are found consistently in both
+    frozen and normal execution mode.
+    """
+    if getattr(sys, 'frozen', False):
+        # We are running in a PyInstaller bundle.
+        logging.debug(
+            'Running in compiled mode. Base directory is: %s' % sys._MEIPASS
+        )
+        return sys._MEIPASS
+    else:
+        # We are running in a normal Python environment.
+        base_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
+        logging.debug(
+            'Running in source mode. Base directory is: %s' % base_path
+        )
+        return base_path
+
 def get_configuration_value(key, default = None):
     """Fetches a configuration value from the configuration file."""
     try:
@@ -157,7 +180,7 @@ def get_base_path_adjustment():
     """
     base_path_adjustment = get_configuration_value('basePathAdjustment')
     if base_path_adjustment is None:
-        base_path_adjustment = '..'
+        base_path_adjustment = os.path.join(get_base_path(), '..')
     elif base_path_adjustment == '~':
         if 'darwin' in sys.platform:
             base_path_adjustment = '/Users/' + getpass.getuser()

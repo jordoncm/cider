@@ -59,14 +59,6 @@ except ImportError:
         'Check dependent libraries pysftp, paramiko and pycrypto.'
     ]))
 
-try:
-    __file__
-except NameError:
-    # pylint: disable=E1101
-    if hasattr(sys, 'frozen') and sys.frozen in ('windows_exe', 'console_exe'):
-        __file__ = os.path.dirname(os.path.abspath(sys.executable))
-    # pylint: enable=E1101
-
 SETTINGS = {
     'autoescape': None,
     'cookie_secret': util.get_configuration_value(
@@ -79,8 +71,8 @@ SETTINGS = {
         ''
     ),
     'login_url': '/',
-    'static_path': os.path.join(os.path.dirname(__file__), 'static'),
-    'template_path': os.path.join(os.path.dirname(__file__), 'templates'),
+    'static_path': os.path.join(util.get_base_path(), 'static'),
+    'template_path': os.path.join(util.get_base_path(), 'templates'),
 }
 
 URLS = [
