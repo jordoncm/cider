@@ -54,10 +54,10 @@ try:
     SFTP = True
 except ImportError:
     SFTP = False
-    log.warn(' '.join(
+    log.warn(' '.join([
         'SFTP support not available.',
         'Check dependent libraries pysftp, paramiko and pycrypto.'
-    ))
+    ]))
 
 try:
     __file__

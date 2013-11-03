@@ -7,6 +7,5 @@ Standards-Version: 3.9.2
 
 Package: cider
 Architecture: all
-Depends: python-paramiko (>=1.7.6-2), python (>=2.6.5-0ubuntu1)
 Description: Web-based IDE
  Provides a web based file manager and IDE like code editor.

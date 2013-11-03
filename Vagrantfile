@@ -1,14 +1,14 @@
 # Simple Vagrant definition for Cider.
 
 Vagrant::Config.run do |config|
-    config.vm.box = 'ubuntu-12.04-amd64'
+    config.vm.box = 'ubuntu-12.04-i386'
 
     # The url from where the 'config.vm.box' box will be fetched if it doesn't
     # already exist on the user's system.
     config.vm.box_url = [
         'http://cloud-images.ubuntu.com',
         'vagrant/precise/current',
-        'precise-server-cloudimg-amd64-vagrant-disk1.box'
+        'precise-server-cloudimg-i386-vagrant-disk1.box'
     ].join('/')
 
     # Give the VM two cores.

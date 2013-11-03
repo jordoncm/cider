@@ -46,6 +46,7 @@ source ~/$DEPS_FOLDER/py/bin/activate
 # For SSH support.
 pip install pycrypto
 pip install paramiko
+pip install pysftp
 
 # PyInstaller is used to bundle the binary for distribution.
 pip install pyinstaller
@@ -55,3 +56,6 @@ pip install pytest
 
 # pep8 is a style checker for python code.
 pip install pep8
+
+# Debian pacakge build deps.
+sudo apt-get -y install dh-make
