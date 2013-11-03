@@ -40,14 +40,6 @@ import log
 import options
 import util
 
-GUI = False
-try:
-    from Tkinter import Tk
-    from Tkinter import Menu
-    GUI = True
-except ImportError:
-    GUI = False
-
 SFTP = False
 try:
     import handlers.sftp
@@ -134,21 +126,8 @@ def main():
                 options.get('port', util.get_configuration_value('port', 3333))
             ))
 
-        if GUI and platform.system() != 'Linux':
-            try:
-                root = Tk()
-                root.withdraw()
-                menu = Menu(root)
-                root.config(menu=menu)
-                root.mainloop()
-            except KeyboardInterrupt:
-                sys.exit()
-            except Exception:
-                while(True):
-                    time.sleep(10)
-        else:
-            while(True):
-                time.sleep(10)
+        while(True):
+            time.sleep(10)
     except KeyboardInterrupt:
         sys.exit()
 
