@@ -24,24 +24,25 @@ This module also defines the `HTTPRequest` class which is exposed via
 `tornado.web.RequestHandler.request`.
 """
 
-from __future__ import absolute_import, division, with_statement
+from __future__ import absolute_import, division, print_function, with_statement
 
-import Cookie
-import logging
 import socket
+import ssl
 import time
 
 from tornado.escape import native_str, parse_qs_bytes
 from tornado import httputil
 from tornado import iostream
-from tornado.netutil import TCPServer
+from tornado.log import gen_log
+from tornado import netutil
+from tornado.tcpserver import TCPServer
 from tornado import stack_context
-from tornado.util import b, bytes_type
+from tornado.util import bytes_type
 
 try:
-    import ssl  # Python 2.6+
+    import Cookie  # py2
 except ImportError:
-    ssl = None
+    import http.cookies as Cookie  # py3
 
 
 class HTTPServer(TCPServer):
@@ -54,8 +55,8 @@ class HTTPServer(TCPServer):
     requests). A simple example server that echoes back the URI you
     requested::
 
-        import httpserver
-        import ioloop
+        import tornado.httpserver
+        import tornado.ioloop
 
         def handle_request(request):
            message = "You requested %s\n" % request.uri
@@ -63,30 +64,39 @@ class HTTPServer(TCPServer):
                          len(message), message))
            request.finish()
 
-        http_server = httpserver.HTTPServer(handle_request)
+        http_server = tornado.httpserver.HTTPServer(handle_request)
         http_server.listen(8888)
-        ioloop.IOLoop.instance().start()
+        tornado.ioloop.IOLoop.instance().start()
 
-    `HTTPServer` is a very basic connection handler. Beyond parsing the
-    HTTP request body and headers, the only HTTP semantics implemented
-    in `HTTPServer` is HTTP/1.1 keep-alive connections. We do not, however,
-    implement chunked encoding, so the request callback must provide a
-    ``Content-Length`` header or implement chunked encoding for HTTP/1.1
-    requests for the server to run correctly for HTTP/1.1 clients. If
-    the request handler is unable to do this, you can provide the
-    ``no_keep_alive`` argument to the `HTTPServer` constructor, which will
-    ensure the connection is closed on every request no matter what HTTP
-    version the client is using.
+    `HTTPServer` is a very basic connection handler.  It parses the request
+    headers and body, but the request callback is responsible for producing
+    the response exactly as it will appear on the wire.  This affords
+    maximum flexibility for applications to implement whatever parts
+    of HTTP responses are required.
 
-    If ``xheaders`` is ``True``, we support the ``X-Real-Ip`` and ``X-Scheme``
-    headers, which override the remote IP and HTTP scheme for all requests.
-    These headers are useful when running Tornado behind a reverse proxy or
-    load balancer.
+    `HTTPServer` supports keep-alive connections by default
+    (automatically for HTTP/1.1, or for HTTP/1.0 when the client
+    requests ``Connection: keep-alive``).  This means that the request
+    callback must generate a properly-framed response, using either
+    the ``Content-Length`` header or ``Transfer-Encoding: chunked``.
+    Applications that are unable to frame their responses properly
+    should instead return a ``Connection: close`` header in each
+    response and pass ``no_keep_alive=True`` to the `HTTPServer`
+    constructor.
 
-    `HTTPServer` can serve SSL traffic with Python 2.6+ and OpenSSL.
-    To make this server serve SSL traffic, send the ssl_options dictionary
+    If ``xheaders`` is ``True``, we support the
+    ``X-Real-Ip``/``X-Forwarded-For`` and
+    ``X-Scheme``/``X-Forwarded-Proto`` headers, which override the
+    remote IP and URI scheme/protocol for all requests.  These headers
+    are useful when running Tornado behind a reverse proxy or load
+    balancer.  The ``protocol`` argument can also be set to ``https``
+    if Tornado is run behind an SSL-decoding proxy that does not set one of
+    the supported ``xheaders``.
+
+    To make this server serve SSL traffic, send the ``ssl_options`` dictionary
     argument with the arguments required for the `ssl.wrap_socket` method,
-    including "certfile" and "keyfile"::
+    including ``certfile`` and ``keyfile``.  (In Python 3.2+ you can pass
+    an `ssl.SSLContext` object instead of a dict)::
 
        HTTPServer(applicaton, ssl_options={
            "certfile": os.path.join(data_dir, "mydomain.crt"),
@@ -94,9 +104,9 @@ class HTTPServer(TCPServer):
        })
 
     `HTTPServer` initialization follows one of three patterns (the
-    initialization methods are defined on `tornado.netutil.TCPServer`):
+    initialization methods are defined on `tornado.tcpserver.TCPServer`):
 
-    1. `~tornado.netutil.TCPServer.listen`: simple single-process::
+    1. `~tornado.tcpserver.TCPServer.listen`: simple single-process::
 
             server = HTTPServer(app)
             server.listen(8888)
@@ -105,7 +115,7 @@ class HTTPServer(TCPServer):
        In many cases, `tornado.web.Application.listen` can be used to avoid
        the need to explicitly create the `HTTPServer`.
 
-    2. `~tornado.netutil.TCPServer.bind`/`~tornado.netutil.TCPServer.start`:
+    2. `~tornado.tcpserver.TCPServer.bind`/`~tornado.tcpserver.TCPServer.start`:
        simple multi-process::
 
             server = HTTPServer(app)
@@ -113,11 +123,11 @@ class HTTPServer(TCPServer):
             server.start(0)  # Forks multiple sub-processes
             IOLoop.instance().start()
 
-       When using this interface, an `IOLoop` must *not* be passed
-       to the `HTTPServer` constructor.  `start` will always start
-       the server on the default singleton `IOLoop`.
+       When using this interface, an `.IOLoop` must *not* be passed
+       to the `HTTPServer` constructor.  `~.TCPServer.start` will always start
+       the server on the default singleton `.IOLoop`.
 
-    3. `~tornado.netutil.TCPServer.add_sockets`: advanced multi-process::
+    3. `~tornado.tcpserver.TCPServer.add_sockets`: advanced multi-process::
 
             sockets = tornado.netutil.bind_sockets(8888)
             tornado.process.fork_processes(0)
@@ -125,25 +135,26 @@ class HTTPServer(TCPServer):
             server.add_sockets(sockets)
             IOLoop.instance().start()
 
-       The `add_sockets` interface is more complicated, but it can be
-       used with `tornado.process.fork_processes` to give you more
-       flexibility in when the fork happens.  `add_sockets` can
-       also be used in single-process servers if you want to create
-       your listening sockets in some way other than
-       `tornado.netutil.bind_sockets`.
+       The `~.TCPServer.add_sockets` interface is more complicated,
+       but it can be used with `tornado.process.fork_processes` to
+       give you more flexibility in when the fork happens.
+       `~.TCPServer.add_sockets` can also be used in single-process
+       servers if you want to create your listening sockets in some
+       way other than `tornado.netutil.bind_sockets`.
 
     """
     def __init__(self, request_callback, no_keep_alive=False, io_loop=None,
-                 xheaders=False, ssl_options=None, **kwargs):
+                 xheaders=False, ssl_options=None, protocol=None, **kwargs):
         self.request_callback = request_callback
         self.no_keep_alive = no_keep_alive
         self.xheaders = xheaders
+        self.protocol = protocol
         TCPServer.__init__(self, io_loop=io_loop, ssl_options=ssl_options,
                            **kwargs)
 
     def handle_stream(self, stream, address):
         HTTPConnection(stream, address, self.request_callback,
-                       self.no_keep_alive, self.xheaders)
+                       self.no_keep_alive, self.xheaders, self.protocol)
 
 
 class _BadRequestException(Exception):
@@ -158,37 +169,75 @@ class HTTPConnection(object):
     until the HTTP conection is closed.
     """
     def __init__(self, stream, address, request_callback, no_keep_alive=False,
-                 xheaders=False):
+                 xheaders=False, protocol=None):
         self.stream = stream
         self.address = address
+        # Save the socket's address family now so we know how to
+        # interpret self.address even after the stream is closed
+        # and its socket attribute replaced with None.
+        self.address_family = stream.socket.family
         self.request_callback = request_callback
         self.no_keep_alive = no_keep_alive
         self.xheaders = xheaders
-        self._request = None
-        self._request_finished = False
+        self.protocol = protocol
+        self._clear_request_state()
         # Save stack context here, outside of any request.  This keeps
         # contexts from one request from leaking into the next.
         self._header_callback = stack_context.wrap(self._on_headers)
-        self.stream.read_until(b("\r\n\r\n"), self._header_callback)
+        self.stream.set_close_callback(self._on_connection_close)
+        self.stream.read_until(b"\r\n\r\n", self._header_callback)
+
+    def _clear_request_state(self):
+        """Clears the per-request state.
+
+        This is run in between requests to allow the previous handler
+        to be garbage collected (and prevent spurious close callbacks),
+        and when the connection is closed (to break up cycles and
+        facilitate garbage collection in cpython).
+        """
+        self._request = None
+        self._request_finished = False
         self._write_callback = None
+        self._close_callback = None
+
+    def set_close_callback(self, callback):
+        """Sets a callback that will be run when the connection is closed.
+
+        Use this instead of accessing
+        `HTTPConnection.stream.set_close_callback
+        <.BaseIOStream.set_close_callback>` directly (which was the
+        recommended approach prior to Tornado 3.0).
+        """
+        self._close_callback = stack_context.wrap(callback)
+
+    def _on_connection_close(self):
+        if self._close_callback is not None:
+            callback = self._close_callback
+            self._close_callback = None
+            callback()
+        # Delete any unfinished callbacks to break up reference cycles.
+        self._header_callback = None
+        self._clear_request_state()
 
     def close(self):
         self.stream.close()
         # Remove this reference to self, which would otherwise cause a
         # cycle and delay garbage collection of this connection.
         self._header_callback = None
+        self._clear_request_state()
 
     def write(self, chunk, callback=None):
         """Writes a chunk of output to the stream."""
-        assert self._request, "Request closed"
         if not self.stream.closed():
             self._write_callback = stack_context.wrap(callback)
             self.stream.write(chunk, self._on_write_complete)
 
     def finish(self):
         """Finishes the request."""
-        assert self._request, "Request closed"
         self._request_finished = True
+        # No more data is coming, so instruct TCP to send any remaining
+        # data immediately instead of waiting for a full packet or ack.
+        self.stream.set_nodelay(True)
         if not self.stream.writing():
             self._finish_request()
 
@@ -208,7 +257,7 @@ class HTTPConnection(object):
             self._finish_request()
 
     def _finish_request(self):
-        if self.no_keep_alive:
+        if self.no_keep_alive or self._request is None:
             disconnect = True
         else:
             connection_header = self._request.headers.get("Connection")
@@ -221,12 +270,21 @@ class HTTPConnection(object):
                 disconnect = connection_header != "keep-alive"
             else:
                 disconnect = True
-        self._request = None
-        self._request_finished = False
+        self._clear_request_state()
         if disconnect:
             self.close()
             return
-        self.stream.read_until(b("\r\n\r\n"), self._header_callback)
+        try:
+            # Use a try/except instead of checking stream.closed()
+            # directly, because in some cases the stream doesn't discover
+            # that it's closed until you try to read from it.
+            self.stream.read_until(b"\r\n\r\n", self._header_callback)
+
+            # Turn Nagle's algorithm back on, leaving the stream in its
+            # default state for the next request.
+            self.stream.set_nodelay(False)
+        except iostream.StreamClosedError:
+            self.close()
 
     def _on_headers(self, data):
         try:
@@ -239,13 +297,14 @@ class HTTPConnection(object):
                 raise _BadRequestException("Malformed HTTP request line")
             if not version.startswith("HTTP/"):
                 raise _BadRequestException("Malformed HTTP version in HTTP Request-Line")
-            headers = httputil.HTTPHeaders.parse(data[eol:])
+            try:
+                headers = httputil.HTTPHeaders.parse(data[eol:])
+            except ValueError:
+                # Probably from split() if there was no ':' in the line
+                raise _BadRequestException("Malformed HTTP headers")
 
             # HTTPRequest wants an IP, not a full socket address
-            if getattr(self.stream.socket, 'family', socket.AF_INET) in (
-                socket.AF_INET, socket.AF_INET6):
-                # Jython 2.5.2 doesn't have the socket.family attribute,
-                # so just assume IP in that case.
+            if self.address_family in (socket.AF_INET, socket.AF_INET6):
                 remote_ip = self.address[0]
             else:
                 # Unix (or other) socket; fake the remote address
@@ -253,7 +312,7 @@ class HTTPConnection(object):
 
             self._request = HTTPRequest(
                 connection=self, method=method, uri=uri, version=version,
-                headers=headers, remote_ip=remote_ip)
+                headers=headers, remote_ip=remote_ip, protocol=self.protocol)
 
             content_length = headers.get("Content-Length")
             if content_length:
@@ -261,13 +320,13 @@ class HTTPConnection(object):
                 if content_length > self.stream.max_buffer_size:
                     raise _BadRequestException("Content-Length too long")
                 if headers.get("Expect") == "100-continue":
-                    self.stream.write(b("HTTP/1.1 100 (Continue)\r\n\r\n"))
+                    self.stream.write(b"HTTP/1.1 100 (Continue)\r\n\r\n")
                 self.stream.read_bytes(content_length, self._on_request_body)
                 return
 
             self.request_callback(self._request)
-        except _BadRequestException, e:
-            logging.info("Malformed HTTP request from %s: %s",
+        except _BadRequestException as e:
+            gen_log.info("Malformed HTTP request from %s: %s",
                          self.address[0], e)
             self.close()
             return
@@ -308,7 +367,7 @@ class HTTPRequest(object):
 
     .. attribute:: headers
 
-       `HTTPHeader` dictionary-like object for request headers.  Acts like
+       `.HTTPHeaders` dictionary-like object for request headers.  Acts like
        a case-insensitive dictionary with additional methods for repeated
        headers.
 
@@ -318,13 +377,16 @@ class HTTPRequest(object):
 
     .. attribute:: remote_ip
 
-       Client's IP address as a string.  If `HTTPServer.xheaders` is set,
+       Client's IP address as a string.  If ``HTTPServer.xheaders`` is set,
        will pass along the real IP address provided by a load balancer
-       in the ``X-Real-Ip`` header
+       in the ``X-Real-Ip`` or ``X-Forwarded-For`` header.
+
+    .. versionchanged:: 3.1
+       The list format of ``X-Forwarded-For`` is now supported.
 
     .. attribute:: protocol
 
-       The protocol used, either "http" or "https".  If `HTTPServer.xheaders`
+       The protocol used, either "http" or "https".  If ``HTTPServer.xheaders``
        is set, will pass along the protocol used by a load balancer if
        reported via an ``X-Scheme`` header.
 
@@ -338,13 +400,13 @@ class HTTPRequest(object):
        maps arguments names to lists of values (to support multiple values
        for individual names). Names are of type `str`, while arguments
        are byte strings.  Note that this is different from
-       `RequestHandler.get_argument`, which returns argument values as
+       `.RequestHandler.get_argument`, which returns argument values as
        unicode strings.
 
     .. attribute:: files
 
        File uploads are available in the files property, which maps file
-       names to lists of :class:`HTTPFile`.
+       names to lists of `.HTTPFile`.
 
     .. attribute:: connection
 
@@ -361,26 +423,32 @@ class HTTPRequest(object):
         self.version = version
         self.headers = headers or httputil.HTTPHeaders()
         self.body = body or ""
+
+        # set remote IP and protocol
+        self.remote_ip = remote_ip
+        if protocol:
+            self.protocol = protocol
+        elif connection and isinstance(connection.stream,
+                                       iostream.SSLIOStream):
+            self.protocol = "https"
+        else:
+            self.protocol = "http"
+
+        # xheaders can override the defaults
         if connection and connection.xheaders:
             # Squid uses X-Forwarded-For, others use X-Real-Ip
-            self.remote_ip = self.headers.get(
-                "X-Real-Ip", self.headers.get("X-Forwarded-For", remote_ip))
-            if not self._valid_ip(self.remote_ip):
-                self.remote_ip = remote_ip
+            ip = self.headers.get("X-Forwarded-For", self.remote_ip)
+            ip = ip.split(',')[-1].strip()
+            ip = self.headers.get(
+                "X-Real-Ip", ip)
+            if netutil.is_valid_ip(ip):
+                self.remote_ip = ip
             # AWS uses X-Forwarded-Proto
-            self.protocol = self.headers.get(
-                "X-Scheme", self.headers.get("X-Forwarded-Proto", protocol))
-            if self.protocol not in ("http", "https"):
-                self.protocol = "http"
-        else:
-            self.remote_ip = remote_ip
-            if protocol:
-                self.protocol = protocol
-            elif connection and isinstance(connection.stream,
-                                           iostream.SSLIOStream):
-                self.protocol = "https"
-            else:
-                self.protocol = "http"
+            proto = self.headers.get(
+                "X-Scheme", self.headers.get("X-Forwarded-Proto", self.protocol))
+            if proto in ("http", "https"):
+                self.protocol = proto
+
         self.host = host or self.headers.get("Host") or "127.0.0.1"
         self.files = files or {}
         self.connection = connection
@@ -388,12 +456,7 @@ class HTTPRequest(object):
         self._finish_time = None
 
         self.path, sep, self.query = uri.partition('?')
-        arguments = parse_qs_bytes(self.query)
-        self.arguments = {}
-        for name, values in arguments.iteritems():
-            values = [v for v in values if v]
-            if values:
-                self.arguments[name] = values
+        self.arguments = parse_qs_bytes(self.query, keep_blank_values=True)
 
     def supports_http_1_1(self):
         """Returns True if this request supports HTTP/1.1 semantics"""
@@ -460,20 +523,7 @@ class HTTPRequest(object):
             return None
 
     def __repr__(self):
-        attrs = ("protocol", "host", "method", "uri", "version", "remote_ip",
-                 "body")
+        attrs = ("protocol", "host", "method", "uri", "version", "remote_ip")
         args = ", ".join(["%s=%r" % (n, getattr(self, n)) for n in attrs])
         return "%s(%s, headers=%s)" % (
             self.__class__.__name__, args, dict(self.headers))
-
-    def _valid_ip(self, ip):
-        try:
-            res = socket.getaddrinfo(ip, 0, socket.AF_UNSPEC,
-                                     socket.SOCK_STREAM,
-                                     0, socket.AI_NUMERICHOST)
-            return bool(res)
-        except socket.gaierror, e:
-            if e.args[0] == socket.EAI_NONAME:
-                return False
-            raise
-        return True
