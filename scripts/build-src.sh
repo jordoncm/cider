@@ -21,36 +21,35 @@ cd `dirname $0`/..
 find . -name "*.pyc" -exec rm '{}' ';'
 
 VERSION=`cat version.txt | sed -e 's/\n//g'`
-BINARY_TARGET="cider-$VERSION-bin"
-TARGET="cider-$VERSION"
+TARGET="cider-$VERSION-src"
 
 rm -rf build
 
 BUILD_TARGET="build/$TARGET"
 
-./scripts/build-bin.sh
+mkdir -p $BUILD_TARGET
 
-cp -r build/$BINARY_TARGET $BUILD_TARGET
-cp dist/$BINARY_TARGET.tar.gz $BUILD_TARGET/$TARGET.tar.gz
-cd $BUILD_TARGET
-dh_make --s -e jordoncm@gmail.com -c GPL -f $TARGET.tar.gz
-cd ..
-rm -f cider_$VERSION.orig.tar.gz
+cp -r handlers $BUILD_TARGET/
+cp -r static $BUILD_TARGET/
+cp -r templates $BUILD_TARGET/
+cp -r tornado $BUILD_TARGET/
+cp cider $BUILD_TARGET/
+cp collaborate.py $BUILD_TARGET/
+cp configuration.json $BUILD_TARGET/
+cp license.txt $BUILD_TARGET/
+cp log.py $BUILD_TARGET/
+cp options.py $BUILD_TARGET/
+cp readme.md $BUILD_TARGET/
+cp server.py $BUILD_TARGET/
+cp util.py $BUILD_TARGET/
 
-mkdir -p $TARGET/extra
-cd $TARGET/extra
-ln -s /usr/share/cider/configuration.json cider.json
-ln -s /usr/share/cider/cider cider
-cd ../..
-cp ../scripts/deb/control $TARGET/debian/
-cp ../scripts/deb/cider.install $TARGET/debian/
-cd $TARGET/debian/
-rm -f *ex
-rm -f *EX
-rm -f README*
-rm -rf source
-cd ..
-dpkg-buildpackage -b
-cd ..
+cd build
+tar -czf $TARGET.tar.gz $TARGET
 
-mv cider_$VERSION-1_all.deb ../dist/
+cd ..
+mkdir -p dist
+if [ -a "dist/$TARGET.tar.gz" ]; then
+    echo "NOTE: Replacing existing target in dist."
+    rm dist/$TARGET.tar.gz
+fi
+mv build/$TARGET.tar.gz dist/
